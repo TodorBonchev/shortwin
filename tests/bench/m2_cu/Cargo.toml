@@ -1,0 +1,58 @@
+# M2 CU bench and T-TRACE (ARCHITECTURE §6.1, §6.2, §8.2 T-CU / T-TRACE, §9 M2): the compute
+# units of every M2 instruction on short.win's test-venue SBF build against the mock venue,
+# measured with Mollusk 0.15.1 on account states built by the LiteSVM harness (tests/litesvm),
+# which runs the same instruction as a cross-check; and the instruction-trace entries of the
+# worst-case M2 transactions (≤ 64). See README.md.
+#
+# A standalone workspace with its own lockfile, like tests/bench/m1_cu (whose lockfile seeded
+# this one): Mollusk stays out of the on-chain workspace's lockfile, and the shared crates
+# (anchor 1.2.0, LiteSVM 0.16.0, the Agave 4.2.2 runtime line) resolve to the same versions as
+# the program tests (C1-14).
+[workspace]
+resolver = "3"
+
+[package]
+name = "m2-cu-bench"
+version = "0.1.0"
+description = "short.win M2 CU bench (Mollusk 0.15.1, LiteSVM cross-check) and T-TRACE of the worst-case transactions"
+edition = "2024"
+# Host-only crate; LiteSVM 0.16's MSRV.
+rust-version = "1.89"
+publish = false
+
+[dependencies]
+# The harness enables short.win's TEST-ONLY `test-venue` feature on the host (the mock venue's
+# types); the SBF build measured is `scripts/build-test-venue.sh`'s (or SHORTWIN_TEST_VENUE_SO).
+shortwin = { path = "../../../programs/shortwin", features = ["no-entrypoint"] }
+shortwin-litesvm-tests = { path = "../../litesvm" }
+shortwin-math = { path = "../../../crates/shortwin-math" }
+anchor-lang = "=1.2.0"
+
+# ARCH §1.1 pins.
+litesvm = "=0.16.0"
+mollusk-svm = "=0.15.1"
+
+# The component crates both harnesses speak (the majors LiteSVM 0.16 declares).
+solana-account = "4.3"
+solana-clock = "~3.1.1"
+solana-instruction = "~3.4"
+solana-keypair = "3.1.2"
+# T-TRACE reports each worst-case transaction's legacy wire size (T-SIZE preview).
+solana-message = "4.2.4"
+solana-rent = "~4.3"
+solana-signer = "3.0.1"
+
+# C1-14 (ARCH §1.1): Mollusk 0.15.1 declares the Agave runtime crates as ^4.2.0 and does not
+# compile against 4.3.0; LiteSVM 0.16.0 declares ^4.2.1. Hold the line both share at 4.2.x
+# (4.2.2 resolved, as in the root lockfile, tests/bench/cu_math and tests/bench/m1_cu).
+agave-feature-set = "~4.2.2"
+solana-bpf-loader-program = "~4.2.2"
+solana-compute-budget = "~4.2.2"
+solana-program-runtime = "~4.2.2"
+solana-svm-callback = "~4.2.2"
+solana-svm-feature-set = "~4.2.2"
+solana-svm-log-collector = "~4.2.2"
+solana-svm-timings = "~4.2.2"
+solana-syscalls = "~4.2.2"
+solana-system-program = "~4.2.2"
+solana-transaction-context = "~4.2.2"

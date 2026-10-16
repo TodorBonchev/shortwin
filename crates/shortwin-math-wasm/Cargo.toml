@@ -1,0 +1,17 @@
+[package]
+name = "shortwin-math-wasm"
+version = "0.1.0"
+description = "wasm-bindgen facade over shortwin-math for the frontend (packages/math-wasm)"
+edition = "2024"
+rust-version = "1.89"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+shortwin-math = { path = "../shortwin-math" }
+# The mint filter (`mint::check`) the program is differential-tested against (zero dependencies).
+shortwin-venue-state = { path = "../shortwin-venue-state" }
+# Exact pin: the generated JS glue must match the wasm-bindgen CLI used to build packages/math-wasm.
+wasm-bindgen = "=0.2.129"

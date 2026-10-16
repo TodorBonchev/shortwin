@@ -1,0 +1,27 @@
+[package]
+name = "cu-math-runner"
+version = "0.1.0"
+description = "Mollusk runner asserting the T-CU-MATH budgets of cu-math-bench"
+edition = "2024"
+publish = false
+
+[dev-dependencies]
+cu-math-bench = { path = "../program" }
+# ARCH §1.1 pin; the Agave crates it declares (^4.2.0) resolve to 4.3.0 here.
+mollusk-svm = "=0.15.1"
+# Mollusk's own majors (Pubkey 4.x, Instruction 3.x).
+solana-instruction = "3.2"
+solana-pubkey = "4.1"
+# Mollusk 0.15.1 declares Agave ^4.2.0 but does not compile against the 4.3.0 crates the
+# resolver would pick (private `InvokeContext` methods; ARCH §1.1 C1-14): hold the Agave
+# runtime line at 4.2.x.
+solana-bpf-loader-program = "~4.2.2"
+solana-compute-budget = "~4.2.2"
+solana-program-runtime = "~4.2.2"
+solana-svm-callback = "~4.2.2"
+solana-svm-feature-set = "~4.2.2"
+solana-svm-log-collector = "~4.2.2"
+solana-svm-timings = "~4.2.2"
+solana-syscalls = "~4.2.2"
+solana-system-program = "~4.2.2"
+solana-transaction-context = "~4.2.2"

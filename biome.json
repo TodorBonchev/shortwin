@@ -1,0 +1,96 @@
+{
+    "$schema": "https://biomejs.dev/schemas/2.5.14/schema.json",
+    "root": true,
+    "vcs": {
+        "enabled": true,
+        "clientKind": "git",
+        "useIgnoreFile": true
+    },
+    "files": {
+        "includes": [
+            "apps/web/**",
+            "packages/math-wasm/**",
+            "!**/node_modules",
+            "!**/dist",
+            "!**/pkg",
+            "!**/playwright-report",
+            "!**/test-results",
+            "!**/.e2e"
+        ]
+    },
+    "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 4,
+        "lineWidth": 120
+    },
+    "javascript": {
+        "formatter": {
+            "quoteStyle": "single",
+            "jsxQuoteStyle": "double",
+            "trailingCommas": "all",
+            "semicolons": "always"
+        }
+    },
+    "css": {
+        "formatter": {
+            "enabled": true
+        },
+        "linter": {
+            "enabled": true
+        }
+    },
+    "linter": {
+        "enabled": true,
+        "domains": {
+            "react": "recommended",
+            "test": "recommended"
+        },
+        "rules": {
+            "preset": "recommended",
+            "correctness": {
+                "noUnusedImports": "error",
+                "noUnusedVariables": "error",
+                "useExhaustiveDependencies": "error"
+            },
+            "suspicious": {
+                "noExplicitAny": "error",
+                "noConsole": {
+                    "level": "error",
+                    "options": {
+                        "allow": ["error", "warn"]
+                    }
+                }
+            },
+            "security": {
+                "noDangerouslySetInnerHtml": "error"
+            },
+            "style": {
+                "noNonNullAssertion": "error",
+                "useImportType": "error"
+            },
+            "a11y": {
+                "preset": "recommended"
+            }
+        }
+    },
+    "assist": {
+        "actions": {
+            "source": {
+                "organizeImports": "on"
+            }
+        }
+    },
+    "overrides": [
+        {
+            "includes": ["packages/math-wasm/scripts/**", "apps/web/e2e/**", "apps/web/scripts/**"],
+            "linter": {
+                "rules": {
+                    "suspicious": {
+                        "noConsole": "off"
+                    }
+                }
+            }
+        }
+    ]
+}

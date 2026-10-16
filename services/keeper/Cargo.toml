@@ -1,0 +1,57 @@
+[package]
+name = "shortwin-keeper"
+version = "0.1.0"
+description = "short.win keeper v1 (ARCHITECTURE §7.1 duties 1–14): observation coverage, deviation bursts, liquidate / expire at the first executable second, sol_settle re-checks, size-packed crank batches, degraded mode, the venue drift monitor (Raydium admin actions, PumpSwap disable_flags, flag_venue_upgraded), the Raydium pool monitor and fast path (propose_pool, execute_pool_switch), graduation (migrate_v2 and the → PumpSwap transition after a curve completes, pump v3's synthetic exits with the TradeExtras format the deployed short.win parses), post-wipe and trader-side sweeps with the venue cashback claims, the O17 coverage pause and the SOL/USD cache (M7); and shortwin-build-alt, the protocol address lookup table (ARCH §6.4 A28)"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[features]
+default = []
+# TEST-ONLY (A49): the mock venue's account lists (`VenueKind::Mock`), for the LiteSVM
+# scenario tests (keeper-litesvm). The keeper binary never enables it.
+test-venue = ["shortwin/test-venue"]
+
+[dependencies]
+shortwin.workspace = true
+shortwin-math.workspace = true
+# The venue-state readers the program uses (AMM v4 `AmmInfo`, CPMM `PoolState` / `AmmConfig`,
+# ProgramData headers): the admin monitor reads exactly the bytes the adapters read.
+shortwin-venue-state.workspace = true
+shortwin-services-common.workspace = true
+# M7-SEC-8: a pool discovery's four `getProgramAccounts` calls in parallel.
+futures.workspace = true
+anchor-lang.workspace = true
+bytemuck.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+toml.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+solana-address-lookup-table-interface.workspace = true
+solana-hash.workspace = true
+solana-keypair.workspace = true
+solana-message.workspace = true
+solana-pubkey.workspace = true
+solana-signer.workspace = true
+
+[dev-dependencies]
+# The discriminator checks of the unit tests (the version the program uses).
+solana-sha256-hasher = "3"
+
+[[bin]]
+name = "shortwin-keeper"
+path = "src/main.rs"
+
+# The protocol ALT (ARCH §6.4 A28): print, create, extend, freeze or check it
+# (`scripts/build-alt.sh` wraps it).
+[[bin]]
+name = "shortwin-build-alt"
+path = "src/bin/build_alt.rs"
+
+# U25 (ARCH §12; M7): does a cluster take v1 transactions? Simulates (and with --send, lands) a
+# zero-lamport self-transfer as v1 and as v0 with the keeper's own builder.
+[[bin]]
+name = "shortwin-v1-probe"
+path = "src/bin/v1_probe.rs"

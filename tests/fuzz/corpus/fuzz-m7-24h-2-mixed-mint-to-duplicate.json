@@ -1,0 +1,17 @@
+{
+  "profile": "mixed",
+  "seed": 20288828,
+  "step": 1,
+  "signature": "tests/litesvm/src/tokens.rs:122 | mint_to: AlreadyProcessed",
+  "minimized": true,
+  "differential": true,
+  "avoid_known": true,
+  "actions": [
+    "donate 0 2012706147 2230792167",
+    "donate 0 3947167893 1434463617"
+  ],
+  "finding": "FUZZ-M7-24H-2 (the 24 h fuzz at eb82a2a, profile all; harness, not program): two `donate` actions in a row on slot 0 both draw the pool-vault target (`a mod 7 = 4`) and the same amount (`1 + 17·10⁷` = 170,000,001 raw units), so the mock venue's `top_up` sends two byte-identical `MintTo`s (same payer, mint, vault, authority, amount) through `tokens::mint_to` — a litesvm-token builder that, unlike `Env::send`, did not expire the blockhash — and no transaction ran between them: LiteSVM refused the second as `AlreadyProcessed` (its signature check, before any program ran) and the helper panicked. Replay: `shortwin-fuzz replay tests/fuzz/corpus/fuzz-m7-24h-2-mixed-mint-to-duplicate.json`.",
+  "message": "tests/litesvm/src/tokens.rs:122\nmint_to: AlreadyProcessed",
+  "status": "fixed",
+  "resolution": "Resolved in the harness, no program change: every helper of `tests/litesvm` that sends around `Env::send` (the litesvm-token builders' `.send()` in `tokens.rs`, `mock::wrap`, `fork::{wrap, fund_wsol, fund_token}`, the airdrops of `Env::fund` and `tokens::holder`) goes through `env::send_direct`, which expires the blockhash after the send as `Env::send` does, so the latest blockhash is never one a committed transaction used; `Env::send` panics on `AlreadyProcessed` (a duplicate is the harness's fault, never a refusal an oracle may count). No invariant changed. Regression test: `harness::identical_helper_calls_in_a_row_are_not_duplicates` (tests/litesvm/tests/it). This file replays as a regression: the run must pass (`corpus_replays`)."
+}

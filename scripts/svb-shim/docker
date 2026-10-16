@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+# A minimal `docker` stand-in for solana-verify 0.5.2's `build` path, for hosts without a Docker
+# daemon (scripts/verifiable-build.sh --local). It runs a pinned image's root filesystem, fetched
+# and checked by scripts/svb-shim/fetch-image, under bubblewrap in an unprivileged user namespace
+# (no daemon, no root). It implements exactly the calls src/main.rs@v0.5.2 makes:
+#   docker run --rm IMAGE pwd                                              -> the image's WorkingDir
+#   docker run --rm -v HOST:WORKDIR -dit [--memory M --cpus C] IMAGE bash   -> prints a container id
+#   docker exec [-e K=V]... [-w DIR] ID CMD...
+#   docker kill ID
+# IMAGE must be REPO@sha256:<hex>; the shim runs $SVB_CACHE/rootfs-<hex>, which fetch-image
+# extracted after checking every blob against that digest. The digest is the only identity, so
+# any image of solana-verify's IMAGE_MAP works once fetched (e.g. 1.18.16 for a Squads v4
+# reproduction, 3.1.10 for Raydium CPMM):
+#   scripts/svb-shim/fetch-image solanafoundation/solana-verifiable-build sha256:<hex> "$SVB_CACHE"
+#   PATH=<repo>/scripts/svb-shim:$PATH SVB_CACHE=... solana-verify build --library-name <lib> ...
+# SVB_IMAGE_DIGEST, if set, is an allow-list (space-separated digests): any other image is
+# refused, so a wrong Cargo.toml version cannot silently pick another fetched image.
+# Each "container" gets a fresh copy of the extracted image (cp --reflink=auto: instant on
+# btrfs/xfs), in $SVB_CACHE/containers/<id>, removed by `docker kill`.
+set -euo pipefail
+: "${SVB_CACHE:?directory holding the rootfs-<hex> trees of scripts/svb-shim/fetch-image}"
+state="$SVB_CACHE/containers"
+
+rootfs_of() {  # IMAGE -> its extracted rootfs, or exit
+  local image="$1" digest
+  [[ "$image" == *@sha256:* ]] || { echo "shim: image $image is not pinned by digest" >&2; exit 1; }
+  digest="sha256:${image##*@sha256:}"
+  if [[ -n "${SVB_IMAGE_DIGEST:-}" && " $SVB_IMAGE_DIGEST " != *" $digest "* ]]; then
+    echo "shim: unexpected image $image (allowed: $SVB_IMAGE_DIGEST)" >&2; exit 1
+  fi
+  local root="$SVB_CACHE/rootfs-${digest#sha256:}"
+  [[ -f "$root/.complete" ]] || {
+    echo "shim: $image not fetched; run scripts/svb-shim/fetch-image ${image%@*} $digest $SVB_CACHE" >&2; exit 1; }
+  echo "$root"
+}
+
+case "${1:-}" in
+  run)
+    shift; mount=""; detach=0
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --rm) shift ;;
+        -dit) detach=1; shift ;;
+        -v) mount="$2"; shift 2 ;;
+        --memory|--cpus) shift 2 ;;
+        *) break ;;
+      esac
+    done
+    image="$1"; shift; root=$(rootfs_of "$image"); workdir=$(<"$root/.svb-workdir")
+    if [[ $detach == 0 && "${1:-}" == pwd ]]; then echo "$workdir"; exit 0; fi
+    [[ $detach == 1 && -n "$mount" ]] || { echo "shim: unsupported run form: $*" >&2; exit 1; }
+    [[ "${mount#*:}" == "$workdir" ]] || { echo "shim: mount target must be $workdir" >&2; exit 1; }
+    id="svb$(date +%s%N)"; d="$state/$id"; mkdir -p "$d/tmp"
+    cp -a --reflink=auto "$root" "$d/root"
+    echo "${mount%%:*}" > "$d/mount"
+    echo "$id"
+    ;;
+  exec)
+    shift; envs=(); wd=""
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        -e) envs+=("$2"); shift 2 ;;
+        -w) wd="$2"; shift 2 ;;
+        *) break ;;
+      esac
+    done
+    id="$1"; shift; d="$state/$id"
+    [[ -f "$d/mount" ]] || { echo "shim: no container $id" >&2; exit 1; }
+    host_mount=$(<"$d/mount"); workdir=$(<"$d/root/.svb-workdir")
+    # The image's own Env (its config, saved by fetch-image) plus Docker's HOME for root.
+    mapfile -t image_env < <(python3 -c 'import json,sys; print("\n".join(json.load(open(sys.argv[1]))))' "$d/root/.svb-env.json")
+    image_env+=(HOME=/root)
+    args=(--unshare-user --uid 0 --gid 0 --unshare-pid --unshare-ipc --share-net --die-with-parent
+          --bind "$d/root" /
+          --bind "$host_mount" "$workdir" --bind "$d/tmp" /tmp
+          --proc /proc --dev /dev --ro-bind /etc/resolv.conf /etc/resolv.conf
+          --clearenv --chdir "${wd:-$workdir}")
+    # SVB_EXTRA_ENV: e.g. CARGO_BUILD_JOBS=3 (does not change the output).
+    for kv in "${image_env[@]}" ${SVB_EXTRA_ENV:-} "${envs[@]}"; do args+=(--setenv "${kv%%=*}" "${kv#*=}"); done
+    exec bwrap "${args[@]}" "$@"
+    ;;
+  kill)
+    [[ -n "${2:-}" && "$2" != */* ]] || { echo "shim: bad container id '${2:-}'" >&2; exit 1; }
+    chmod -R u+rwx "$state/$2" 2>/dev/null || true
+    rm -rf "${state:?}/$2"; echo "$2"
+    ;;
+  *)
+    echo "shim: unsupported docker command: $*" >&2; exit 1 ;;
+esac

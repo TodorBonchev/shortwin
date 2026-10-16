@@ -1,0 +1,44 @@
+| market | arming rule | borrower bundles every 20 s | outcome | settled after (s) | borrower bundles | borrower cost (SOL) |
+|---|---|---|---|---|---|---|
+| A | v0.2 (any false check disarms) | no | S1 | 55 | 0 | 0.000 |
+| A | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 47.575 |
+| A | v0.3 (non-atomic evidence only) | no | S1 | 55 | 0 | 0.000 |
+| A | v0.3 (non-atomic evidence only) | yes | S1 | 55 | 2 | 3.079 |
+| A | v0.4.1 (settlement box) | no | S1 | 55 | 0 | 0.000 |
+| A | v0.4.1 (settlement box) | yes | S1 | 55 | 2 | 3.079 |
+| B | v0.2 (any false check disarms) | no | S1 | 56 | 0 | 0.000 |
+| B | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 27.818 |
+| B | v0.3 (non-atomic evidence only) | no | S1 | 56 | 0 | 0.000 |
+| B | v0.3 (non-atomic evidence only) | yes | S1 | 56 | 2 | 1.801 |
+| B | v0.4.1 (settlement box) | no | S1 | 56 | 0 | 0.000 |
+| B | v0.4.1 (settlement box) | yes | S1 | 56 | 2 | 1.801 |
+| C | v0.2 (any false check disarms) | no | S1 | 57 | 0 | 0.000 |
+| C | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 3.766 |
+| C | v0.3 (non-atomic evidence only) | no | S1 | 57 | 0 | 0.000 |
+| C | v0.3 (non-atomic evidence only) | yes | S1 | 57 | 2 | 0.244 |
+| C | v0.4.1 (settlement box) | no | S1 | 57 | 0 | 0.000 |
+| C | v0.4.1 (settlement box) | yes | S1 | 57 | 2 | 0.244 |
+| D@0% | v0.2 (any false check disarms) | no | S1 | 59 | 0 | 0.000 |
+| D@0% | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 1.314 |
+| D@0% | v0.3 (non-atomic evidence only) | no | S1 | 59 | 0 | 0.000 |
+| D@0% | v0.3 (non-atomic evidence only) | yes | S1 | 59 | 2 | 0.088 |
+| D@0% | v0.4.1 (settlement box) | no | S1 | 59 | 0 | 0.000 |
+| D@0% | v0.4.1 (settlement box) | yes | S1 | 59 | 2 | 0.088 |
+| RA | v0.2 (any false check disarms) | no | S1 | 55 | 0 | 0.000 |
+| RA | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 16.524 |
+| RA | v0.3 (non-atomic evidence only) | no | S1 | 55 | 0 | 0.000 |
+| RA | v0.3 (non-atomic evidence only) | yes | S1 | 55 | 2 | 1.062 |
+| RA | v0.4.1 (settlement box) | no | S1 | 55 | 0 | 0.000 |
+| RA | v0.4.1 (settlement box) | yes | S1 | 55 | 2 | 1.062 |
+| RB | v0.2 (any false check disarms) | no | S1 | 56 | 0 | 0.000 |
+| RB | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 7.389 |
+| RB | v0.3 (non-atomic evidence only) | no | S1 | 56 | 0 | 0.000 |
+| RB | v0.3 (non-atomic evidence only) | yes | S1 | 56 | 2 | 0.475 |
+| RB | v0.4.1 (settlement box) | no | S1 | 56 | 0 | 0.000 |
+| RB | v0.4.1 (settlement box) | yes | S1 | 56 | 2 | 0.475 |
+| RC | v0.2 (any false check disarms) | no | S1 | 57 | 0 | 0.000 |
+| RC | v0.2 (any false check disarms) | yes | none | > 600 | 30 | 0.686 |
+| RC | v0.3 (non-atomic evidence only) | no | S1 | 57 | 0 | 0.000 |
+| RC | v0.3 (non-atomic evidence only) | yes | S1 | 57 | 2 | 0.044 |
+| RC | v0.4.1 (settlement box) | no | S1 | 57 | 0 | 0.000 |
+| RC | v0.4.1 (settlement box) | yes | S1 | 57 | 2 | 0.044 |

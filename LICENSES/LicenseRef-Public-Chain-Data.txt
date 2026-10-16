@@ -1,0 +1,5 @@
+Public chain data
+
+The files this notice applies to (REUSE.toml lists them) are snapshots of public Solana mainnet
+state, account data and recorded RPC responses, kept as test fixtures. The short.win authors
+claim no rights in this data; any rights in it belong to its respective owners.

@@ -1,0 +1,33 @@
+[package]
+name = "shortwin-indexer-litesvm"
+version = "0.1.0"
+description = "TEST-ONLY: records LiteSVM sessions (the program-test harness, the keeper scenarios, the fuzz harness) in the indexer's session format and replays them into an embedded Postgres, asserting the indexed state against the chain (docs/design/INDEXER.md §11.3, §11.4)"
+edition.workspace = true
+# The indexer's (sqlx 0.9, postgresql_embedded 0.21).
+rust-version = "1.94"
+publish.workspace = true
+
+[dependencies]
+shortwin-indexer = { workspace = true, features = ["embedded-pg"] }
+shortwin.workspace = true
+shortwin-math.workspace = true
+shortwin-services-common.workspace = true
+# The program-test harness (Env, the market builders, the invariant hooks) and the keeper's
+# in-process chain and scenario driver: the sessions are recorded from them.
+shortwin-litesvm-tests = { path = "../../tests/litesvm" }
+shortwin-keeper-litesvm = { path = "../keeper-litesvm" }
+anchor-lang.workspace = true
+anyhow.workspace = true
+base64.workspace = true
+bs58.workspace = true
+serde_json.workspace = true
+sqlx.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+litesvm = "=0.16.0"
+solana-account = "4.3"
+solana-message.workspace = true
+solana-pubkey.workspace = true
+solana-signature.workspace = true
+solana-transaction.workspace = true
+solana-transaction-error.workspace = true
+solana-transaction-status-client-types.workspace = true

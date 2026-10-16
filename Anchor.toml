@@ -1,0 +1,30 @@
+# Always build with `anchor build --tools-version v1.57 --arch v3` (docs/DEVELOPMENT.md).
+# Program tests run in-process (LiteSVM, from M1), so `anchor test` starts no validator.
+skip_local_validator = true
+
+[toolchain]
+anchor_version = "1.2.0"
+solana_version = "4.1.2"
+package_manager = "pnpm"
+
+[features]
+resolution = true
+skip-lint = false
+
+[workspace]
+# tests/mock_cpamm: the TEST-ONLY mock venue of M2 (ARCH §9, A49). It is built next to the
+# program so the LiteSVM tests can load target/deploy/mock_cpamm.so; it is never deployed (deploy
+# by name: `anchor deploy -p shortwin`). The straddle helper `programs/complete_curve` of M5 was
+# retired before it was ever deployed (design pump-final §11, owner decision D2).
+members = ["programs/shortwin", "tests/mock_cpamm"]
+
+[programs.localnet]
+shortwin = "5yvyAddWb8RRGh3pPiFS5eV33eZYeHVmAAfwAFmqVpKK"
+mock_cpamm = "BPAZFPkmVtYEWEZHCzFUns7oybh1VWfAvmu3ofM2mQi7"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "cargo test"

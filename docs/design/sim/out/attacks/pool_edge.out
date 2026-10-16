@@ -1,0 +1,20 @@
+--- (a) share/asset ratio after full SOL settlement (pump token: 1e15 raw supply) ---
+before settle: T=0 B=90000000000000 S=9.000e+16 epoch=0
+after settle : T=0 B=0 S=0.000e+00 epoch=1 (old lender pending 49999999999 lamports)
+new deposit 1e14 raw -> minted 1.000e+17 shares; S=1.000e+17 (u128 max 3.403e+38)
+credit 1,000 SOL -> acc delta = 10000000000000 WAD-units/share; new lender pending = 1000000000000 lamports
+second wipe: next deposit would mint 1.000e+17 shares -> exceeds u128: False (epochs rolled 2)
+
+--- (b) exited lender with a negative SOL balance ---
+A claimed 500000000000, A pending now 4727397259, A shares left 666666666666677, A tokens withdrawn 250000000000
+A exits with pending >= 0
+B pending before claim 498649315068, B claims 498649315068, sol_vault left 4727397261, receivable 0
+
+--- (b2) a lender whose pending turns negative cannot withdraw until it covers ---
+C pending after shortfall: -688500000
+C withdraw blocked: negative SOL balance: cover it first
+after cover: C withdraws 4500000000000 tokens
+
+--- (c) withdraw-then-settle run (two equal lenders, 90 % util, S1 pays 50 % of token value) ---
+v0.1 first come, first served    runner withdrew 200000000000; runner 599999999999 (+9.1% vs fair), other 500000000000 (-9.1%)
+v0.4.1 pro-rata + lock           runner withdrew 100000000000; runner 573684210526 (+4.3% vs fair), other 526315789473 (-4.3%)

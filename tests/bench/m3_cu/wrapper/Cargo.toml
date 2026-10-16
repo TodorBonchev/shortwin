@@ -1,0 +1,29 @@
+[package]
+name = "m3-cpi-wrapper"
+version = "0.1.0"
+description = "TEST-ONLY SBF program that forwards one instruction by CPI (the M3 stack-depth test, ARCH §6.3); never deployed"
+edition = "2024"
+# Built by the platform-tools rustc (v1.57 = 1.95) with `cargo-build-sbf --tools-version v1.57
+# --arch v3` (README.md); on the host it is a plain library without an entrypoint.
+rust-version = "1.89"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# The component crates anchor-lang 1.2.0 already resolves in this workspace's lockfile.
+[dependencies]
+solana-account-info = "3.1.1"
+solana-cpi = "3.1.0"
+solana-instruction = "~3.4"
+solana-program-entrypoint = "3.1.1"
+solana-program-error = "3.0.1"
+solana-pubkey = "4"
+
+# Read by `solana_program_entrypoint::entrypoint!` (the default heap and panic handler are kept).
+[features]
+custom-heap = []
+custom-panic = []
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

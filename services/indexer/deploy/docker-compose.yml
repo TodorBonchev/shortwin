@@ -1,0 +1,110 @@
+# short.win indexer — reference deployment (docs/design/INDEXER.md §12.1).
+#
+#   cd services/indexer/deploy
+#   mkdir -p secrets && for r in admin ingest api; do openssl rand -hex 24 > secrets/pg_$r; done
+#   export SHORTWIN_RPC_URL=https://… SHORTWIN_WS_URL=wss://…
+#   docker compose up -d postgres migrate
+#   docker compose run --rm ingest backfill        # first start: history, before `live` runs
+#   docker compose up -d                           # live ingest, rollups, the API
+#
+# One `ingest` container only: it is the database's single writer (an advisory lock refuses a
+# second one, §3.1). `api` scales horizontally (read-only role). The image's build context is the
+# repository root, filtered by Dockerfile.dockerignore (no target/, no keys). Not run on the
+# development machine (no Docker); CI validates this file (`docker compose config`, the indexer
+# job); the tested database path is the embedded-Postgres fixture (§11.1).
+
+name: shortwin-indexer
+
+x-indexer: &indexer
+  image: shortwin-indexer:latest
+  build:
+    context: ../../..                       # the repository root (path dependencies)
+    dockerfile: services/indexer/deploy/Dockerfile
+  restart: unless-stopped
+  environment: &indexer-env
+    RUST_LOG: info
+    SHORTWIN_RPC_URL: ${SHORTWIN_RPC_URL:?set the JSON-RPC endpoint}
+    SHORTWIN_WS_URL: ${SHORTWIN_WS_URL:?set the PubSub endpoint}
+  volumes:
+    - ./indexer.toml:/etc/shortwin/indexer.toml:ro
+    - ./secrets:/run/secrets/shortwin:ro
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:17.11
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shortwin
+      POSTGRES_USER: shortwin_admin
+      POSTGRES_PASSWORD_FILE: /run/secrets/shortwin/pg_admin
+    command:
+      - postgres
+      - -c
+      - shared_buffers=1GB
+      - -c
+      - max_connections=200
+      - -c
+      - statement_timeout=0
+      - -c
+      - idle_in_transaction_session_timeout=60s
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+      - ./secrets:/run/secrets/shortwin:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shortwin_admin -d shortwin"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    <<: *indexer
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c", "DATABASE_URL=postgres://shortwin_ingest:$$(cat /run/secrets/shortwin/pg_ingest)@postgres:5432/shortwin exec shortwin-indexer --config /etc/shortwin/indexer.toml migrate"]
+
+  ingest:
+    <<: *indexer
+    entrypoint: ["/bin/sh", "-c", "DATABASE_URL=postgres://shortwin_ingest:$$(cat /run/secrets/shortwin/pg_ingest)@postgres:5432/shortwin exec shortwin-indexer --config /etc/shortwin/indexer.toml \"$$@\"", "--"]
+    command: ["live"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  rollups:
+    <<: *indexer
+    entrypoint: ["/bin/sh", "-c", "DATABASE_URL=postgres://shortwin_ingest:$$(cat /run/secrets/shortwin/pg_ingest)@postgres:5432/shortwin exec shortwin-indexer --config /etc/shortwin/indexer.toml rollups"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    <<: *indexer
+    entrypoint: ["/bin/sh", "-c", "DATABASE_URL=postgres://shortwin_api:$$(cat /run/secrets/shortwin/pg_api)@postgres:5432/shortwin exec shortwin-indexer --config /etc/shortwin/indexer.toml serve"]
+    # Two replicas, each on its own host port, reachable only from this host: the load balancer
+    # (or reverse proxy) runs here and forwards to 127.0.0.1:8080-8081. Its connections reach the
+    # containers from the network's gateway (172.30.0.1, `networks` below), which indexer.toml
+    # lists in [api] trusted_proxies, so client addresses come from X-Forwarded-For (§10.1,
+    # M8-SEC-8). A balancer on another machine: bind these ports to the private interface it
+    # uses and list its address in trusted_proxies instead.
+    ports:
+      - "127.0.0.1:8080-8081:8080"
+    deploy:
+      replicas: 2
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+# A fixed subnet, so the gateway the API sees the host's load balancer from is known
+# (indexer.toml [api] trusted_proxies).
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+          gateway: 172.30.0.1
+
+volumes:
+  pgdata:

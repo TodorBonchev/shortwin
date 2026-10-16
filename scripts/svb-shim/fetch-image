@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""Fetch a Docker Hub image by digest and extract its root filesystem, without Docker.
+
+    scripts/svb-shim/fetch-image REPO DIGEST CACHE      e.g.
+    scripts/svb-shim/fetch-image solanafoundation/solana-verifiable-build sha256:2e0b78f4... ~/.cache/shortwin/svb
+
+Used by `scripts/verifiable-build.sh --local` (the pinned Agave 4.1.2 image) and, by hand, to
+rebuild a third-party program in another pinned image of solana-verify's IMAGE_MAP (e.g. the
+Squads v4 or Raydium CPMM reproduction; see scripts/svb-shim/docker). Nothing here is specific
+to one image: the digest is the only identity.
+
+Every byte is checked: the manifest's sha256 must equal DIGEST, and each blob (config and
+layers) its own digest. Layers are applied in order with the OCI whiteout rules (`.wh.<name>`
+deletes, `.wh..wh..opq` empties the directory); device nodes and FIFOs are skipped (bubblewrap
+mounts its own /dev). The rootfs holds absolute symlinks (var/run -> /run, ...) that mean the
+container's root but here would resolve on the host: every deletion, write, chmod and hard-link
+target must resolve inside the rootfs at the moment it happens, or the fetch fails, so no layer
+can reach a host file through one. The result lands in CACHE/rootfs-<hex>, with the image's Env in
+`.svb-env.json`, its WorkingDir in `.svb-workdir`, REPO@DIGEST in `.svb-image` and a
+`.complete` marker written last; a rootfs that has the marker is reused. Blobs stay in
+CACHE/blobs. Prints the rootfs path. Only single-platform linux/amd64 manifests (Docker v2 or
+OCI) are supported; solana-verify's IMAGE_MAP pins those.
+"""
+import hashlib
+import json
+import os
+import shutil
+import sys
+import tarfile
+import urllib.request
+
+MANIFEST_TYPES = (
+    "application/vnd.docker.distribution.manifest.v2+json",
+    "application/vnd.oci.image.manifest.v1+json",
+)
+
+
+def main():
+    if len(sys.argv) != 4:
+        sys.exit(f"usage: {sys.argv[0]} REPO DIGEST CACHE")
+    repo, digest, cache = sys.argv[1:]
+    if not digest.startswith("sha256:") or len(digest) != 71:
+        sys.exit(f"fetch-image: DIGEST must be sha256:<64 hex>, got {digest!r}")
+    root = os.path.join(cache, "rootfs-" + digest.removeprefix("sha256:"))
+    if os.path.exists(os.path.join(root, ".complete")):
+        print(root)
+        return
+    blobs = os.path.join(cache, "blobs")
+    os.makedirs(blobs, exist_ok=True)
+    print(f"fetching {repo}@{digest} into {root}", file=sys.stderr)
+
+    tok = json.load(urllib.request.urlopen(
+        f"https://auth.docker.io/token?service=registry.docker.io&scope=repository:{repo}:pull"))["token"]
+
+    def get(path, accept=None):
+        headers = {"Authorization": f"Bearer {tok}"}
+        if accept:
+            headers["Accept"] = accept
+        return urllib.request.urlopen(
+            urllib.request.Request(f"https://registry-1.docker.io/v2/{repo}/{path}", headers=headers))
+
+    def sha256_file(path):
+        h = hashlib.sha256()
+        with open(path, "rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                h.update(chunk)
+        return "sha256:" + h.hexdigest()
+
+    def blob(d):
+        p = os.path.join(blobs, d.removeprefix("sha256:"))
+        if not os.path.exists(p):
+            with get(f"blobs/{d}") as r, open(p + ".part", "wb") as f:
+                shutil.copyfileobj(r, f)
+            os.rename(p + ".part", p)
+        if sha256_file(p) != d:
+            os.remove(p)
+            sys.exit(f"fetch-image: digest mismatch for blob {d}")
+        return p
+
+    raw = get(f"manifests/{digest}", ", ".join(MANIFEST_TYPES)).read()
+    if "sha256:" + hashlib.sha256(raw).hexdigest() != digest:
+        sys.exit("fetch-image: manifest digest mismatch")
+    man = json.loads(raw)
+    if man.get("mediaType", MANIFEST_TYPES[1]) not in MANIFEST_TYPES:
+        sys.exit(f"fetch-image: {digest} is a {man.get('mediaType')}, not a single-platform image manifest")
+    with open(blob(man["config"]["digest"])) as f:
+        cfg = json.load(f)
+    if cfg.get("architecture") != "amd64" or cfg.get("os", "linux") != "linux":
+        sys.exit(f"fetch-image: image is {cfg.get('os')}/{cfg.get('architecture')}, need linux/amd64")
+
+    if os.path.exists(root):
+        make_removable(root)
+        shutil.rmtree(root)
+    os.makedirs(root)
+    extract(root, [blob(layer["digest"]) for layer in man["layers"]])
+    c = cfg.get("config") or {}
+    with open(os.path.join(root, ".svb-env.json"), "w") as f:
+        json.dump(c.get("Env") or [], f)
+    with open(os.path.join(root, ".svb-workdir"), "w") as f:
+        f.write((c.get("WorkingDir") or "/") + "\n")
+    with open(os.path.join(root, ".svb-image"), "w") as f:
+        f.write(f"{repo}@{digest}\n")
+    open(os.path.join(root, ".complete"), "w").close()
+    print(root)
+
+
+def extract(root, layers):
+    """Apply the layer tarballs, in order, to the empty directory root."""
+    real_root = os.path.realpath(root)
+
+    def inside(p):
+        """p, with every symlink resolved, is the rootfs or under it."""
+        r = os.path.realpath(p)
+        return r == real_root or r.startswith(real_root + os.sep)
+
+    def confined(p, what):
+        # A symlink in the rootfs (var/run -> /run) points at the HOST here; never follow one out.
+        if not inside(p):
+            sys.exit(f"fetch-image: {what} resolves outside the rootfs, to {os.path.realpath(p)}; "
+                     f"refusing the image")
+
+    def rm(p):
+        confined(os.path.dirname(p), f"deleting {os.path.relpath(p, root)}")  # p: removed, not followed
+        if os.path.isdir(p) and not os.path.islink(p):
+            shutil.rmtree(p)  # does not follow symlinks below p
+        elif os.path.lexists(p):
+            os.remove(p)
+
+    def guard(m, dest):
+        """tarfile filter, called on each member right before it is extracted (so after the
+        symlinks earlier members of the same layer created)."""
+        p = os.path.join(root, m.name)
+        confined(os.path.dirname(p), f"layer member {m.name}")
+        if not m.issym() and os.path.lexists(p):  # tarfile writes/chmods through an existing p
+            confined(p, f"layer member {m.name}")
+        if m.islnk():
+            confined(os.path.join(root, m.linkname), f"hard link {m.name} -> {m.linkname}")
+        return tarfile.fully_trusted_filter(m, dest)
+
+    for layer in layers:
+        # r:* reads gzip (Docker v2, OCI tar+gzip) and uncompressed layers; zstd is refused.
+        with tarfile.open(layer, "r:*") as tf:
+            keep = []
+            for m in tf.getmembers():
+                d, b = os.path.split(m.name)
+                if b == ".wh..wh..opq":
+                    t = os.path.join(root, d)
+                    confined(t, f"opaque whiteout {m.name}")
+                    for c in os.listdir(t) if os.path.isdir(t) else []:
+                        rm(os.path.join(t, c))
+                elif b.startswith(".wh."):
+                    rm(os.path.join(root, d, b[4:]))
+                elif not (m.ischr() or m.isblk() or m.isfifo()):
+                    p = os.path.join(root, m.name)
+                    # A directory replaces a lower layer's symlink, as in overlayfs.
+                    if os.path.lexists(p) and not (m.isdir() and os.path.isdir(p) and not os.path.islink(p)):
+                        rm(p)
+                    if not m.issym():
+                        m.mode |= 0o200  # owner-writable, so later layers and `kill` can replace it
+                    keep.append(m)
+            tf.extractall(root, members=keep, filter=guard)
+
+
+def make_removable(path):
+    """A half-extracted rootfs may hold read-only directories; make them removable."""
+    for dirpath, dirnames, _ in os.walk(path):
+        for d in dirnames:
+            p = os.path.join(dirpath, d)
+            if not os.path.islink(p):
+                os.chmod(p, 0o755)
+
+
+if __name__ == "__main__":
+    main()

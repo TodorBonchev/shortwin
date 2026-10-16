@@ -1,0 +1,255 @@
+fuzz[continuous, util cap 90%]: 60000 ops, invariants held (liveness checked every 2,000 ops); share epochs rolled 1021; largest sum of negative pendings 226,931,486 lamports; worst stranded SOL after wind-down 16,010 lamports (all within the rounding bound; no rebase-orphan shares, KI-65); op counts {'accrue': 3395, 'adv': 3287, 'borrow': 2835, 'borrow!': 518, 'churn': 3168, 'churn!': 252, 'claim': 3378, 'claimN': 3416, 'cover': 3384, 'dep': 6627, 'dep!': 26, 'donate': 3329, 'gov': 3302, 'repay': 3246, 'settle': 3342, 'sweep': 3304, 'wd': 6315, 'wd!': 239, 'wdall': 2896, 'wdall!': 367, 'wipe': 3374}
+fuzz[continuous, util cap 100%]: 60000 ops, invariants held (liveness checked every 2,000 ops); share epochs rolled 1941; largest sum of negative pendings 254,896,038 lamports; worst stranded SOL after wind-down 6,146 lamports (all within the rounding bound; no rebase-orphan shares, KI-65); op counts {'accrue': 3344, 'adv': 3344, 'borrow': 3358, 'churn': 3467, 'claim': 3377, 'claimN': 3462, 'cover': 3396, 'dep': 5862, 'dep!': 745, 'donate': 3305, 'gov': 3303, 'repay': 3302, 'settle': 3325, 'sweep': 3264, 'wd': 5574, 'wd!': 966, 'wdall': 2848, 'wdall!': 458, 'wipe': 3300}
+fuzz[release, util cap 90%]: 60000 ops, invariants held (liveness checked every 2,000 ops); share epochs rolled 1021; largest sum of negative pendings 0 lamports; worst stranded SOL after wind-down 15,093 lamports (all within the rounding bound; no rebase-orphan shares, KI-65); op counts {'accrue': 3388, 'adv': 3311, 'borrow': 2837, 'borrow!': 497, 'churn': 3158, 'churn!': 242, 'claim': 3380, 'claimN': 3432, 'cover': 3380, 'dep': 6631, 'dep!': 22, 'donate': 3318, 'gov': 3299, 'repay': 3228, 'settle': 3347, 'sweep': 3303, 'wd': 6369, 'wd!': 213, 'wdall': 2921, 'wdall!': 360, 'wipe': 3364}
+
+R3A-2 stranded lender SOL after an honest wind-down (40 seeds x 3,000 ops, reviewer's r3_stranded.py):
+| model | realised inflow (SOL) | stranded (SOL) | worst seed (SOL) | seeds above 0.01 SOL |
+|---|---|---|---|---|
+| v0.3 (surplus recycled into acc_r) | 51,169.3 | 68.121466 | 15.353244 | 34 |
+| v0.4 (unmatched pot) | 50,850.3 | 0.000015 | 0.000000 | 0 |
+
+JIT rent capture (attacker deposits 9x pool just before a 30-day position closes, withdraws at once):
+| accounting | rent paid (lamports) | attacker SOL | honest lender SOL | attacker tokens back |
+|---|---|---|---|---|
+| (a) continuous | 36,986,302 | 0 (0.0%) | 31,438,356 (85.0%) | 9,000,000,000 |
+| (b) release | 36,986,302 | 0 (0.0%) | 31,438,357 (85.0%) | 9,000,000,000 |
+
+R3B-2 whale deposits 9x just before the last position expires, withdraws after h hours (lender income 3.2699 SOL = 85 % of 2.4165 SOL rent + 1.2159 SOL expiry fee):
+| model | h | whale SOL (share of lender income) | honest lender SOL |
+|---|---|---|---|
+| v0.3 (lumps immediate) | 0 | 1.0943 (33.5%) | 2.1756 |
+| (a) v0.4: continuous rent, lumps vest 6 h | 0 | 0.0000 (0.0%) | 3.2699 |
+| (a) v0.4: continuous rent, lumps vest 6 h | 1 | 0.1824 (5.6%) | 3.0875 |
+| (a) v0.4: continuous rent, lumps vest 6 h | 3 | 0.5472 (16.7%) | 2.7228 |
+| (a) v0.4: continuous rent, lumps vest 6 h | 6 | 1.0943 (33.5%) | 2.1756 |
+| (a) v0.4: continuous rent, lumps vest 6 h | 24 | 1.0943 (33.5%) | 2.1756 |
+| (b) owner option: all lender SOL released over 6 h | 0 | 0.0000 (0.0%) | 3.2699 |
+| (b) owner option: all lender SOL released over 6 h | 1 | 0.4905 (15.0%) | 2.7794 |
+| (b) owner option: all lender SOL released over 6 h | 3 | 1.4715 (45.0%) | 1.7985 |
+| (b) owner option: all lender SOL released over 6 h | 6 | 2.9429 (90.0%) | 0.3270 |
+| (b) owner option: all lender SOL released over 6 h | 24 | 2.9429 (90.0%) | 0.3270 |
+
+R3B-1 locks: A withdrew its free part once at 90 % utilisation; A's allowance as a share of its pro-rata part of unborrowed inventory (B, who never withdrew, is always at 100 %):
+| market path | lock rule | after 24 h | after 7 d | after 30 d | after 32 d |
+|---|---|---|---|---|---|
+| growing, always busy | v0.3 (PI / running minimum only) | 0% | 0% | 0% | 0% |
+| growing, always busy | v0.4 (PI + lock_until) | 0% | 0% | 0% | 100% |
+| growing, always busy | v0.4 without PI (lock_until only) | 0% | 0% | 0% | 100% |
+| interest fades (100 of 900 stays out) | v0.3 (PI / running minimum only) | 94% | 94% | 94% | 94% |
+| interest fades (100 of 900 stays out) | v0.4 (PI + lock_until) | 94% | 94% | 94% | 100% |
+| interest fades (100 of 900 stays out) | v0.4 without PI (lock_until only) | 0% | 0% | 0% | 100% |
+
+R4A-2 / R4B-3 stale aggregate lock (reviewers' stale_lock.py): E withdrew its free part at 50 % utilisation; positions roll, Pi stays; at day 33 E's lock has expired but nobody touched E; F, G, then E withdraw the most they may (tokens, 1e12 = 1,000 units of free inventory T):
+| model | E's lock_until (day) | free T | F gets | G gets | E gets |
+|---|---|---|---|---|---|
+| v0.4 (expiry leaves the aggregate at the holder's touch) | 31.06 | 1,000,000,000,000 | 500,000,000,000 | 500,000,000,000 | 0 |
+| v0.4.1 (day-bucket expiry calendar) | 32.00 | 1,000,000,000,000 | 400,000,000,000 | 400,000,000,000 | 200,000,000,000 |
+
+R4A-2 / R4B-3 I-P4 on the state the program sees (each lender touched alone), reviewers' lock-heavy op mix, 6 seeds x 4,000 ops sampled every 25 ops:
+| model | sampled states | states with sum(allowances) > T + dust | worst sum / T |
+|---|---|---|---|
+| v0.4 (touch-time expiry, ceil'd terms) | 954 | 87 | 3.00 |
+| expiry calendar, ceil'd terms | 954 | 0 | 0.00 |
+| v0.4.1 (calendar, floored terms) | 954 | 0 | 0.00 |
+
+R4A-8 / R4B-8 a position stuck in PumpMigrating (deadline day 30) reaches S3 at day 33 with the timers at their compiled maxima; lock_grace_s at its compiled minimum (1 h):
+| model | lock_until (day) | position resolves (day) |
+|---|---|---|
+| v0.4 (lock_until from the deadline alone) | 30.04 | 33.00 |
+| v0.4.1 (deadline + own S3 tail, day buckets) | 34.00 | 33.00 |
+
+AIR-12 lock eras while a small position keeps B above 0: each era a large position opens, A withdraws half its free part, the large position closes (B falls by 1,000/1,001) and A's lock expires:
+| model | era | PI when A's lock is set | PI after the repay | A's lock left (permille) |
+|---|---|---|---|---|
+| v0.4.2 (PI kept across lock eras) | 1 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| v0.4.2 (PI kept across lock eras) | 2 | 999,000,999,001,000 | 998,002,996,005 | 0 |
+| v0.4.2 (PI kept across lock eras) | 3 | 998,002,996,005 | 997,005,991 | 0 |
+| v0.4.2 (PI kept across lock eras) | 4 | 997,005,991 | 996,010 | 0 |
+| v0.4.2 (PI kept across lock eras) | 5 | 996,010 | 996 | 0 |
+| v0.4.2 (PI kept across lock eras) | 6 | 996 | 1 | 1 |
+| v0.4.2 (PI kept across lock eras) | 7 | 1 | 1 | 1000 |
+| v0.4.2 (PI kept across lock eras) | 8 | 1 | 1 | 1000 |
+| AIR-12 (PI restarts with every lock era) | 1 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 2 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 3 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 4 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 5 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 6 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 7 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+| AIR-12 (PI restarts with every lock era) | 8 | 1,000,000,000,000,000,000 | 999,000,999,001,000 | 0 |
+
+R4A-7 the keeper that executes the wiping sol_settle bundles [sol_settle -> deposit(2 raw units) -> claim_venue_rewards (1 SOL of pre-wipe cashback)]:
+| model | first step after the wipe | dust depositor gets (lamports) | wiped lenders get (lamports) |
+|---|---|---|---|
+| v0.4 (deposit finalises the record at once) | ATT deposits first | 1,000,000,000 | 0 |
+| v0.4.1 (deposit waits for the post-wipe sweep) | deposit refused (WipeSweepPending) | 0 | 1,000,000,000 |
+
+R4B-4 exits and the unreleased vest (3 SOL of lumps):
+| case | variant | leaving / JIT lender gets (lamports) | remaining holder gets (lamports) |
+|---|---|---|---|
+| honest exit 10 min after the lumps | dust 0 | 3,000,000,000 | 0 |
+| honest exit 10 min after the lumps | dust 1000 | 83,333,332 | 2,916,666,667 |
+| JIT whale x199 around a 3 SOL lump | v0.4.1 (no flush) | 0 | 3,000,000,000 |
+| JIT whale x199 around a 3 SOL lump | flush below 1 % of S (rejected) | 2,985,000,000 | 15,000,000 |
+
+KI-65 rebase orphans: three lenders, a settlement vests a 3 SOL lump and rebases the shares (1/1,000), every lender exits during the vest (converting at its own exit) and claims again after it; 200 seeds:
+| model | runs that rebased | runs with S > 0 after every exit | worst stranded (lamports) | its seed |
+|---|---|---|---|---|
+| v0.4.1 (each lender floored alone) | 198 | 98 | 3,000,000,002 | 4 |
+| v0.4.2 (cumulative conversion) | 198 | 0 | 3 | 0 |
+
+KI-65 against R4B-4: a whale, the conversion order and the R3B-2 flush (H: an honest lender whose shares were not converted yet; 3 SOL lumps):
+| case | model | whale gets (lamports) | H gets (lamports) | stranded (lamports) |
+|---|---|---|---|---|
+| W1 JIT x199 around a lump, H's share not converted | v0.4.1 | 0 | 6,000,000,999 | 1 |
+| W2 sync order H then W, then the whale exits | v0.4.1 | 999,916,668 | 83,331 | 3,000,000,001 |
+| W2 sync order W then H, then the whale exits | v0.4.1 | 999,916,668 | 83,331 | 3,000,000,001 |
+| W3 whale deposits while S = 1 is H's unconverted share | v0.4.1 | 0 | 83,331 | 6,000,000,001 |
+| W1 JIT x199 around a lump, H's share not converted | v0.4.2 | 0 | 6,000,000,999 | 1 |
+| W2 sync order H then W, then the whale exits | v0.4.2 | 3,999,916,667 | 83,331 | 2 |
+| W2 sync order W then H, then the whale exits | v0.4.2 | 999,916,668 | 3,000,083,331 | 1 |
+| W3 whale deposits while S = 1 is H's unconverted share | v0.4.2 | 0 | 6,000,083,331 | 1 |
+
+KI-66 a surplus holder behind a rebase record that never returns (T-POT's early leaver A and late joiner C, a rebase rolled before anyone touched C; then C's owner returns):
+| sync of C | pot after it (lamports) | A's next claim | A's pending left | C's shares, converted | C's claim | lender_sol left |
+|---|---|---|---|---|---|---|
+| owner-signed conversions only (no sync of C) | 0 | 130,434,782 | 2,827,173,914 | 2,000 | 579,710,144 | 4,114,855,074 |
+| pot-only touch of C (anyone) | 4,434,782,609 | 2,957,608,696 | 0 | 2,000 | 579,710,144 | 4,114,855,074 |
+| pot-only touch twice | 4,434,782,609 | 2,957,608,696 | 0 | 2,000 | 579,710,144 | 4,114,855,074 |
+| C's owner converts C | 4,434,782,609 | 2,957,608,696 | 0 | 2,000 | 579,710,144 | 4,114,855,074 |
+
+KI-66 I-P6 with absent lenders: random pools (late joiners, early leavers, positions across one or more rebases), a random set of lenders never returns, the present lenders claim after the wind-down; 2,000 seeds:
+| variant | runs with an absent lender behind a rebase | runs with a present lender unpaid above dust | unpaid in total (lamports) | worst run (lamports) |
+|---|---|---|---|---|
+| KI65-REV-SEC1 only (absent lenders behind a rebase untouched) | 654 | 13 | 4,367,362,502 | 1,830,229,138 |
+| pot-only touch + forward chain (KI-66 full) | 654 | 0 | 9 | 2 |
+| every absent owner returns and converts | 654 | 0 | 9 | 2 |
+
+KI-66 full, the forward chain: KI-66's scenario a rebase later (A and C lend, a settlement rebases before anyone touched C, A's owner converts; in the new epoch rent is credited, A leaves early and the rent is paid, realised on C's unconverted shares beyond C's entitlement; then C's owner returns):
+| sync of C | pot after it (lamports) | C's fwd | A's next claim | A's pending left | C's shares, converted | C's claim | C's pending + claimed | lender_sol left |
+|---|---|---|---|---|---|---|---|---|
+| pot-only touch, held at the record only (KI-66, seventh round) | 0 | 0 | 4,123,790,163 | 201,209,837 | 1,000,000 | 4,325,000,000 | 4,325,000,000 | 1 |
+| pot-only touch + forward chain (KI-66 full) | 201,209,836 | 1 | 4,324,999,999 | 1 | 1,000,000 | 4,325,000,000 | 4,325,000,000 | 1 |
+| forward chain, touched twice | 201,209,836 | 1 | 4,324,999,999 | 1 | 1,000,000 | 4,325,000,000 | 4,325,000,000 | 1 |
+| C's owner converts C first | 201,209,836 | 0 | 4,324,999,999 | 1 | 1,000,000 | 4,325,000,000 | 4,325,000,000 | 1 |
+
+KI-66 full, the double-count differential: 2,000 random pools, world A (owners only) against world B (the same ops plus third-party pot-only touches with random 1-8 record windows); after every owner converts, shares, epochs, locks, pending + claimed, sum(real) + unmatched, every conv_rem and S are bit-equal: pot-only touches 6,376, owner syncs a chained lender 563, owner stops inside a chain 108, ... with lag 1 35, ... with epoch < fwd_epoch 37, pools with a chain left open 333, touches moving more than the owner's own 3, ... lamports in total 3, closable positions after every lender claims 2,663, ... holding a dead lock term 2
+
+KI-66 full over-move and KI-67 dead lock terms, the same differential over 5,000 random pools (the eighth round's measurement size): pot-only touches 15,756, of which moving more to the pot than the owner's own touch would at the same moment 5 (5 lamports in total); closable positions once every lender has claimed 6,479, of which holding a lock term with no lock 3
+
+KI-66 full, the residual: latent rounding units (an absent lender's shares beyond the chain's floor) (3,000 tuned pools; 2 x 20,000 adversarial random pools):
+| generator | variant | runs | runs with a present lender unpaid above dust | unpaid in total (lamports) | worst run | runs owed > 10,000 beyond every owner returning | that excess in total | worst excess |
+|---|---|---|---|---|---|---|---|---|
+| tuned latent units | pot-only touch, held at the record only (KI-66, seventh round) | 2,134 | 31 | 1,937,091 | 727,760 | 19 | 1,937,089 | 727,760 |
+| tuned latent units | pot-only touch + forward chain (KI-66 full) | 2,134 | 31 | 1,937,091 | 727,760 | 19 | 1,937,089 | 727,760 |
+| tuned latent units | every absent owner returns and converts | 2,134 | 0 | 2 | 1 | 0 | 0 | 0 |
+| adversarial random pools | pot-only touch, held at the record only (KI-66, seventh round) | 17,598 | 138 | 4,350,386,612,768 | 753,725,757,295 | 89 | 3,165,677,022,755 | 753,725,757,295 |
+| adversarial random pools | pot-only touch + forward chain (KI-66 full) | 17,598 | 27 | 1,184,709,606,244 | 285,761,924,882 | 1 | 16,229 | 14,894 |
+| adversarial random pools | every absent owner returns and converts | 17,598 | 27 | 1,184,709,590,715 | 285,761,924,882 | 0 | 0 | 0 |
+
+KI-65 lemma, lazy conversion order: 2,000 random pools, 2,593 rebase records, 9,934 conversions in random order between deposits and 0-token burns; sum(shares) == S once every lender converted, each conversion within [floor, floor + 1 per record] (v0.4.1 on the same pools: up to 6 orphan shares)
+
+R4B-5 a 10 SOL lump, then a 1-lamport sweep every k seconds (share of the 10 SOL released):
+| model | k (s) | released after 6 h | after 24 h |
+|---|---|---|---|
+| v0.4 (every lump restarts the window) | 3600 | 66.5% | 98.7% |
+| v0.4 (every lump restarts the window) | 600 | 63.7% | 98.3% |
+| v0.4 (every lump restarts the window) | 60 | 63.3% | 98.2% |
+| v0.4.1 (value-weighted end, rounded up) | 3600 | 100.0% | 100.0% |
+| v0.4.1 (value-weighted end, rounded up) | 600 | 99.8% | 100.0% |
+| v0.4.1 (value-weighted end, rounded up) | 60 | 98.4% | 100.0% |
+| AIR-02 (value-weighted end, rounded down) | 3600 | 100.0% | 100.0% |
+| AIR-02 (value-weighted end, rounded down) | 600 | 100.0% | 100.0% |
+| AIR-02 (value-weighted end, rounded down) | 60 | 100.0% | 100.0% |
+
+R4B-6 JIT whale (x9) around an S2/S3 settlement of the last open position (Q worth 500 SOL at P_ema; take = B_FV x 1.02, B_FV = Q x (1 + premium)):
+| premium of B_FV over Q.P_ema | model | take above Q.P_ema (lamports) | whale's atomic gain (lamports) |
+|---|---|---|---|
+| 3.5% | v0.4 | 27,850,000,000 | 15,749,999,999 |
+| 3.5% | v0.4.1 | 27,850,000,000 | 0 |
+| 7.0% | v0.4 | 45,700,000,000 | 31,499,999,999 |
+| 7.0% | v0.4.1 | 45,700,000,000 | 0 |
+| 20.0% | v0.4 | 112,000,000,000 | 89,999,999,999 |
+| 20.0% | v0.4.1 | 112,000,000,000 | 0 |
+
+first-depositor attack: victim deposits 1e9, receives 1,000,000,000,000 shares, redeems 1,000,000,000 tokens
+
+C0-9 lender run before an S1 (two equal lenders, 90 % utilisation, S1 pays 50 % of token value):
+| withdrawal rule | tokens A withdrew before S1 | A final value | B final value |
+|---|---|---|---|
+| v0.1 first come, first served | 200,000,000,000 | 599,999,999,999 | 500,000,000,000 |
+| v0.4 pro-rata + lock | 100,000,000,000 | 573,684,210,526 | 526,315,789,473 |
+
+V2-2 lender A calls claim_sol N times in one transaction (A's fair realised share shown):
+| claim rule | calls | A's fair realised share | A received | sol_vault left for B |
+|---|---|---|---|---|
+| v0.2 (memoryless) | 1 | 76,500,000,000 | 76,500,000,000 | 76,500,000,000 |
+| v0.2 (memoryless) | 2 | 76,500,000,000 | 102,000,000,000 | 51,000,000,000 |
+| v0.2 (memoryless) | 5 | 76,500,000,000 | 127,500,000,000 | 25,500,000,000 |
+| v0.2 (memoryless) | 20 | 76,500,000,000 | 145,714,285,711 | 7,285,714,289 |
+| v0.2 (memoryless) | 100 | 76,500,000,000 | 151,485,148,497 | 1,514,851,503 |
+| v0.4 (own allocation + pot) | 1 | 76,500,000,000 | 76,500,000,000 | 76,500,000,000 |
+| v0.4 (own allocation + pot) | 2 | 76,500,000,000 | 76,500,000,000 | 76,500,000,000 |
+| v0.4 (own allocation + pot) | 5 | 76,500,000,000 | 76,500,000,000 | 76,500,000,000 |
+| v0.4 (own allocation + pot) | 20 | 76,500,000,000 | 76,500,000,000 | 76,500,000,000 |
+| v0.4 (own allocation + pot) | 100 | 76,500,000,000 | 76,500,000,000 | 76,500,000,000 |
+
+Runner advantage over fair value by utilisation (v0.4 lock rule; churn = 30 rounds of others' open + close between A's withdrawals):
+| utilisation | no churn | churn |
+|---|---|---|
+| 90% | +4.3% | +4.3% |
+| 80% | +7.4% | +7.4% |
+| 60% | +10.7% | +10.7% |
+| 50% | +11.1% | +11.1% |
+| 30% | +9.5% | +9.5% |
+
+C0-6 repeated full SOL settlements (critic pool_edge (a)):
+| model | new deposit 1e14 mints | new lender pending after 1,000 SOL lump + rent (lamports) | next deposit after 2nd wipe would mint | > u128 | epochs |
+|---|---|---|---|---|---|
+| v0.1 (no epochs) | 1.000e+31 | 0 | 1.000e+45 | True | 0 |
+| v0.4 (share epochs) | 1.000e+17 | 1,000,042,500,000 | 1.000e+17 | False | 2 |
+
+V2-12 / R3B-2 after a full wipe: old epoch's lenders +4,000,000,000 lamports (3 SOL unreleased vest + 1 SOL post-wipe sweep); dust depositor that arrives first and triggers a 1 SOL sweep: 0 at once, 2,777,777 in total after a lender joins a minute later (that lender: 997,222,222); a lender with 0 shares 6 epochs behind caught up in one touch: True
+
+AIR-07 the last settlement of a run leaves dust token claims (a rebase, not a full wipe); its 5 SOL / 4 SOL lump and the vest before it (lamports; JIT rows: the deposit's atomic gain beyond its tokens' value):
+| case | model | outsider gets | old lenders get |
+|---|---|---|---|
+| attack: 1 raw unit deposited before the last settlement, 10^6 after | v0.4.2 (flush at a full wipe only) | 4,999,993,333 | 45,000,006,664 |
+| organic: two lenders withdrew all they could at 90 % (1 raw token left), 10^6 deposited after | v0.4.2 (flush at a full wipe only) | 3,999,992,004 | 46,000,007,993 |
+| JIT: 1e+09 deposited just before the settlement of 1e12, out at once | v0.4.2 (flush at a full wipe only) | -1 | 1,004,000,998,994 |
+| JIT: 1e+10 deposited just before the settlement of 1e12, out at once | v0.4.2 (flush at a full wipe only) | -2 | 995,099,009,900 |
+| residual: 3e9 (above 1/1,000) deposited before, 3e10 after, held 6 h | v0.4.2 (flush at a full wipe only) | 4,613,534,243 | 45,386,465,756 |
+| attack: 1 raw unit deposited before the last settlement, 10^6 after | AIR-07 (flush when at most 1/1,000 of the claims is left) | 0 | 49,999,999,998 |
+| organic: two lenders withdrew all they could at 90 % (1 raw token left), 10^6 deposited after | AIR-07 (flush when at most 1/1,000 of the claims is left) | 0 | 49,999,999,999 |
+| JIT: 1e+09 deposited just before the settlement of 1e12, out at once | AIR-07 (flush when at most 1/1,000 of the claims is left) | 4,995,003 | 1,003,996,003,996 |
+| JIT: 1e+10 deposited just before the settlement of 1e12, out at once | AIR-07 (flush when at most 1/1,000 of the claims is left) | -2 | 995,099,009,900 |
+| residual: 3e9 (above 1/1,000) deposited before, 3e10 after, held 6 h | AIR-07 (flush when at most 1/1,000 of the claims is left) | 4,613,534,243 | 45,386,465,756 |
+| attack: 1 raw unit deposited before the last settlement, 10^6 after | AIR-07 + no deposit while drained (residual fix) | 0 | 50,000,000,000 |
+| organic: two lenders withdrew all they could at 90 % (1 raw token left), 10^6 deposited after | AIR-07 + no deposit while drained (residual fix) | 0 | 49,999,999,999 |
+| JIT: 1e+09 deposited just before the settlement of 1e12, out at once | AIR-07 + no deposit while drained (residual fix) | 0 | 1,005,000,000,000 |
+| JIT: 1e+10 deposited just before the settlement of 1e12, out at once | AIR-07 + no deposit while drained (residual fix) | 0 | 1,005,000,000,000 |
+| residual: 3e9 (above 1/1,000) deposited before, 3e10 after, held 6 h | AIR-07 + no deposit while drained (residual fix) | 0 | 50,000,000,000 |
+
+R3A-10 all lenders withdrew (no wipe), then a 1 SOL sweep, then a dust deposit:
+| model | dust depositor claims | former lender claims | to protocol |
+|---|---|---|---|
+| v0.3 | 1,000,000,000 | 0 | 0 |
+| v0.4 | 0 | 0 | 1,000,000,000 |
+
+AIR-08 the same market, deposit first: [deposit(1,000 raw units), sweep 1 SOL of earlier cashback, withdraw everything] in one transaction:
+| model | first step | attacker gets (lamports) | to protocol (lamports) |
+|---|---|---|---|
+| v0.4.2 (no gate after the last exit) | the dust deposit lands first | 1,000,000,000 | 0 |
+| AIR-08 (a deposit waits for the sweep after the last exit) | deposit refused (WipeSweepPending) | 0 | 1,000,000,000 |
+
+R3B-9 / R3A-5 rent_protocol_bps raised 15 % -> 30 % halfway through the only position's life:
+| model | receivable after the position closed | lender pending | sol_vault |
+|---|---|---|---|
+| v0.3 (global value at every accrual and at the true-up) | 75,000,000 | 775,000,000 | 700,000,000 |
+| v0.4 (snapshot per position) | 0 | 850,000,000 | 850,000,000 |
+
+C0-13 early claim then 90 % rent shortfall (critic pool_edge (b)):
+| model | A claimed | A pending after shortfall | A could exit | B claims now | B pending left | sol_vault | receivable |
+|---|---|---|---|---|---|---|---|
+| v0.1 | 516,883,561,643 | -15,195,205,480 | True | 486,493,150,686 | 15,195,205,478 | 0 | 0 |
+| v0.4 | 500,000,000,000 | 1,688,356,163 | True | 501,688,356,164 | 0 | 1,688,356,165 | 0 |

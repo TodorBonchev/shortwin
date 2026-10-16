@@ -1,0 +1,14 @@
+| market | path | positions | basket outcomes | isolated outcomes | largest delay of a basket exit vs isolation (s) |
+|---|---|---|---|---|---|
+| A | gap 1.8x | 5 | {'liquidation': 1} | {'open': 4, 'liquidation': 1} | 0 |
+| A | pump 2x/60s | 5 | {'liquidation': 5} | {'liquidation': 5} | 1 |
+| A | pump 3x/10min | 5 | {'liquidation': 5} | {'liquidation': 5} | 1 |
+| A | pump 10x/10min | 5 | {'liquidation': 5} | {'liquidation': 5} | 1 |
+| RA | gap 1.8x | 4 | {'liquidation': 4} | {'liquidation': 4} | 0 |
+| RA | pump 2x/60s | 4 | {'liquidation': 4} | {'liquidation': 4} | 1 |
+| RA | pump 3x/10min | 4 | {'liquidation': 4} | {'liquidation': 4} | 0 |
+| RA | pump 10x/10min | 4 | {'liquidation': 4} | {'liquidation': 4} | 1 |
+| C | gap 1.8x | 5 | {} | {'open': 5} | 0 |
+| C | pump 2x/60s | 5 | {} | {'open': 5} | 0 |
+| C | pump 3x/10min | 5 | {'liquidation': 5} | {'liquidation': 5} | 1 |
+| C | pump 10x/10min | 5 | {'liquidation': 5} | {'liquidation': 5} | 1 |

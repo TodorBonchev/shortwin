@@ -1,0 +1,47 @@
+=== (a) reviewer's dutch.py: 9 markets x 8 genuine pump/gap paths; cells that differ from the v0.3 Dutch clock ===
+| keeper latency | variant | runs | cells different (outcome, exit price or lender P&L) | of which worse for lenders |
+|---|---|---|---|---|
+| latency 1 s | v0.3 fixed 1 % | 72 | 0 | 0 |
+| latency 1 s | v0.3 fixed 2 % | 72 | 0 | 0 |
+| latency 1 s | v0.4.1 (fixed 2 %) | 72 | 1 | 0 |
+| latency 2 s | v0.3 fixed 1 % | 72 | 0 | 0 |
+| latency 2 s | v0.3 fixed 2 % | 72 | 0 | 0 |
+| latency 2 s | v0.4.1 (fixed 2 %) | 72 | 1 | 0 |
+
+=== (b) reviewer's dutch2.py: gaps near the liquidation band and 30 s ramps ===
+| keeper latency | variant | runs | cells different | of which worse for lenders |
+|---|---|---|---|---|
+| latency 1 s | v0.3 fixed 1 % | 32 | 1 | 1 |
+| latency 1 s | v0.3 fixed 2 % | 32 | 1 | 1 |
+| latency 1 s | v0.4.1 (fixed 2 %) | 32 | 1 | 1 |
+| latency 3 s | v0.3 fixed 1 % | 32 | 0 | 0 |
+| latency 3 s | v0.3 fixed 2 % | 32 | 0 | 0 |
+| latency 3 s | v0.4.1 (fixed 2 %) | 32 | 0 | 0 |
+| latency 5 s | v0.3 fixed 1 % | 32 | 0 | 0 |
+| latency 5 s | v0.3 fixed 2 % | 32 | 0 | 0 |
+| latency 5 s | v0.4.1 (fixed 2 %) | 32 | 0 | 0 |
+
+=== (c) reviewer's dutch3.py: 50 % LP drain (all unlocked LP at lambda_min) then a pump ===
+| market | path | v0.3 Dutch 1->5 % | v0.3 fixed 1 % | v0.3 fixed 2 % | v0.4.1 (fixed 2 %) |
+|---|---|---|---|---|---|
+| RA | drain 50 % + 2x/600s | liqu @1.62x, lender +2% | liqu @1.62x, lender +2% | liqu @1.62x, lender +2% | liqu @1.62x, lender +2% |
+| RA | drain 50 % + 2x/120s | liqu @1.69x, lender +2% | S1 @2.00x, lender +2% | liqu @1.69x, lender +2% | liqu @1.69x, lender +2% |
+| RA | drain 50 % + 3x/600s | liqu @1.63x, lender +1% | liqu @1.63x, lender +1% | liqu @1.63x, lender +1% | liqu @1.63x, lender +1% |
+| RB | drain 50 % + 2x/600s | liqu @1.88x, lender +3% | liqu @1.88x, lender +3% | liqu @1.88x, lender +3% | liqu @1.88x, lender +3% |
+| RB | drain 50 % + 2x/120s | liqu @1.95x, lender +4% | liqu @2.00x, lender +4% | liqu @1.95x, lender +4% | liqu @1.95x, lender +4% |
+| RB | drain 50 % + 3x/600s | liqu @1.89x, lender +2% | S1 @2.69x, lender -16% | liqu @1.89x, lender +2% | liqu @1.89x, lender +2% |
+| RC | drain 50 % + 2x/600s | open @2.00x, lender +0% | open @2.00x, lender +0% | open @2.00x, lender +0% | open @2.00x, lender +0% |
+| RC | drain 50 % + 2x/120s | open @2.00x, lender +0% | open @2.00x, lender +0% | open @2.00x, lender +0% | open @2.00x, lender +0% |
+| RC | drain 50 % + 3x/600s | liqu @2.04x, lender +3% | S1 @3.00x, lender +1% | liqu @2.04x, lender +3% | liqu @2.04x, lender +3% |
+
+=== (d) reviewer's sandwich_fixed.py: atomic-model liquidation sandwich, extra over an honest keeper / borrower loss (SOL) ===
+| variant | keeper waits | A | B | C | D@0% | RA | RB | RC |
+|---|---|---|---|---|---|---|---|---|
+| v0.3 Dutch 1->5 % | 0 s | +0.706 / 0.950 | +0.313 / 0.441 | +0.032 / 0.049 | +0.004 / 0.010 | +0.206 / 0.279 | +0.098 / 0.129 | +0.009 / 0.012 |
+| v0.3 Dutch 1->5 % | 4 s | +3.855 / 5.111 | +1.689 / 2.372 | +0.174 / 0.264 | +0.024 / 0.052 | +1.142 / 1.532 | +0.541 / 0.710 | +0.050 / 0.065 |
+| v0.3 fixed 1 % | 0 s | +0.706 / 0.950 | +0.313 / 0.441 | +0.032 / 0.049 | +0.004 / 0.010 | +0.206 / 0.279 | +0.098 / 0.129 | +0.009 / 0.012 |
+| v0.3 fixed 1 % | 4 s | +0.706 / 0.951 | +0.313 / 0.441 | +0.032 / 0.049 | +0.004 / 0.010 | +0.206 / 0.280 | +0.098 / 0.130 | +0.009 / 0.012 |
+| v0.3 fixed 2 % | 0 s | +1.504 / 2.022 | +0.666 / 0.938 | +0.065 / 0.099 | +0.009 / 0.021 | +0.415 / 0.561 | +0.197 / 0.260 | +0.018 / 0.024 |
+| v0.3 fixed 2 % | 4 s | +1.504 / 2.022 | +0.666 / 0.939 | +0.068 / 0.104 | +0.009 / 0.021 | +0.439 / 0.594 | +0.208 / 0.275 | +0.019 / 0.025 |
+| v0.4.1 (fixed 2 %) | 0 s | +1.504 / 2.022 | +0.666 / 0.938 | +0.065 / 0.099 | +0.009 / 0.021 | +0.439 / 0.593 | +0.208 / 0.274 | +0.018 / 0.024 |
+| v0.4.1 (fixed 2 %) | 4 s | +1.505 / 2.025 | +0.666 / 0.940 | +0.068 / 0.105 | +0.010 / 0.022 | +0.463 / 0.625 | +0.219 / 0.290 | +0.020 / 0.027 |

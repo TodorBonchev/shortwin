@@ -1,0 +1,189 @@
+=== (a) borrower's attacker-only dump 1 s before the settlement clock matures, every cycle ===
+| market | beyond S1 boundary | rule | attack | outcome | settled after (s) | attacker-only seconds | cost (SOL) |
+|---|---|---|---|---|---|---|---|
+| A | x1.03 | v0.3 | yes | none | > 600 | 13 | 124.811 |
+| A | x1.03 | v0.4.1 | no | S1 | 58 | 0 | 0.000 |
+| A | x1.03 | v0.4.1 | yes | S1 | 62 | 1 | 9.560 |
+| A | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 124.811 |
+| A | x1.05 | v0.3 | yes | S1 | 57 | 1 | 9.358 |
+| A | x1.05 | v0.4.1 | no | S1 | 55 | 0 | 0.000 |
+| A | x1.05 | v0.4.1 | yes | S1 | 57 | 1 | 9.358 |
+| A | x1.05 | rejected reading: lender-adverse corner | yes | S1 | 57 | 1 | 9.358 |
+| A | x1.08 | v0.3 | yes | S1 | 55 | 1 | 9.192 |
+| A | x1.08 | v0.4.1 | no | S1 | 53 | 0 | 0.000 |
+| A | x1.08 | v0.4.1 | yes | S1 | 55 | 1 | 9.192 |
+| A | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 55 | 1 | 9.192 |
+| B | x1.03 | v0.3 | yes | none | > 600 | 13 | 67.500 |
+| B | x1.03 | v0.4.1 | no | S1 | 59 | 0 | 0.000 |
+| B | x1.03 | v0.4.1 | yes | S1 | 63 | 1 | 5.170 |
+| B | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 67.500 |
+| B | x1.05 | v0.3 | yes | S1 | 58 | 1 | 5.220 |
+| B | x1.05 | v0.4.1 | no | S1 | 56 | 0 | 0.000 |
+| B | x1.05 | v0.4.1 | yes | S1 | 58 | 1 | 5.220 |
+| B | x1.05 | rejected reading: lender-adverse corner | yes | S1 | 58 | 1 | 5.220 |
+| B | x1.08 | v0.3 | yes | S1 | 56 | 1 | 5.294 |
+| B | x1.08 | v0.4.1 | no | S1 | 54 | 0 | 0.000 |
+| B | x1.08 | v0.4.1 | yes | S1 | 56 | 1 | 5.294 |
+| B | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 56 | 1 | 5.294 |
+| C | x1.03 | v0.3 | yes | none | > 600 | 13 | 9.057 |
+| C | x1.03 | v0.4.1 | no | S1 | 60 | 0 | 0.000 |
+| C | x1.03 | v0.4.1 | yes | S1 | 64 | 1 | 0.694 |
+| C | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 9.057 |
+| C | x1.05 | v0.3 | yes | S1 | 227 | 5 | 3.507 |
+| C | x1.05 | v0.4.1 | no | S1 | 57 | 0 | 0.000 |
+| C | x1.05 | v0.4.1 | yes | S1 | 59 | 1 | 0.700 |
+| C | x1.05 | rejected reading: lender-adverse corner | yes | S1 | 227 | 5 | 3.507 |
+| C | x1.08 | v0.3 | yes | S1 | 57 | 1 | 0.710 |
+| C | x1.08 | v0.4.1 | no | S1 | 55 | 0 | 0.000 |
+| C | x1.08 | v0.4.1 | yes | S1 | 57 | 1 | 0.710 |
+| C | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 57 | 1 | 0.710 |
+| D@0% | x1.03 | v0.3 | yes | none | > 600 | 13 | 3.178 |
+| D@0% | x1.03 | v0.4.1 | no | S1 | 62 | 0 | 0.000 |
+| D@0% | x1.03 | v0.4.1 | yes | S1 | 66 | 1 | 0.244 |
+| D@0% | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 3.178 |
+| D@0% | x1.05 | v0.3 | yes | none | > 600 | 13 | 3.209 |
+| D@0% | x1.05 | v0.4.1 | no | S1 | 59 | 0 | 0.000 |
+| D@0% | x1.05 | v0.4.1 | yes | S1 | 61 | 1 | 0.247 |
+| D@0% | x1.05 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 3.209 |
+| D@0% | x1.08 | v0.3 | yes | S1 | 59 | 1 | 0.250 |
+| D@0% | x1.08 | v0.4.1 | no | S1 | 57 | 0 | 0.000 |
+| D@0% | x1.08 | v0.4.1 | yes | S1 | 59 | 1 | 0.250 |
+| D@0% | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 59 | 1 | 0.250 |
+| RA | x1.03 | v0.3 | yes | none | > 600 | 13 | 38.610 |
+| RA | x1.03 | v0.4.1 | no | S1 | 57 | 0 | 0.000 |
+| RA | x1.03 | v0.4.1 | yes | S1 | 61 | 1 | 2.956 |
+| RA | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 38.614 |
+| RA | x1.05 | v0.3 | yes | S1 | 57 | 1 | 2.985 |
+| RA | x1.05 | v0.4.1 | no | S1 | 55 | 0 | 0.000 |
+| RA | x1.05 | v0.4.1 | yes | S1 | 57 | 1 | 2.985 |
+| RA | x1.05 | rejected reading: lender-adverse corner | yes | S1 | 57 | 1 | 2.985 |
+| RA | x1.08 | v0.3 | yes | S1 | 55 | 1 | 3.027 |
+| RA | x1.08 | v0.4.1 | no | S1 | 53 | 0 | 0.000 |
+| RA | x1.08 | v0.4.1 | yes | S1 | 55 | 1 | 3.027 |
+| RA | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 55 | 1 | 3.027 |
+| RB | x1.03 | v0.3 | yes | none | > 600 | 13 | 17.287 |
+| RB | x1.03 | v0.4.1 | no | S1 | 59 | 0 | 0.000 |
+| RB | x1.03 | v0.4.1 | yes | S1 | 63 | 1 | 1.324 |
+| RB | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 17.290 |
+| RB | x1.05 | v0.3 | yes | S1 | 58 | 1 | 1.336 |
+| RB | x1.05 | v0.4.1 | no | S1 | 56 | 0 | 0.000 |
+| RB | x1.05 | v0.4.1 | yes | S1 | 58 | 1 | 1.337 |
+| RB | x1.05 | rejected reading: lender-adverse corner | yes | S1 | 58 | 1 | 1.337 |
+| RB | x1.08 | v0.3 | yes | S1 | 56 | 1 | 1.355 |
+| RB | x1.08 | v0.4.1 | no | S1 | 54 | 0 | 0.000 |
+| RB | x1.08 | v0.4.1 | yes | S1 | 56 | 1 | 1.356 |
+| RB | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 56 | 1 | 1.356 |
+| RC | x1.03 | v0.3 | yes | none | > 600 | 13 | 1.602 |
+| RC | x1.03 | v0.4.1 | no | S1 | 60 | 0 | 0.000 |
+| RC | x1.03 | v0.4.1 | yes | S1 | 64 | 1 | 0.123 |
+| RC | x1.03 | rejected reading: lender-adverse corner | yes | none | > 600 | 13 | 1.605 |
+| RC | x1.05 | v0.3 | yes | S1 | 185 | 4 | 0.496 |
+| RC | x1.05 | v0.4.1 | no | S1 | 57 | 0 | 0.000 |
+| RC | x1.05 | v0.4.1 | yes | S1 | 59 | 1 | 0.124 |
+| RC | x1.05 | rejected reading: lender-adverse corner | yes | S1 | 185 | 4 | 0.497 |
+| RC | x1.08 | v0.3 | yes | S1 | 57 | 1 | 0.126 |
+| RC | x1.08 | v0.4.1 | no | S1 | 55 | 0 | 0.000 |
+| RC | x1.08 | v0.4.1 | yes | S1 | 57 | 1 | 0.126 |
+| RC | x1.08 | rejected reading: lender-adverse corner | yes | S1 | 57 | 1 | 0.126 |
+
+=== (c) push-then-freeze refutation (R4B-2): 1 dump second (x0.7) + 4 frozen seconds, 3 s before maturity, every cycle ===
+| market | beyond S1 boundary | rule | attack | outcome | settled after (s) | attacker-only s | frozen s | cost (SOL) |
+|---|---|---|---|---|---|---|---|---|
+| A | x1.03 | v0.4 (box on clamped obs) | PTF | none | > 600 | 12 | 48 | 182.300 |
+| A | x1.03 | v0.4.1 (box on bucket extremes) | no | S1 | 58 | 0 | 0 | 0.000 |
+| A | x1.03 | v0.4.1 (box on bucket extremes) | PTF | S1 | 66 | 1 | 4 | 15.149 |
+| A | x1.05 | v0.4 (box on clamped obs) | PTF | S1 | 203 | 4 | 16 | 59.356 |
+| A | x1.05 | v0.4.1 (box on bucket extremes) | no | S1 | 55 | 0 | 0 | 0.000 |
+| A | x1.05 | v0.4.1 (box on bucket extremes) | PTF | S1 | 63 | 1 | 4 | 14.815 |
+| C | x1.03 | v0.4 (box on clamped obs) | PTF | none | > 600 | 12 | 48 | 13.522 |
+| C | x1.03 | v0.4.1 (box on bucket extremes) | no | S1 | 60 | 0 | 0 | 0.000 |
+| C | x1.03 | v0.4.1 (box on bucket extremes) | PTF | S1 | 68 | 1 | 4 | 1.120 |
+| C | x1.05 | v0.4 (box on clamped obs) | PTF | S1 | 201 | 4 | 14 | 4.314 |
+| C | x1.05 | v0.4.1 (box on bucket extremes) | no | S1 | 57 | 0 | 0 | 0.000 |
+| C | x1.05 | v0.4.1 (box on bucket extremes) | PTF | S1 | 65 | 1 | 4 | 1.131 |
+| D@0% | x1.03 | v0.4 (box on clamped obs) | PTF | none | > 600 | 12 | 48 | 4.771 |
+| D@0% | x1.03 | v0.4.1 (box on bucket extremes) | no | S1 | 62 | 0 | 0 | 0.000 |
+| D@0% | x1.03 | v0.4.1 (box on bucket extremes) | PTF | S1 | 70 | 1 | 4 | 0.398 |
+| D@0% | x1.05 | v0.4 (box on clamped obs) | PTF | none | > 600 | 12 | 48 | 4.817 |
+| D@0% | x1.05 | v0.4.1 (box on bucket extremes) | no | S1 | 59 | 0 | 0 | 0.000 |
+| D@0% | x1.05 | v0.4.1 (box on bucket extremes) | PTF | S1 | 67 | 1 | 4 | 0.401 |
+| RA | x1.03 | v0.4 (box on clamped obs) | PTF | none | > 600 | 12 | 48 | 58.302 |
+| RA | x1.03 | v0.4.1 (box on bucket extremes) | no | S1 | 57 | 0 | 0 | 0.000 |
+| RA | x1.03 | v0.4.1 (box on bucket extremes) | PTF | S1 | 65 | 1 | 4 | 4.825 |
+| RA | x1.05 | v0.4 (box on clamped obs) | PTF | S1 | 155 | 3 | 12 | 14.633 |
+| RA | x1.05 | v0.4.1 (box on bucket extremes) | no | S1 | 55 | 0 | 0 | 0.000 |
+| RA | x1.05 | v0.4.1 (box on bucket extremes) | PTF | S1 | 63 | 1 | 4 | 4.872 |
+| RC | x1.03 | v0.4 (box on clamped obs) | PTF | none | > 600 | 12 | 48 | 2.420 |
+| RC | x1.03 | v0.4.1 (box on bucket extremes) | no | S1 | 60 | 0 | 0 | 0.000 |
+| RC | x1.03 | v0.4.1 (box on bucket extremes) | PTF | S1 | 68 | 1 | 4 | 0.200 |
+| RC | x1.05 | v0.4 (box on clamped obs) | PTF | S1 | 157 | 3 | 12 | 0.608 |
+| RC | x1.05 | v0.4.1 (box on bucket extremes) | no | S1 | 57 | 0 | 0 | 0.000 |
+| RC | x1.05 | v0.4.1 (box on bucket extremes) | PTF | S1 | 65 | 1 | 4 | 0.202 |
+
+=== (d) widening: a contrary observation every second (v0.4.1 residual; deferral only) ===
+| market | case | widening | outcome | at (s) | cost per second (SOL) |
+|---|---|---|---|---|---|
+| A | S1, 2 % beyond the boundary | none | S1 | 60 | 0.0000 |
+| A | S3 on an executable venue (Emergency flag), due at the deadline | none | S3 | 0 | 0.0000 |
+| A | S1, 2 % beyond the boundary | round trip -1 % | S1 | 63 | 0.2675 |
+| A | S3 on an executable venue (Emergency flag), due at the deadline | round trip -1 % | none in 300 s |  | 0.2124 |
+| A | S1, 2 % beyond the boundary | round trip -3 % | S1 | 225 | 0.8126 |
+| A | S3 on an executable venue (Emergency flag), due at the deadline | round trip -3 % | none in 300 s |  | 0.6452 |
+| C | S1, 2 % beyond the boundary | none | S1 | 62 | 0.0000 |
+| C | S3 on an executable venue (Emergency flag), due at the deadline | none | S3 | 0 | 0.0000 |
+| C | S1, 2 % beyond the boundary | round trip -1 % | S1 | 66 | 0.0204 |
+| C | S3 on an executable venue (Emergency flag), due at the deadline | round trip -1 % | none in 300 s |  | 0.0116 |
+| C | S1, 2 % beyond the boundary | round trip -3 % | S1 | 226 | 0.0620 |
+| C | S3 on an executable venue (Emergency flag), due at the deadline | round trip -3 % | none in 300 s |  | 0.0353 |
+| RA | S1, 2 % beyond the boundary | none | S1 | 59 | 0.0000 |
+| RA | S3 on an executable venue (Emergency flag), due at the deadline | none | S3 | 0 | 0.0000 |
+| RA | S1, 2 % beyond the boundary | round trip -1 % | S1 | 63 | 0.0893 |
+| RA | S3 on an executable venue (Emergency flag), due at the deadline | round trip -1 % | none in 300 s |  | 0.0601 |
+| RA | S1, 2 % beyond the boundary | round trip -3 % | S1 | 188 | 0.2710 |
+| RA | S3 on an executable venue (Emergency flag), due at the deadline | round trip -3 % | none in 300 s |  | 0.1826 |
+| RA | S1, 2 % beyond the boundary | LP add/remove x2 L (Raydium) | S1 | 59 | 0.0000 |
+| RA | S3 on an executable venue (Emergency flag), due at the deadline | LP add/remove x2 L (Raydium) | S3 | 0 | 0.0000 |
+| RC | S1, 2 % beyond the boundary | none | S1 | 62 | 0.0000 |
+| RC | S3 on an executable venue (Emergency flag), due at the deadline | none | S3 | 0 | 0.0000 |
+| RC | S1, 2 % beyond the boundary | round trip -1 % | S1 | 66 | 0.0037 |
+| RC | S3 on an executable venue (Emergency flag), due at the deadline | round trip -1 % | none in 300 s |  | 0.0020 |
+| RC | S1, 2 % beyond the boundary | round trip -3 % | S1 | 188 | 0.0112 |
+| RC | S3 on an executable venue (Emergency flag), due at the deadline | round trip -3 % | none in 300 s |  | 0.0062 |
+| RC | S1, 2 % beyond the boundary | LP add/remove x2 L (Raydium) | S1 | 62 | 0.0000 |
+| RC | S3 on an executable venue (Emergency flag), due at the deadline | LP add/remove x2 L (Raydium) | S3 | 0 | 0.0000 |
+
+=== (b) spot-leg veto for w seconds, starting 20 s after arming ===
+| market | w (s) | rule | outcome | settled after (s) | cost (SOL) |
+|---|---|---|---|---|---|
+| A | 0 | v0.3 | S1 | 55 | 0.000 |
+| A | 0 | v0.4.1 | S1 | 55 | 0.000 |
+| A | 9 | v0.3 | S1 | 55 | 63.439 |
+| A | 9 | v0.4.1 | S1 | 55 | 63.439 |
+| A | 12 | v0.3 | S1 | 89 | 84.895 |
+| A | 12 | v0.4.1 | S1 | 55 | 84.895 |
+| A | 20 | v0.3 | S1 | 97 | 142.885 |
+| A | 20 | v0.4.1 | S1 | 61 | 142.885 |
+| C | 0 | v0.3 | S1 | 57 | 0.000 |
+| C | 0 | v0.4.1 | S1 | 57 | 0.000 |
+| C | 9 | v0.3 | S1 | 57 | 7.730 |
+| C | 9 | v0.4.1 | S1 | 57 | 7.730 |
+| C | 12 | v0.3 | S1 | 91 | 10.349 |
+| C | 12 | v0.4.1 | S1 | 57 | 10.349 |
+| C | 20 | v0.3 | S1 | 99 | 17.437 |
+| C | 20 | v0.4.1 | S1 | 63 | 17.437 |
+| D@0% | 0 | v0.3 | S1 | 59 | 0.000 |
+| D@0% | 0 | v0.4.1 | S1 | 59 | 0.000 |
+| D@0% | 9 | v0.3 | S1 | 59 | 3.463 |
+| D@0% | 9 | v0.4.1 | S1 | 59 | 3.463 |
+| D@0% | 12 | v0.3 | S1 | 93 | 4.617 |
+| D@0% | 12 | v0.4.1 | S1 | 59 | 4.617 |
+| D@0% | 20 | v0.3 | S1 | 101 | 7.695 |
+| D@0% | 20 | v0.4.1 | S1 | 65 | 7.695 |
+| RA | 0 | v0.3 | S1 | 55 | 0.000 |
+| RA | 0 | v0.4.1 | S1 | 55 | 0.000 |
+| RA | 9 | v0.3 | S1 | 55 | 20.877 |
+| RA | 9 | v0.4.1 | S1 | 55 | 20.892 |
+| RA | 12 | v0.3 | S1 | 89 | 27.956 |
+| RA | 12 | v0.4.1 | S1 | 55 | 27.975 |
+| RA | 20 | v0.3 | S1 | 97 | 47.130 |
+| RA | 20 | v0.4.1 | S1 | 61 | 47.162 |

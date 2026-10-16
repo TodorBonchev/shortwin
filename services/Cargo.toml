@@ -1,0 +1,99 @@
+# HOST workspace for the off-chain services (ARCHITECTURE §1.2, §7): its own lockfile, so the
+# Agave client crates (RPC client, tokio) never enter the on-chain workspace's Cargo.lock.
+#
+# - common/          RPC chain client + transaction building (v1, v0 fallback)
+# - keeper/          keeper v0 (ARCH §7.1 duties 1–4, batching, degraded mode) and its binary
+# - keeper-litesvm/  the in-process LiteSVM chain backend and the keeper's scenario tests
+#                    (TEST-ONLY: loads short.win's `test-venue` build and the mock venue)
+# - indexer/         the indexer and API (ARCH §7.2, M8; docs/design/INDEXER.md): ingest, Postgres,
+#                    analytics, axum REST + WebSocket; its embedded-Postgres test fixture behind the
+#                    TEST-ONLY `embedded-pg` feature
+# - indexer-litesvm/ TEST-ONLY: LiteSVM session recording and the indexer's replay harness
+#                    (DB-vs-chain assertions on an embedded Postgres)
+# - ops/             `shortwin-gov`, the Squads v4 governance tool (M10 WP-7): multisig creation,
+#                    init, staging / approval / execution of vault transactions, apply, verify
+#
+# C1-14: the scenario tests link the LiteSVM harness (tests/litesvm), so this lockfile holds
+# the same Agave 4.2.2 runtime line and the same solana-* component versions as the root
+# Cargo.lock (it was seeded from it); the RPC client is the matching 4.2.2 line.
+[workspace]
+resolver = "3"
+members = ["common", "keeper", "keeper-litesvm", "indexer", "indexer-litesvm", "ops"]
+
+[workspace.package]
+edition = "2024"
+# LiteSVM 0.16's MSRV (the harness's); resolver 3 prefers dependency versions that build there.
+rust-version = "1.89"
+publish = false
+
+[workspace.dependencies]
+shortwin = { path = "../programs/shortwin", features = ["no-entrypoint"] }
+shortwin-math = { path = "../crates/shortwin-math" }
+shortwin-venue-state = { path = "../crates/shortwin-venue-state" }
+shortwin-services-common = { path = "common" }
+shortwin-keeper = { path = "keeper" }
+shortwin-indexer = { path = "indexer" }
+anchor-lang = "=1.2.0"
+bytemuck = "1.25"
+anyhow = "1"
+serde = { version = "1", features = ["derive"] }
+toml = "0.9"
+tokio = { version = "1.47", features = ["macros", "rt", "time", "net", "io-util", "signal", "sync"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+bs58 = "0.5"
+wincode = "0.5.5"
+# Jito `sendBundle` params (services/common; both already in this lockfile through the RPC client).
+base64 = "0.22"
+serde_json = "1"
+# `getMultipleAccounts` chunks in parallel (services/common; M7-SEC-8; in this lockfile through the
+# RPC client).
+futures = "0.3"
+
+# The Agave 4.2.2 client line (C1-14: the root lockfile's line; see the workspace comment).
+solana-rpc-client = { version = "~4.2.2", default-features = false }
+solana-rpc-client-api = "~4.2.2"
+solana-commitment-config = "3.1"
+solana-account-decoder-client-types = "~4.2.2"
+solana-transaction-status-client-types = "~4.2.2"
+solana-compute-budget-interface = "3"
+solana-hash = "4"
+solana-instruction = "~3.4"
+solana-keypair = "3.1.2"
+solana-message = "4.2.4"
+solana-pubkey = "4.2"
+solana-signature = "3.4"
+solana-signer = "3.0.1"
+solana-transaction = "4.1.5"
+solana-transaction-error = "~3.3.1"
+# The address-lookup-table program's instruction builders and table layout (the protocol ALT of
+# ARCH §6.4 A28, `shortwin-build-alt`); already in this lockfile through LiteSVM.
+solana-address-lookup-table-interface = { version = "3.1", features = ["bincode"] }
+
+# The indexer and API (M8; docs/design/INDEXER.md §12.4 "Dependencies"). sqlx 0.9 and
+# postgresql_embedded 0.21 need Rust 1.94 (the indexer's own rust-version); the other crates keep
+# the workspace's 1.89. The set is frozen by the M8 contract: a track that needs another crate
+# asks the integrator (one writer of this lockfile).
+sqlx = { version = "0.9", default-features = false, features = ["runtime-tokio", "tls-rustls-ring-webpki", "postgres", "migrate", "macros", "json"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "json", "query", "tokio", "ws", "matched-path", "original-uri", "tower-log", "tracing"] }
+tower = { version = "0.5", default-features = false, features = ["util", "limit", "timeout"] }
+tower-http = { version = "0.6", default-features = false, features = ["cors", "trace", "timeout", "limit", "request-id", "util"] }
+# The live source's `logsSubscribe` client (the version axum's `ws` uses).
+tokio-tungstenite = { version = "0.29", default-features = false, features = ["connect", "rustls-tls-webpki-roots"] }
+sha2 = "0.10"
+thiserror = "2"
+# TEST-ONLY (the indexer's `embedded-pg` feature): PostgreSQL binaries downloaded at first use into
+# the user cache, run as the current user (no Docker, no root; INDEXER.md §11.1). The zonky builds
+# (Maven Central) bundle their shared libraries (libxml2, OpenSSL, ICU, zlib) and need only glibc;
+# the theseus builds link the system's libxml2.so.2, which current distributions (libxml2 ≥ 2.14,
+# soname 16) no longer ship.
+postgresql_embedded = { version = "0.21", default-features = false, features = ["zonky", "tls-rustls-ring", "tokio"] }
+# The API contract tests (INDEXER.md §11.2): openapi.yaml parsed as YAML, every response body
+# validated against its schema (JSON Schema 2020-12, no network resolution), bodies read from the
+# router driven as a tower service.
+serde-saphyr = "1.3"
+jsonschema = { version = "0.58", default-features = false }
+http-body-util = "0.1"
+# The venue decoders on WP-9's recorded mainnet transactions (`scripts/gapcal/tests/fixtures/*.json.gz`;
+# M10 GC-F1): gzip only. Already in this lockfile (the RPC client's reqwest decompression).
+flate2 = "1.1"

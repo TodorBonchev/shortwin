@@ -1,0 +1,19 @@
+{
+ "profile": "pumpswap",
+ "seed": 71023945,
+ "step": 3,
+ "signature": "tests/fuzz/src/world.rs:1145 | FUZZ-ORACLE PumpSwap differential exit (I# / I-E#): expire refused NotExpired; predicted NoRoute",
+ "minimized": true,
+ "differential": true,
+ "avoid_known": true,
+ "actions": [
+  "wrapped_open 0 3695344406 1717531632",
+  "venue_halt 0 2960483064 606435977",
+  "keeper_exit 0 2441401241 277336578",
+  "keeper_exit 0 1740157846 2051968744"
+ ],
+ "finding": "FUZZ-24D-A (run D, the final-tree 24 h run at 55b3e23, `run --profile all --duration 24h --jobs 4 --actions 400 --seed 71000000`, pumpswap seed 71023945; harness, not program): the PumpSwap differential exit oracle reused, for the expiry, the prediction it had made with a refused liquidation of the same position in the same second (the cache `World::pswap_expire`, keyed `(now, position, transactions landed)`). Action 2 halts PumpSwap (`disable_flags` 0b1111, buys off: not executable), action 3's liquidation is refused `NoRoute` as predicted and caches the expiry's `NoRoute`; before action 4 the halt's undo clears the flags by a direct VM write (no transaction, so the key does not change), and action 4's expiry reused the stale `NoRoute` while the program, on an executable pool again, correctly refused `NotExpired` (ARCH §3.7: NoRoute, EmaWarmingUp, NotExpired, ReferenceStale, ...; the predictor's order is the program's on every venue).",
+ "message": "tests/fuzz/src/world.rs:1145\nFUZZ-ORACLE PumpSwap differential exit (I11 / I-E11): expire refused NotExpired; predicted NoRoute\nprediction: Err(NoRoute)\nexecutable false ema_warm 0 fresh true spot_leg true ema_leg false expired false buyback_allowed false b_live None reference RefPred { p_ref: Some(48416447748031702), l_b: 8209766551259, b_ref: Some(186635951), max_in: Some(188502310), pi_ref: 3732720 } q 3854406457 reserves None pool_d 7633466039253\nlogs:\n\u001b[38;5;239mProgram ComputeBudget111111111111111111111111111111 invoke [1]\u001b[0m\n\u001b[38;5;239mProgram ComputeBudget111111111111111111111111111111 success\u001b[0m\n\u001b[38;5;239mProgram 5yvyAddWb8RRGh3pPiFS5eV33eZYeHVmAAfwAFmqVpKK invoke [1]\u001b[0m\n\u001b[32mInstruction: Expire\u001b[0m\n\u001b[1;38;5;9mAnchorError thrown in programs/shortwin/src/instructions/liquidate.rs:445. Error Code: NotExpired. Error Number: 6071. Error Message: Position is not expired.\u001b[0m\n\u001b[38;5;239mProgram 5yvyAddWb8RRGh3pPiFS5eV33eZYeHVmAAfwAFmqVpKK consumed 56704 of 399850 compute units\u001b[0m\n\u001b[1;38;5;9mProgram 5yvyAddWb8RRGh3pPiFS5eV33eZYeHVmAAfwAFmqVpKK failed: custom program error: 0x17b7\u001b[0m\n",
+ "status": "fixed",
+ "resolution": "Resolved in the fuzzer, no program change: the cached expiry prediction serves only the next keeper exit of the same action (taken at every `keeper_exit`, dropped at every action boundary, before the due undos run). This file replays as a regression: the run must pass (`corpus_replays`, `pswap_expire_cache_fuzz24d_a`)."
+}

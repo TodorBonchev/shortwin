@@ -1,0 +1,44 @@
+[package]
+name = "shortwin-ops"
+version = "0.1.0"
+description = "short.win operations: shortwin-gov, the Squads v4 governance tool (M10 WP-7; ARCH §1.1 \"Admin\", §8.5): creates the Governance and Emergency multisigs, initializes the config with their vaults, stages, approves and executes vault transactions (authorities, the checked upgrade-authority transfer, upgrades, every admin instruction; the transaction-buffer path for large messages), applies timelocked changes and verifies the whole layout"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+shortwin.workspace = true
+# The compiled default kink of `initialize_config` (ECON §15).
+shortwin-math.workspace = true
+shortwin-venue-state.workspace = true
+shortwin-services-common.workspace = true
+# Squads v4 encoders, PDAs and decoders (crates/squads-v4-ix; already in this lockfile through
+# the LiteSVM harness).
+squads-v4-ix = { path = "../../crates/squads-v4-ix" }
+anchor-lang.workspace = true
+bytemuck.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+toml.workspace = true
+tokio.workspace = true
+# The transaction buffer's `final_buffer_hash` (sha256 of the message).
+sha2.workspace = true
+solana-hash.workspace = true
+solana-instruction.workspace = true
+solana-keypair.workspace = true
+solana-message.workspace = true
+solana-pubkey.workspace = true
+solana-signer.workspace = true
+solana-transaction.workspace = true
+
+[dev-dependencies]
+# The end-to-end test (tests/gov_e2e.rs): the program-test harness's `Env` (the mainnet Squads
+# ELF, short.win's release build, the invariant hooks of `Env::send`) behind a `Chain`.
+shortwin-litesvm-tests = { path = "../../tests/litesvm" }
+litesvm = "=0.16.0"
+solana-account = "4.3"
+solana-transaction-error.workspace = true
+
+[[bin]]
+name = "shortwin-gov"
+path = "src/main.rs"

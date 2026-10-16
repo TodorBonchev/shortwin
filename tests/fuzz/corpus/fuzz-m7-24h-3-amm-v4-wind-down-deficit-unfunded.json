@@ -1,0 +1,27 @@
+{
+  "profile": "amm-v4",
+  "seed": 20333958,
+  "step": "wind-down",
+  "signature": "",
+  "anomaly": "wind-down-withdraw-refused",
+  "minimized": true,
+  "differential": true,
+  "avoid_known": true,
+  "actions": [
+    "shock 0 2108477664 4246407800",
+    "pump_crank_dump 0 3751126065 3194319161",
+    "shock 0 1353906638 1650557782",
+    "keeper_seconds 0 3287056924 2074721576",
+    "open_near_cap 0 3342182193 3929427675",
+    "push_then_freeze 0 1163952348 3569906114",
+    "shock 0 2693250288 3218401119",
+    "ramp 0 966263160 1941722642",
+    "shock 0 2474531950 914105591",
+    "withdraw 0 943018557 451108468",
+    "warp_to_deadline 0 791278208 1517332518",
+    "deposit 0 2023025936 972591749"
+  ],
+  "finding": "FUZZ-M7-24H-3 (the second 24-hour run at eb82a2a, profile `all`, seed base 20261001, 1 in 84,049 wind-downs; harness, not program): an anomaly, not a failure. A near-cap short on a Raydium AMM v4 market accrues ≈ 3,640 SOL of rent receivable to the seeding lender (`warp_to_deadline`), a second lender's `deposit` then takes ≈ 59 % of the shares, and the position exits in the wind-down paying less than it was credited: the true-up debits the shortfall pro-rata to the current shares (ECON §9.4, disclosed: a lender who joined after the rent was credited bears part of it), so the late depositor's `pending` is ≈ −1,044 SOL. The wind-down's `cover_negative` sent the exact `cover_deficit`, but every lender is funded with 1,000 SOL: the System transfer failed (insufficient funds, `Custom(1)`), the withdraw refused `NegativePending` (6082) and the wind-down reported `wind-down-withdraw-refused`. Minimised from the 280-action run (`shortwin-fuzz one --profile amm-v4 --seed 20333958 --actions 280`; the `run` loop's length for that seed is `400/4 + splitmix64(seed ^ 0x1e57) % 301 = 280`) by `tmin` with the anomaly made a panic.",
+  "status": "fixed",
+  "resolution": "Resolved in the fuzzer: `cover_negative` tops the lender up to the deficit plus 1 SOL of fees before the `cover_deficit` (`wind-down-deficit-funded`); the cover lands, `pending` reaches 0 and the withdraw lands. The program is correct: `cover_deficit` restores `pending ≥ 0` for any lender that brings the SOL (ARCH §3.3; ECON §9.4). No program change. This file replays as a regression: the run must pass and must not report its `anomaly` (`corpus_replays`). Revised 2026-10-13 for AIR-07's residual (00d3772): action 9 is a `withdraw` of 668 per mille of the seeding lender's shares (a 943018557 picks lender 0, b % 1100 = 668) instead of `lenders_out 0 943018558 451108283`. `lenders_out` took the unborrowed tokens to 0, and since 00d3772 `deposit` refuses `PoolDrained` (6108) while 1,000·T ≤ T + ΣB_Q, so the late deposit was refused, no lender owed a deficit and the replay passed without reaching `cover_negative`. 668 per mille is the largest withdrawal that lands: it leaves T = 33,081,646 of 16,728,135,998 token claims (1.98 per mille, above the gate's 1/1,000), the near-cap short accrues 3,614.36 SOL of receivable at 99.8 % utilisation (3,640.30 SOL at 100 %), the late deposit lands with 58.6 % of the shares and owes 1,028.408 SOL after the exit (1,044.467 SOL before 00d3772), above the 1,000 SOL every lender is funded with, so the replay needs `cover_negative`'s top-up again (`wind-down-deficit-funded`)."
+}

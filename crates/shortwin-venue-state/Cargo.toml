@@ -1,0 +1,17 @@
+[package]
+name = "shortwin-venue-state"
+version = "0.1.0"
+description = "short.win: length-tolerant readers of venue, token, loader and oracle account state (no_std)"
+edition = "2024"
+# On-chain crate: must build with the platform-tools rustc (v1.57 = 1.95) (ARCHITECTURE §1.1).
+rust-version = "1.89"
+publish = false
+
+# Zero runtime dependencies, by design (ARCHITECTURE §1.2, §4.1): the program, the keeper and
+# the WASM frontend read venue accounts with the same bytes-in, values-out functions.
+[dependencies]
+
+[features]
+default = []
+# TEST-ONLY: the mock venue reader (`mock_cpamm`) for short.win's `test-venue` build (A49).
+test-venue = []

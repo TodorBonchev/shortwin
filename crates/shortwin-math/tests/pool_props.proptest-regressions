@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 36bcfc12501259591baaf9e79c371b35ff49c668e6c43e256aee99ca8ebf778f # shrinks to (cfg, ops) = (Cfg { cap_bps: 10000, touch_all: false, params: (21600, 86400), tail: 4800 }, [Deposit(0, 18446744073709551615, false), Borrow(0, 0), Settle(0, 2148, 1786812089282407560), Run(0, 1), Withdraw(0, 0, 0), Borrow(0, 0), Accrue(0, 1176470588235294118)])

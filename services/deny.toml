@@ -1,0 +1,64 @@
+# cargo-deny 0.20 policy for the services workspace (services/, its own Cargo.lock;
+# ARCHITECTURE §1.2, §8.4 "Static"). The root deny.toml's policy, plus what the JSON-RPC client
+# stack brings (rustls, ring, webpki-roots).
+# Run: cargo deny --manifest-path services/Cargo.toml check --config services/deny.toml
+
+[graph]
+all-features = false
+no-default-features = false
+
+[advisories]
+unmaintained = "all"
+yanked = "deny"
+ignore = [
+    # The root deny.toml's exceptions (unmaintained, not vulnerable), which reach this workspace
+    # through the same crates: anchor-lang 1.2.0 (bincode) and the LiteSVM 0.16 harness the
+    # scenario tests link (tests/litesvm).
+    { id = "RUSTSEC-2025-0141", reason = "bincode via anchor-lang 1.2.0; unmaintained, no advisory against 1.3.3's code" },
+    { id = "RUSTSEC-2021-0139", reason = "ansi_term via litesvm 0.16 (keeper scenario tests only)" },
+    { id = "RUSTSEC-2024-0388", reason = "derivative via ark-* via solana-syscalls 4.2 (keeper scenario tests only)" },
+    { id = "RUSTSEC-2024-0436", reason = "paste via ark-ff via solana-syscalls 4.2 (keeper scenario tests only)" },
+    { id = "RUSTSEC-2025-0161", reason = "libsecp256k1 via solana-syscalls 4.2 (keeper scenario tests only)" },
+]
+
+[licenses]
+confidence-threshold = 0.9
+allow = [
+    "0BSD",
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "MIT",
+    "Unicode-3.0",
+    "Zlib",
+    # rustls-webpki, untrusted and ring (the RPC client's TLS stack).
+    "ISC",
+    # webpki-roots (the RPC client's TLS root store).
+    "CDLA-Permissive-2.0",
+    # postgresql_embedded / _archive / _commands ("(Apache-2.0 OR MIT) AND PostgreSQL"; OSI
+    # approved, permissive): the indexer's TEST-ONLY embedded-Postgres fixture (INDEXER.md §11.1).
+    "PostgreSQL",
+]
+
+# solana-config-interface declares its licence only as a file (the Apache-2.0 text, which
+# cargo-deny recognises; `no-license-field` stays a warning).
+
+[licenses.private]
+ignore = true
+
+[bans]
+multiple-versions = "warn"
+wildcards = "deny"
+allow-wildcard-paths = true
+highlight = "all"
+deny = [
+    { name = "solana-sdk" },
+    { name = "solana-program", reason = "use the solana-* component crates" },
+    { name = "pump-rust-client", reason = "ARCHITECTURE §2.1: never used; own readers in shortwin-venue-state" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

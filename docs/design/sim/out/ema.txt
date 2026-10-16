@@ -1,0 +1,36 @@
+### Exit bounds and persistence vs genuine fast moves (size at cap, keeper latency 1 s)
+
+| market | setting | pump 10x/60s | pump 10x/3min | pump 10x/10min | gap 5x |
+|---|---|---|---|---|---|
+| A | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | no liquidation persistence (1 update) | S1 @10.00x +65s, lender -78% | liqu @1.82x +47s, lender +0% | liqu @1.72x +141s, lender +0% | S1 @5.00x +45s, lender -57% |
+| A | persistence 5 updates (above the compiled maximum) | S1 @10.00x +65s, lender -78% | liqu @1.92x +51s, lender +1% | liqu @1.74x +145s, lender +0% | S1 @5.00x +49s, lender -57% |
+| A | fixed delta 1 % (below the compiled minimum) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +67s, lender -78% | liqu @1.94x +52s, lender +1% | liqu @1.75x +146s, lender +0% | S1 @5.00x +48s, lender -57% |
+| A | tau 10 s (v0.1 value) | S1 @10.00x +69s, lender -78% | liqu @2.00x +54s, lender +0% | liqu @1.76x +148s, lender +0% | S1 @5.00x +49s, lender -57% |
+| C | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | liqu @2.93x +28s, lender +1% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | no liquidation persistence (1 update) | liqu @2.71x +26s, lender +1% | liqu @2.27x +64s, lender +1% | liqu @2.14x +198s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | persistence 5 updates (above the compiled maximum) | S1 @10.00x +75s, lender -68% | liqu @2.39x +68s, lender +1% | liqu @2.17x +202s, lender +1% | S1 @5.00x +50s, lender -35% |
+| C | fixed delta 1 % (below the compiled minimum) | liqu @2.93x +28s, lender +1% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +75s, lender -68% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +75s, lender -68% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +77s, lender -68% | liqu @2.42x +69s, lender +1% | liqu @2.18x +203s, lender +1% | S1 @5.00x +51s, lender -35% |
+| C | tau 10 s (v0.1 value) | S1 @10.00x +79s, lender -68% | liqu @2.48x +71s, lender +1% | liqu @2.20x +205s, lender +1% | S1 @5.00x +54s, lender -35% |
+| D@0% | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | liqu @3.29x +31s, lender +2% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | no liquidation persistence (1 update) | liqu @3.04x +29s, lender +2% | liqu @2.58x +74s, lender +1% | liqu @2.40x +228s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | persistence 5 updates (above the compiled maximum) | liqu @3.55x +33s, lender +2% | liqu @2.71x +78s, lender +1% | liqu @2.44x +232s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | fixed delta 1 % (below the compiled minimum) | liqu @3.29x +31s, lender +2% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +82s, lender -58% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +82s, lender -58% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +84s, lender -58% | liqu @2.71x +78s, lender +1% | liqu @2.45x +233s, lender +1% | S1 @5.00x +57s, lender -17% |
+| D@0% | tau 10 s (v0.1 value) | S1 @10.00x +86s, lender -58% | liqu @2.78x +80s, lender +1% | liqu @2.46x +235s, lender +1% | S1 @5.00x +60s, lender -17% |
+| RA | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | no liquidation persistence (1 update) | S1 @10.00x +64s, lender -80% | liqu @1.78x +45s, lender +0% | liqu @1.67x +133s, lender +0% | S1 @5.00x +45s, lender -59% |
+| RA | persistence 5 updates (above the compiled maximum) | S1 @10.00x +64s, lender -80% | liqu @1.87x +49s, lender +0% | liqu @1.69x +137s, lender +0% | S1 @5.00x +49s, lender -59% |
+| RA | fixed delta 1 % (below the compiled minimum) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +66s, lender -80% | liqu @1.90x +50s, lender +0% | liqu @1.70x +138s, lender +0% | S1 @5.00x +48s, lender -59% |
+| RA | tau 10 s (v0.1 value) | S1 @10.00x +68s, lender -80% | liqu @1.94x +52s, lender +0% | liqu @1.71x +140s, lender +0% | S1 @5.00x +49s, lender -59% |

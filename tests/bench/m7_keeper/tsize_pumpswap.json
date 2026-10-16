@@ -1,0 +1,15 @@
+{
+  "schema": "shortwin.m7.tsize_pumpswap/1",
+  "pools": ["Legacy261", "Mature", "Cashback"],
+  "limit_bytes": 1232,
+  "tables": ["a28", "build_alt", "a28_plus_market", "build_alt_plus_market"],
+  "rows": [
+    {"what": "open_short (first-time borrower, separate payer)", "bytes_min_max": [[1238, 1239], [1207, 1208], [621, 622], [590, 591]]},
+    {"what": "open_short (first-time borrower pays its fee)", "bytes_min_max": [[1142, 1143], [1111, 1112], [525, 526], [494, 495]]},
+    {"what": "keeper liquidate (4 extras)", "bytes_min_max": [[1131, 1132], [1100, 1101], [514, 515], [483, 484]]},
+    {"what": "keeper [crank_price, liquidate] (4 extras)", "bytes_min_max": [[1156, 1157], [1125, 1126], [539, 540], [508, 509]]},
+    {"what": "keeper crank_price", "bytes_min_max": [[507, 507], [507, 507], [324, 324], [324, 324]]}
+  ],
+  "market_table": {"addresses_min_max": [21, 21], "rent_lamports_min_max": [4348480, 4348480]},
+  "keeper_liquidation_sent_v0": {"bytes_min_max": [471, 472], "accounts_min_max": [44, 45]}
+}

@@ -1,0 +1,17 @@
+[package]
+name = "cu-math-bench"
+version = "0.1.0"
+description = "SBF program that runs one shortwin-math primitive n times (T-CU-MATH)"
+edition = "2024"
+# Built by the platform-tools rustc (v1.57 = 1.95).
+rust-version = "1.89"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+shortwin-math = { path = "../../../../crates/shortwin-math" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

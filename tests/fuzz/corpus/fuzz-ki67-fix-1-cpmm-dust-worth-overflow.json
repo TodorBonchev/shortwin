@@ -1,0 +1,21 @@
+{
+ "profile": "cpmm",
+ "seed": 67800610,
+ "step": "wind-down",
+ "signature": "tests/fuzz/src/world.rs:2330 | attempt to multiply with overflow",
+ "minimized": true,
+ "differential": true,
+ "avoid_known": true,
+ "actions": [
+  "stale_receivable 0 206589910 3725750659",
+  "stale_receivable 0 2473268631 1656858420",
+  "stale_receivable 0 2362141133 4170225107",
+  "stale_receivable 0 638196154 495394232",
+  "stale_receivable 0 172755522 722883874",
+  "stale_receivable 0 1079571665 4068243528"
+ ],
+ "finding": "FUZZ-KI67-FIX-1 (the KI-66 full / KI-67 fix round's 10-minute run, `run --profile cpmm --seed 67800200 --jobs 3`, cpmm seed 67800610; harness, not program; also fails the 24 h run's fuzzer at f48e75d, at world.rs:2297): the wind-down's dust test for a refused full withdrawal computed a lender's token worth as `shares * tokens_free / S` in u128; six `stale_receivable` actions leave a lender with shares and `T` whose product exceeds 2^128, and the release fuzzer (overflow checks on) panicked.",
+ "message": "tests/fuzz/src/world.rs:2330\nattempt to multiply with overflow",
+ "status": "fixed",
+ "resolution": "Resolved in the fuzzer, no program change: the worth is `shortwin_math::num::mul_div` (256-bit product, floor). This file replays as a regression: the run must pass (`corpus_replays`)."
+}

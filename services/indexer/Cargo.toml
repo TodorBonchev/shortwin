@@ -1,0 +1,71 @@
+[package]
+name = "shortwin-indexer"
+version = "0.1.0"
+description = "short.win indexer and API (ARCHITECTURE §7.2, M8; docs/design/INDEXER.md): RPC backfill and live ingest of short.win and venue events, Postgres projections and analytics, axum REST + WebSocket"
+edition.workspace = true
+# sqlx 0.9 and postgresql_embedded 0.21 declare Rust 1.94 (the repository toolchain is 1.98.1);
+# the other services crates keep the workspace's 1.89.
+rust-version = "1.94"
+publish.workspace = true
+
+[features]
+default = []
+# TEST-ONLY: the embedded-Postgres fixture (`testing::pg`, INDEXER.md §11.1). It downloads the
+# PostgreSQL binaries into the user cache at first use and runs them as the current user. The
+# production binary never enables it; this crate's own tests do (the dev-dependency below).
+embedded-pg = ["dep:postgresql_embedded"]
+
+[dependencies]
+# Event and instruction types, exactly as the program declares them (Borsh layouts, Anchor
+# discriminators): `shortwin::events::*`, `shortwin::instruction::*`, `shortwin::state::*`.
+shortwin.workspace = true
+# `mul_div` on a 256-bit intermediate (q·P/WAD overflows u128 for pumped prices; §8.4).
+shortwin-math.workspace = true
+# The venue account readers the program and the keeper use (the venue admin watch, §6.3).
+shortwin-venue-state.workspace = true
+# `RpcChain::accounts` for the account refresher (§2.6).
+shortwin-services-common.workspace = true
+anchor-lang.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread"] }
+futures.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+bs58.workspace = true
+base64.workspace = true
+# `ConfigProposed.hash = sha256(kind ‖ payload)` is re-checked on the decoded payload (§5.4).
+sha2.workspace = true
+sqlx.workspace = true
+axum.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+tokio-tungstenite.workspace = true
+solana-rpc-client.workspace = true
+solana-rpc-client-api.workspace = true
+solana-commitment-config.workspace = true
+solana-transaction-status-client-types.workspace = true
+solana-hash.workspace = true
+solana-message.workspace = true
+solana-pubkey.workspace = true
+solana-signature.workspace = true
+solana-transaction.workspace = true
+postgresql_embedded = { workspace = true, optional = true }
+
+[dev-dependencies]
+# The crate's own tests use the embedded-Postgres fixture (INDEXER.md §11.1).
+shortwin-indexer = { path = ".", features = ["embedded-pg"] }
+tokio = { workspace = true, features = ["rt-multi-thread", "macros"] }
+# The API contract tests (§11.2).
+serde-saphyr.workspace = true
+jsonschema.workspace = true
+http-body-util.workspace = true
+# The venue decoders on recorded mainnet transactions (`tests/venue_mainnet.rs`).
+flate2.workspace = true
+
+[[bin]]
+name = "shortwin-indexer"
+path = "src/main.rs"

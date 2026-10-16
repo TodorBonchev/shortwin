@@ -1,0 +1,23 @@
+[package]
+name = "squads-v4-ix"
+version = "0.1.0"
+description = "Squads v4 (SQDS4ep6…, program 2.1.0) instruction encoders, TransactionMessage compiler, PDAs and account decoders for short.win's governance (M10 WP-7)"
+edition = "2024"
+# Host-only crate (the LiteSVM harness and the M11 ops tool); LiteSVM 0.16's MSRV, as
+# tests/litesvm.
+rust-version = "1.89"
+publish = false
+
+# Only the two solana-* component crates every lockfile that links it already holds at these
+# versions (the root, services/ and the five tests/bench lockfiles: solana-pubkey 4.2.1,
+# solana-instruction 3.4.1), so adding this crate adds no package to any of them. Borsh is
+# written by hand (src/borsh.rs): the instructions carry a handful of fixed shapes.
+[dependencies]
+solana-instruction = "~3.4"
+solana-pubkey = { version = "~4.2.1", features = ["curve25519"] }
+
+[dev-dependencies]
+# tests/idl.rs: the discriminators are sha256("global:<name>")[..8] / ("account:<Name>"), and
+# every builder is checked against the vendored IDL (tests/fixtures/idl/).
+serde_json = "1.0.151"
+sha2 = "0.10.9"

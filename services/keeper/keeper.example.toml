@@ -1,0 +1,201 @@
+# shortwin-keeper configuration (ARCHITECTURE §7.1). Every key is optional: the values below are
+# the defaults (ECON §5.8 duties; owner item O17 sets the budget, the ceiling and the markets).
+#
+#   shortwin-keeper --rpc https://… --keypair keeper.json --config keeper.toml --metrics 127.0.0.1:9464
+
+# Markets covered (O17): "all", or { only = ["<market pubkey>", …] }.
+markets = "all"
+
+# Batch format (duty 7): "auto" (v1 while the cluster accepts it, v0 after a refusal, re-probed
+# after v1_reprobe_s), "v1" or "v0". The batch sizes are maxima: a batch is also cut where its
+# transaction would exceed the format's size (4,096 / 1,232 B) or 64 accounts.
+tx_format = "auto"
+batch_v1 = 6
+batch_v0 = 4
+v1_reprobe_s = 3600
+
+# The protocol ALT(s) of A28 for v0 transactions (base58; `scripts/build-alt.sh` builds and
+# checks it). Empty: all keys inline.
+lookup_tables = []
+
+# Simulate only, never send.
+dry_run = false
+
+[coverage]
+# Duty 1: every 30 s on a market with open positions and nothing near a threshold (at most 30 s);
+# the only cadence of a market below the value-at-risk floor ([budget] var_floor_lamports).
+idle_interval_s = 30
+# Duty 5: every 30 s on a market without a route (the S3 chain restarts after 60 s).
+no_route_interval_s = 30
+# Duty 1: a position is "near" below 1.3·L (bps of L), or within 60 s of its deadline, or armed.
+near_cr_bps = 13000
+deadline_window_s = 60
+# Duty 1: per-second coverage while |P_spot/P_ema − 1| > 2 %.
+ema_dev_bps = 200
+# Duty 2: a foreign observation whose price is 2 % away from the keeper's own view of that second
+# starts 60 s of per-slot observations — when the excursion reverted, i.e. the keeper's next read
+# is 2 % away from it too (an atomic bundle's signature; M7-SEC-2). A price still there at the next
+# read is a genuine move, which duty 1's per-second coverage above ema_dev_bps follows.
+burst_dev_bps = 200
+burst_s = 60
+# Duty 2 (FITS-2): on a market with open positions, a foreign bucket liquidity 2 % away from the
+# keeper's own sqrt(X*Y) (an LP-wrapped crank) starts 10 s of per-second observations, extended
+# while it recurs; never on a market without positions. 0 disables it.
+liq_cover_s = 10
+# Duty 9: 3 consecutive seconds without a required observation make the market degraded; 10
+# minutes of restored coverage lift it.
+degraded_after_misses = 3
+recovery_s = 600
+# Positions of a market whose S3 is due are probed (simulated sol_settle) this often.
+s3_probe_interval_s = 10
+# Seconds between getProgramAccounts discoveries of new markets.
+discovery_interval_s = 10
+# M4V-5: a Raydium market with no open position is observed every 60 s inside its listing
+# window, and every second in the window's last EMA_WARMUP_BUCKETS + 2 = 10 seconds and after it
+# until its price state has warmed up (opens refuse EmaWarmingUp before that).
+listing_interval_s = 60
+# M7-SEC-1 (a): a CoverageGap in the keeper's own transaction degrades the market only above
+# max(idle_interval_s + gap_tolerance_s, COVERAGE_GAP_S): the program measures landing seconds,
+# the keeper schedules from its confirmed read, and the send latency (0-2 s) made 31-32 s gaps at
+# the idle cadence while COVERAGE_GAP_S was 30. Since the owner raised it to 40 s (2026-10-01) the
+# program emits none at the idle cadence, and every gap it emits (41 s or more) degrades. A crank
+# that does not land is a miss. [0, 30].
+gap_tolerance_s = 4
+# M7-SEC-1 (b): a tick more than 1 + tick_gap_tolerance_s seconds after the previous one means the
+# keeper was down (a degraded market's recovery restarts); a shorter skip (a tick that waited for
+# its confirmations) misses only the seconds that required per-second coverage. [0, 30].
+tick_gap_tolerance_s = 5
+# M7-SEC-8: list-only markets and curve markets far from completion (the markets anyone can list for
+# a fee and rent), without open positions and nothing time-critical pending, are read every
+# cold_interval_s (staggered) instead of every tick; markets with positions, PumpSwap and Raydium
+# markets every tick. (0, 60].
+cold_interval_s = 30
+# A curve that a buy of at most this many lamports completes is read every tick (duty 6 follows its
+# graduation at once).
+hot_curve_completion_lamports = 20000000000
+
+[budget]
+# O17, the global keeper budget (owner decision A of 2026-10-01; ARCHITECTURE §7.1 duty 8): ONE
+# daily budget G for coverage observations (crank_price), all markets together, funding them in
+# order of their lenders' value at risk V = floor(borrowed_q * min(ema_price, P_ACC_MAX) / 1e18)
+# lamports. The M7 per-market budget (per_market_daily_lamports) is retired: a config that sets it
+# is refused.
+# - Covered markets (open positions, V >= var_floor_lamports) are ranked by V; at 00:00 UTC each
+#   gets an entitlement of reserve_margin_bps over its quiet day (twice it by default), funded from
+#   the top; the rest of G is the free pool. A market covered later in the day gets its prorated
+#   entitlement from the free pool, then from the lowest-ranked covered markets.
+# - A charge draws on its market's entitlement, then the free pool, then - for the cranks exits
+#   depend on and the baseline cadence, never for price bursts or liquidity-anomaly coverage - the
+#   lower-ranked markets' entitlements, lowest first. The cranks exits depend on are never throttled
+#   (beyond G: an alerted overdraft, ExitOverdraft); any other charge the budget cannot cover is
+#   refused, and on a market with open positions that is degraded mode at once (opens paused
+#   through [coverage_pause], or the Emergency multisig paged; exits continue).
+# - Markets with positions below the floor get the 30-s idle cadence only (read at that cadence),
+#   from the free pool within tail_share_bps of G a day; never a covered market's entitlement.
+# - Exits, pool selection, graduation moves, crank_sol_usd and set_coverage_pause are neither
+#   charged nor throttled.
+# PROPOSED defaults (OWNER-M7-17). 0 = no budget (every charge admitted).
+global_daily_lamports = 1000000000
+# [0, market_max_notional]; 0 = every market with positions covered.
+var_floor_lamports = 1000000000
+# [0, 100000]: the entitlement is (1e4 + this) / 1e4 quiet days.
+reserve_margin_bps = 10000
+# [0, 10000]: the below-floor markets' share of G (0.2 SOL a day at the defaults).
+tail_share_bps = 2000
+# O17 (owner decision of 2026-09-30): priority-price ceilings, micro-lamports per CU
+# (observations / exits, set_coverage_pause, pool selection, the upgrade latch).
+priority_ceiling = 100000
+exit_priority_ceiling = 100000
+priority_floor = 0
+# Start from the p75 of the recent per-account fees on the transaction's markets; ×1.5 per
+# consecutive missed second.
+priority_percentile_bps = 7500
+escalate_bps = 5000
+# T-CASCADE (C0-17): the most compute units the keeper requests per market per slot on exits
+# (every exit write-locks the Market and its MarketVault: 24,000,000 CU per account and block);
+# the rest of a cascade goes out in the next slot, most under-collateralised first. 0: no cap.
+market_cu_per_slot = 12000000
+# The same across all of the keeper's exits in a slot: the fee payer is write-locked by every one of
+# its transactions (24,000,000 CU per account and block). 0: no cap.
+payer_cu_per_slot = 20000000
+
+[coverage_pause]
+# O17: this instance is the designated pauser — it holds the coverage_authority key (a separate
+# key from the fee payer that can only pause and unpause opens per market) and sends
+# set_coverage_pause(market, true) when a market with open positions is degraded, false after
+# recovery_s of restored coverage. Exactly one instance should be the pauser; the others (and this
+# one without the key, or while GlobalConfig.coverage_authority is unset) only alert, and the
+# Degraded alert pages the Emergency multisig to set_pause the market.
+enabled = false
+# The coverage_authority keypair file (the binary's --coverage-keypair overrides it).
+authority_keypair = ""
+
+[oracle]
+# Duty 11 (ARCH §7.1, §4.7): crank_sol_usd whenever the configured Pyth PriceUpdateV2 holds an update
+# newer than the OracleCache (the USD tiers read it; a cache older than oracle_stale_s - 600 s since
+# the owner's decision of 2026-10-01, was 3,600 - puts every graduated market in Tier C). Read every
+# interval_s (at most 30 s); a failed crank is retried every second. Alert when the cache is older
+# than aging_alert_s (once per stall, hourly while it lasts): half of oracle_stale_s, in (0, 600).
+enabled = true
+interval_s = 30
+aging_alert_s = 300
+
+[venue_watch]
+# Duty 10: watch the venue ProgramData accounts (pump, pAMM, pfee, AMM v4, CPMM, Jupiter; and
+# Token-2022, alert only) and call flag_venue_upgraded in the slot after an upgrade.
+flag_upgrades = true
+# Duty 10: report admin actions on each covered market's pool and CPMM config (Raydium SetParams,
+# update_pool_status, update_amm_config): route lost / restored, status, open time, fee vs caps.
+pool_admin = true
+
+[pool_select]
+# Duty 5's Raydium fast path and duty 12's pool monitor (ARCH §2.6, §7.1): discover every
+# Raydium SOL pool of each covered mint, rank the eligible ones by locked depth D with the
+# program's own verifier, and propose_pool / execute_pool_switch exactly when the program would
+# accept (listing window, zero-position adoption, fast path).
+enabled = true
+# getProgramAccounts discovery per covered mint (4 filtered calls: AMM v4 and CPMM, WSOL on
+# either side), and the faster cadence while the incumbent fails pool_fail or a window runs.
+discovery_interval_s = 300
+fast_discovery_interval_s = 10
+# Re-read the candidates' accounts this often when nothing is pending.
+eval_interval_s = 30
+# R4B-10: alert when a dominant candidate has been blocked this long by open positions.
+pinned_alert_s = 3600
+# A separate endpoint for the getProgramAccounts calls (empty: the keeper's --rpc).
+discovery_rpc = ""
+# M4-SEC-7: anyone can create pools for a mint, so the keeper ranks a discovery's pools by their
+# locked SOL (one read of each pool's WSOL vault and LP mint, at most rank_keys_per_tick accounts
+# a tick) and evaluates only the best max_candidates each tick.
+max_candidates = 8
+rank_keys_per_tick = 200
+# M7-SEC-8: at most this many markets' discoveries (4 getProgramAccounts calls each) per tick,
+# the fast cadence first, then markets with open positions, then the longest waiting (listing is
+# permissionless: a batch of junk list-only markets must not stall a tick).
+discoveries_per_tick = 2
+
+[graduation]
+# Duty 6 (ARCH §2.5, §5.1, §7.1): call pump migrate_v2 top-level as soon as a covered market's
+# curve completes (ADOPTED Q16) -- also right after the keeper's own synthetic exit completed it --
+# alone in its transaction, then the -> PumpSwap transition (the pool's missing accounts,
+# crank_price onto the pool and its first observation) in the same second. On again in M6
+# (M5-SEC-4 suspended it).
+migrate = true
+# pump-final §7 (owner D2): the straddle bundle's keys (straddle, send_without_exit,
+# complete_slippage_bps, max_complete_lamports, tip_lamports, tip_accounts, block_engine) are
+# removed and refused: a curve position past rT exits by pump v3's synthetic migration in its own
+# liquidate / expire.
+
+[sweep]
+# Duties 6 and 13 (ARCH §7.1; R4A-7): right after a full wipe, the venue cashback claims the trader
+# needs (pump claim_cashback; PumpSwap claim_cashback into ATA(trader, WSOL)) and sweep_trader, so a
+# deposit (and hence an open) is possible again.
+post_wipe = true
+# sweep_trader when ATA(trader, WSOL) exists, the trader PDAs hold lamports or a pump venue's trader
+# base ATA holds tokens; the trader side is read every check_interval_s seconds.
+sweep = true
+check_interval_s = 60
+# The venue cashback claim (with a sweep) on cashback coins: at most every cashback_interval_s
+# (weekly), once the claimable cashback reaches cashback_min_lamports (lamports).
+cashback_interval_s = 604800
+cashback_min_lamports = 10000000

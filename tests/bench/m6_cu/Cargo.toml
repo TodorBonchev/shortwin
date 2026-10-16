@@ -1,0 +1,68 @@
+# M6 CU bench, T-TRACE, T-SIZE, T-DEPTH, the graduation transition and stack depth on the PumpSwap
+# venue (ARCHITECTURE §6.1–§6.4, §8.2 T-CU / T-TRACE / T-SIZE / T-DEPTH, §9 M6): the compute units
+# of every PumpSwap-path instruction and the `→ PumpSwap` graduation transition of the release
+# short.win against the dumped mainnet PumpSwap, pump and pump-fees programs and canonical pools
+# (tests/fixtures, groups `pamm_state`, `pamm_synthetic`, `pump_state`), measured with Mollusk
+# 0.15.1 on account states built by the LiteSVM harness (tests/litesvm), which runs the same
+# instruction as a cross-check; the instruction-trace entries and wire sizes of the worst-case
+# PumpSwap transactions (≤ 64 entries; v0 through the protocol ALT ≤ 1,232 B), the straddle's tx3
+# and the post-wipe reward claim; the stack depth of every path through 0–3 levels of the
+# TEST-ONLY `wrapper/` program. See README.md.
+#
+# A standalone workspace with its own lockfile, like tests/bench/m5_cu (whose lockfile seeded
+# this one): Mollusk stays out of the on-chain workspace's lockfile, and the shared crates
+# (anchor 1.2.0, LiteSVM 0.16.0, the Agave 4.2.2 runtime line) resolve to the same versions as
+# the program tests (C1-14).
+[workspace]
+resolver = "3"
+members = [".", "wrapper"]
+
+[package]
+name = "m6-cu-bench"
+version = "0.1.0"
+description = "short.win M6 CU bench on the PumpSwap venue (Mollusk 0.15.1, LiteSVM cross-check), T-TRACE / T-SIZE of the worst-case PumpSwap transactions, the graduation transition and the stack depth"
+edition = "2024"
+# Host-only crate; LiteSVM 0.16's MSRV.
+rust-version = "1.89"
+publish = false
+
+[dependencies]
+# The harness enables short.win's TEST-ONLY `test-venue` feature on the host (its types); the
+# SBF build measured here is the **release** one (`anchor build`, or SHORTWIN_SO): the curve
+# adapter is release code.
+shortwin = { path = "../../../programs/shortwin", features = ["no-entrypoint"] }
+shortwin-litesvm-tests = { path = "../../litesvm" }
+shortwin-math = { path = "../../../crates/shortwin-math" }
+shortwin-venue-state = { path = "../../../crates/shortwin-venue-state" }
+anchor-lang = "=1.2.0"
+
+# ARCH §1.1 pins.
+litesvm = "=0.16.0"
+mollusk-svm = "=0.15.1"
+
+# The component crates both harnesses speak (the majors LiteSVM 0.16 declares).
+solana-account = "4.3"
+solana-clock = "~3.1.1"
+solana-instruction = "~3.4"
+solana-keypair = "3.1.2"
+# T-TRACE reports each worst-case transaction's legacy and v0 wire size (T-SIZE preview).
+solana-message = "4.2.4"
+solana-rent = "~4.3"
+solana-signer = "3.0.1"
+# The keeper's `simulate_transaction` of an exit before a case sends it.
+solana-transaction = "4.1.5"
+
+# C1-14 (ARCH §1.1): Mollusk 0.15.1 declares the Agave runtime crates as ^4.2.0 and does not
+# compile against 4.3.0; LiteSVM 0.16.0 declares ^4.2.1. Hold the line both share at 4.2.x
+# (4.2.2 resolved, as in the root lockfile and the other bench lockfiles).
+agave-feature-set = "~4.2.2"
+solana-bpf-loader-program = "~4.2.2"
+solana-compute-budget = "~4.2.2"
+solana-program-runtime = "~4.2.2"
+solana-svm-callback = "~4.2.2"
+solana-svm-feature-set = "~4.2.2"
+solana-svm-log-collector = "~4.2.2"
+solana-svm-timings = "~4.2.2"
+solana-syscalls = "~4.2.2"
+solana-system-program = "~4.2.2"
+solana-transaction-context = "~4.2.2"

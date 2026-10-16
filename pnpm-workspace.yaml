@@ -1,0 +1,6 @@
+# JS workspace (ARCHITECTURE §1.2): the Codama client (clients/js).
+packages:
+  - "clients/*"
+
+# Supply chain: nothing published less than 14 days ago is resolved.
+minimumReleaseAge: 20160

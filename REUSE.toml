@@ -1,0 +1,77 @@
+# The licence of every file in this repository, in REUSE format (https://reuse.software/spec-3.3/).
+# When several annotations match a file, the last one wins. The licence texts are in LICENSES/;
+# third-party material is described in THIRD_PARTY_NOTICES.md.
+version = 1
+SPDX-PackageName = "short.win"
+SPDX-PackageSupplier = "Todor Bonchev"
+
+# The protocol: the programs, crates, keeper, indexer, tests, scripts and configuration.
+[[annotations]]
+path = "**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Todor Bonchev"
+SPDX-License-Identifier = "BUSL-1.1"
+
+# The documentation: every Markdown file and everything under docs/.
+[[annotations]]
+path = ["*.md", "**/*.md", "docs/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Todor Bonchev"
+SPDX-License-Identifier = "CC-BY-NC-ND-4.0"
+
+# Code under docs/: the simulator, the CU-math crate and the design pass's helper scripts.
+[[annotations]]
+path = ["docs/**/*.py", "docs/**/*.rs", "docs/**/*.toml", "docs/**/*.js", "docs/**/*.ts"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Todor Bonchev"
+SPDX-License-Identifier = "BUSL-1.1"
+
+# The TypeScript client SDK with the IDL, and the indexer's API description.
+[[annotations]]
+path = ["clients/js/**", "services/indexer/openapi.yaml"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Todor Bonchev"
+SPDX-License-Identifier = "Apache-2.0"
+
+# Quote arithmetic adapted from Raydium's Apache-2.0 sources (THIRD_PARTY_NOTICES.md).
+[[annotations]]
+path = [
+    "crates/shortwin-math/src/quote/cpmm.rs",
+    "crates/shortwin-math/src/quote/ray_v4.rs",
+    "crates/shortwin-math/tests/vectors/quotes/gen_port.py",
+]
+precedence = "override"
+SPDX-FileCopyrightText = ["2026 Todor Bonchev", "Raydium"]
+SPDX-License-Identifier = "BUSL-1.1 AND Apache-2.0"
+
+# Snapshots of public Solana mainnet state.
+[[annotations]]
+path = ["tests/fixtures/accounts/**", "scripts/gapcal/tests/fixtures/**", "services/keeper/tests/data/*.bin"]
+precedence = "override"
+SPDX-FileCopyrightText = "Public Solana mainnet data; any rights belong to its respective owners"
+SPDX-License-Identifier = "LicenseRef-Public-Chain-Data"
+
+# Third-party program binaries and the Squads IDL (THIRD_PARTY_NOTICES.md).
+[[annotations]]
+path = "tests/fixtures/programs/raydium_*.so"
+precedence = "override"
+SPDX-FileCopyrightText = "Raydium"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["tests/fixtures/programs/token_2022.so", "tests/fixtures/programs/spl_memo_v3.so"]
+precedence = "override"
+SPDX-FileCopyrightText = "The Solana Program Library authors"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "tests/fixtures/programs/squads_v4.so"
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Selimor Investments Limited"
+SPDX-License-Identifier = "LicenseRef-Squads-BUSL-1.1"
+
+[[annotations]]
+path = "tests/fixtures/idl/squads_multisig_program.json"
+precedence = "override"
+SPDX-FileCopyrightText = "Squads (npm package @sqds/multisig 2.1.4)"
+SPDX-License-Identifier = "MIT"

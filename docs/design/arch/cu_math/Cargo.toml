@@ -1,0 +1,20 @@
+# SBF micro-benchmark of shortwin-math primitives (ARCHITECTURE v0.4 §6.1, [V18]).
+# Standalone workspace: never part of the on-chain workspace.
+[package]
+name = "cubench"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+shortwin-math = { path = "../../../../crates/shortwin-math" }
+
+[workspace]
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

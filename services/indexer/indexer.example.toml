@@ -1,0 +1,82 @@
+# shortwin-indexer configuration (docs/design/INDEXER.md §12.2). Every key is optional: the values
+# below are the defaults. DATABASE_URL, SHORTWIN_RPC_URL and SHORTWIN_WS_URL override the file.
+#
+#   shortwin-indexer --config indexer.toml migrate
+#   shortwin-indexer --config indexer.toml backfill
+#   shortwin-indexer --config indexer.toml live      # ingest role
+#   shortwin-indexer --config indexer.toml serve     # API role (read-only database role)
+#   shortwin-indexer --config indexer.toml rollups   # analytics job
+
+[database]
+url = "postgres://shortwin@localhost:5432/shortwin"
+max_connections = 16
+migrate_on_start = false
+
+[ingest]
+rpc_url = "http://127.0.0.1:8899"
+ws_url = "ws://127.0.0.1:8900"
+# short.win (its declare_id!). The straddle helper's `complete_curve_id` is gone with its
+# ingestion (design pump-final §9, owner decision D2): a file that still sets it fails to load.
+program_id = "5yvyAddWb8RRGh3pPiFS5eV33eZYeHVmAAfwAFmqVpKK"
+# "logs_subscribe" (JSON-RPC PubSub). "yellowstone" (§2.4) is deferred to v1.1 (INDEXER.md §14
+# IX-4) and refused at start-up.
+live_source = "logs_subscribe"
+
+[ingest.yellowstone]
+endpoint = ""
+x_token = ""
+
+[ingest.backfill]
+page_limit = 1000
+fetch_concurrency = 8
+max_rps = 20
+# until_signature = "<the deployment's first transaction>"
+
+[ingest.finality]
+poll_ms = 2000
+status_batch = 256
+
+[ingest.refresher]
+enabled = true
+market_min_interval_ms = 2000
+venue_watch_interval_s = 30
+oracle_interval_s = 30
+token_metadata = true
+
+[ingest.venue_trades]
+# Also ingest everyone's trades of listed pools (short.win's own legs are always decoded).
+third_party = false
+max_pools = 200
+
+[api]
+listen = "0.0.0.0:8080"
+cors_origins = ["*"]
+# The load balancer's (reverse proxy's) addresses or networks: X-Forwarded-For is read only from
+# them. Empty behind a balancer means every client shares the balancer's bucket (a startup
+# warning says so).
+trusted_proxies = []
+anon_rps = 20
+anon_burst = 40
+key_rps = 100
+key_burst = 200
+# IPv6 clients share a bucket per this prefix (64: one subscriber; 56 or 48: one allocation).
+ipv6_bucket_prefix = 64
+ws_max_conns_per_ip = 5
+# WebSocket connections per API process, all clients together.
+ws_max_conns_total = 10000
+ws_max_subscriptions = 50
+ws_outbound_buffer = 1000
+ws_max_inbound_per_s = 10
+ws_heartbeat_s = 20
+ws_stats_interval_s = 10
+default_page_limit = 100
+# At least 200 (the web's largest page request; the indexer refuses to start below it, INDEXER.md §9.1).
+max_page_limit = 500
+statement_timeout_ms = 2000
+request_timeout_ms = 5000
+max_concurrent_queries = 32
+
+[analytics]
+enabled = true
+rollup_interval_s = 60
+invocation_retention_days = 30

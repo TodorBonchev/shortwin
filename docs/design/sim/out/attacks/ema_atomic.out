@@ -1,0 +1,26 @@
+
+=== fresh position (60 s after open), model=atomic ===
+| market | margin M (SOL) | best push (x true price, seconds) | push cost (SOL) | final sandwich + keeper (SOL) | attacker net (SOL) | borrower loss (SOL) |
+|---|---|---|---|---|---|---|
+| A | 68.034 | not liquidatable within 60 s at any push level | | | | |
+| B | 40.075 | not liquidatable within 60 s at any push level | | | | |
+| C | 5.443 | not liquidatable within 60 s at any push level | | | | |
+| D@0% | 1.402 | not liquidatable within 60 s at any push level | | | | |
+| D@50% | 2.223 | not liquidatable within 60 s at any push level | | | | |
+| D@90% | 4.187 | not liquidatable within 60 s at any push level | | | | |
+| RA | 19.310 | not liquidatable within 60 s at any push level | | | | |
+| RB | 11.513 | not liquidatable within 60 s at any push level | | | | |
+| RC | 1.300 | not liquidatable within 60 s at any push level | | | | |
+
+=== fresh position (60 s after open), model=held ===
+| market | margin M (SOL) | best push (x true price, seconds) | push cost (SOL) | final sandwich + keeper (SOL) | attacker net (SOL) | borrower loss (SOL) |
+|---|---|---|---|---|---|---|
+| A | 68.034 | x2.5, 7 s | 146.326 | +48.454 | -97.873 | 68.034 |
+| B | 40.075 | x2.5, 9 s | 95.580 | +27.114 | -68.465 | 40.075 |
+| C | 5.443 | x3, 9 s | 14.926 | +3.458 | -11.468 | 5.443 |
+| D@0% | 1.402 | x3, 11 s | 5.951 | +0.418 | -5.533 | 1.123 |
+| D@50% | 2.223 | x3, 11 s | 9.439 | +0.663 | -8.776 | 1.781 |
+| D@90% | 4.187 | not liquidatable within 60 s at any push level | | | | |
+| RA | 19.310 | x2.5, 7 s | 33.110 | +14.879 | -18.231 | 19.310 |
+| RB | 11.513 | x2.5, 9 s | 17.215 | +9.264 | -7.952 | 11.513 |
+| RC | 1.300 | x3, 9 s | 1.705 | +1.067 | -0.637 | 1.300 |

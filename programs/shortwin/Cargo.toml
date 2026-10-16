@@ -1,0 +1,47 @@
+[package]
+name = "shortwin"
+version = "1.0.1"
+description = "short.win: permissionless P2P token lending for shorting memecoins (Anchor program)"
+edition = "2021"
+# Built by the platform-tools rustc (v1.57 = 1.95) through `anchor build` (ARCHITECTURE §1.1).
+rust-version = "1.89"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "shortwin"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+# TEST-ONLY (A49; ARCH §8.2, §9 M2): `VenueKind::Mock`, the adapter of the mock venue
+# `tests/mock_cpamm`. Built only by `scripts/build-test-venue.sh` into its own target
+# directory for the LiteSVM tests; the release artifact never enables it (CI checks the
+# release `shortwin.so` for the mock id and the test-venue marker).
+test-venue = ["shortwin-venue-state/test-venue"]
+
+[dependencies]
+# The security.txt of the release ELF (M10 SECTXT-1; `src/lib.rs`): one macro, no dependencies
+# without its `parser` feature. Exact pin: the blob layout is what Explorer parses.
+solana-security-txt = "=1.1.3"
+# event-cpi: every event goes through `emit_cpi!` (ARCH §3.10); init-if-needed: `deposit`
+# creates the LenderPosition on first use (ARCH §3.3).
+anchor-lang = { version = "=1.2.0", features = ["event-cpi", "init-if-needed"] }
+# token_interface (SPL Token + Token-2022), the ATA program, and the spl-token-2022-interface 2.x
+# parser that fails closed on unknown extensions (ARCH §1.1; R-MINT §3.3, §9.1).
+anchor-spl = { version = "=1.2.0", default-features = false, features = ["token", "token_2022", "associated_token"] }
+# `#[account(zero_copy)]` derives `::bytemuck::{Pod, Zeroable}` from the local crate.
+bytemuck = { version = "1.25", features = ["derive", "min_const_generics"] }
+# sha256 of a pending config change for `ConfigProposed` / `ConfigApplied` (ARCH §3.10).
+solana-sha256-hasher = "3"
+shortwin-math = { path = "../../crates/shortwin-math" }
+shortwin-venue-state = { path = "../../crates/shortwin-venue-state" }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

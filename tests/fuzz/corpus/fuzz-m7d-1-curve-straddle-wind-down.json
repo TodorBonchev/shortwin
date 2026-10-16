@@ -1,0 +1,18 @@
+{
+  "profile": "curve",
+  "seed": 1790845047,
+  "step": "wind-down",
+  "signature": "tests/fuzz/src/world.rs:2898 | FUZZ-ORACLE liveness (I#/I-P#, I-E#): position(s) still open after the wind-down's closes, keeper exits, deadlines, S# and two days",
+  "minimized": true,
+  "differential": true,
+  "avoid_known": true,
+  "actions": [
+    "shock 0 3869335074 3124105974",
+    "open 0 1337467494 3423205553",
+    "shock 0 2385950608 1193957893"
+  ],
+  "finding": "FUZZ-M7D-1 (the 10-minute fuzz smoke of the M7D fixes, 2026-10-01; harness, not program): on a fresh pump curve a `shock` buys up to 98 % of `rT`, a short opens (selling its `Q` into the curve), a second `shock` buys 98 % of `rT` again — now `Q > rT`, so `close_short`, `liquidate` and `expire` all refuse `CurveStraddle` (ARCH §5.1: a buy above `rT` reverts on pump). The wind-down's price restore moves the price at most 50× in one push, which left `rT` below `Q`, and its keeper had no straddle, so the position was still open after the closes, the keeper's exits, the deadlines, S3 and two days: the liveness oracle (I8 / I-P6, I-E11) fired. Replay: `shortwin-fuzz replay tests/fuzz/corpus/fuzz-m7d-1-curve-straddle-wind-down.json`.",
+  "message": "tests/fuzz/src/world.rs:2898\nFUZZ-ORACLE liveness (I8/I-P6, I-E11): position(s) still open after the wind-down's closes, keeper exits, deadlines, S3 and two days\nmarket 2rL3hRBjHEnL8JdZcz98GiuhUYmEZ7CpfrSoBkecQdGg (curve(fresh@0%)): venue Some(PumpCurve) flags 0x180 ema_warm 0 ema_guard 0 no_route_since 0 pool_fail_since 0 executable Some(true) open 1 now 1791139396\n  position 6rG4nSRgbDqsbAtXqV74roBeghJC15fnDFLL9ERj66iD#0: q 5548304051730 v 2517210128 deadline 1790953183 s_armed 0 s_count 0 s_since 0 venue_at_open 1\n    close: CurveStraddle\n    liquidate: CurveStraddle\n    expire: CurveStraddle\n    sol_settle: lands (on a clone)\n",
+  "status": "fixed",
+  "resolution": "Resolved in the fuzzer at M7D: on a market whose close refused `CurveStraddle` the wind-down completed the curve (a buy of `rT`: the straddle's first step, ARCH §5.4 — the in-house keeper's bundle, or anyone's completion) and, as for any completed curve, did not migrate it (`fuzz:wind-down-curve-completed`): the market was left `PumpMigrating` and the S3 path settled the position (`SolSettle(S3)`). The liveness oracle is unchanged. No program change. Closed by itself since pump-final (P2, the curve adapter on pump's v3): an exit of `Q > rT` completes the curve by pump's synthetic migration in its own instruction (`B̂_v3`; `CurveStraddle` is left only past what the would-be pool holds), so P7 removed the wind-down's completion step; the reproducer, kept and re-recorded for P7, now ends with the keeper's liquidation completing the curve synthetically (`liquidate:curve-differential-completes-synthetic`, `fuzz:exit-completes-curve-synthetic`; `smoke::fuzz_m7d_1_closes_by_synthetic_migration`). This file replays as a regression: the run must pass (`corpus_replays`)."
+}

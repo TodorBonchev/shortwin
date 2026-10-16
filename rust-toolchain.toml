@@ -1,0 +1,7 @@
+# Host toolchain (ARCHITECTURE §1.1). On-chain code is compiled by the platform-tools
+# rustc (v1.57 = rustc 1.95) through `anchor build`, never by this toolchain.
+[toolchain]
+channel = "1.98.1"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"

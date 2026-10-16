@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 49ce6bc54a51b96cb32b13346a026adba73a2078752e6e657d19bfc2fe98fab6 # shrinks to venue = PumpSwap(FeeBps { lp: 0, protocol: 0, creator: 0 }), x = 1000000000000, y = 12263844974696, q_bps = 1, cr_liq = 10500, head = 19823, probes = [14698708480623013144]

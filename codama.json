@@ -1,0 +1,36 @@
+{
+  "idl": "clients/js/idl/shortwin.json",
+  "before": [
+    {
+      "from": "codama#updateInstructionsVisitor",
+      "args": [
+        {
+          "syncLender": {
+            "accounts": {
+              "owner": {
+                "isSigner": "either"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "scripts": {
+    "js": {
+      "from": "@codama/renderers-js",
+      "args": [
+        ".",
+        {
+          "deleteFolderBeforeRendering": true,
+          "formatCode": true,
+          "generatedFolder": "src/generated",
+          "kitImportStrategy": "rootOnly",
+          "importExtension": "ts",
+          "erasableSyntax": true,
+          "syncPackageJson": false
+        }
+      ]
+    }
+  }
+}

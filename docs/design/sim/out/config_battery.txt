@@ -1,0 +1,4 @@
+core  : 65 runs, liquidations 43, S1 12, mean lender P&L -8.35 % of Q
+noise : 390 runs, liquidations 267, S1 72, mean lender P&L -8.27 % of Q
+grid  : 960 runs, liquidations 437, S1 523, mean lender P&L -36.22 % of Q
+aged  : 240 runs, liquidations 156, S1 84, mean lender P&L -14.88 % of Q

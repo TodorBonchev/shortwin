@@ -1,0 +1,78 @@
+battery for the scan: 695 runs per value (core, noise +-0.3/1 %, aged)
+| parameter | value | rows worse than the default (liquidation -> S1, or lender -1 % of Q) |
+|---|---|---|
+| `settle_fixed` | 0 | none |
+| `settle_bps` | 0 | none |
+| `settle_cap` | 0 | (rejected by validate_params: settle_fixed <= settle_cap) |
+| `util_kink_bps` | 0 | none |
+| `util_kink_bps` | 9500 | (rejected by validate_params: util_kink_bps <= util_cap_bps) |
+| `util_cap_bps` | 0 | (rejected by validate_params: util_kink_bps <= util_cap_bps) |
+| `util_cap_bps` | 9500 | none |
+| `curve_oi_gamma_bps` | 1000 | none |
+| `curve_oi_gamma_bps` | 9000 | none |
+| `fee_size_cap_x100` | 100 | none |
+| `fee_size_cap_x100` | 500 | none |
+| `fee_oi_cap_x100` | 300 | none |
+| `fee_oi_cap_x100` | 1000 | none |
+| `pool_lock_min_bps` | 2000 | none |
+| `pool_lock_min_bps` | 10000 | none |
+| `venue_fee_hard_cap_bps` | 300 | none |
+| `venue_fee_hard_cap_bps` | 2000 | none |
+| `fv_dev_bps` | 50 | none |
+| `fv_dev_bps` | 200 | none |
+| `liq_slow_tau_s` | 600 | none |
+| `liq_slow_tau_s` | 86400 | none |
+| `liq_slow_dtmax_s` | 1 | none |
+| `liq_slow_dtmax_s` | 600 | none |
+| `ref_max_age_s` | 1 | none |
+| `ref_max_age_s` | 3 | none |
+| `liq_persist_n` | 2 | none |
+| `settle_persist_n` | 600 | none |
+| `settle_arm_gap_s` | 2 | none |
+| `settle_arm_gap_s` | 60 | none |
+| `kappa_liq_bps` | 3000 | none |
+| `kappa_base_bps` | 1000 | none |
+| `kappa_growth_n` | 4 | none |
+| `delta_liq_bps` | 500 | none |
+| `delta_exp_bps` | 50 | none |
+| `delta_exp_bps` | 300 | (rejected by validate_params: delta_liq_bps >= delta_exp_bps) |
+| `exec_tol_bps` | 0 | none |
+| `exec_tol_bps` | 100 | none |
+| `exec_rent_tol` | 6000000 | none |
+| `exec_rent_tol` | 10000000 | none |
+| `expiry_keeper_fixed` | 0 | none |
+| `expiry_keeper_fixed` | 10000000 | none |
+| `expiry_keeper_bps` | 0 | none |
+| `expiry_keeper_bps` | 100 | none |
+| `expiry_keeper_cap` | 0 | (rejected by validate_params: expiry_keeper_fixed <= expiry_keeper_cap) |
+| `expiry_keeper_cap` | 250000000 | none |
+| `expiry_fee_bps` | 0 | none |
+| `expiry_fee_bps` | 500 | none |
+| `rent_protocol_bps` | 0 | none |
+| `rent_protocol_bps` | 3000 | none |
+| `s3_wait_s` | 86400 | none |
+| `grad_grace_s` | 86400 | none |
+| `max_migration_pause_s` | 600 | none |
+| `max_migration_pause_s` | 86400 | none |
+| `ema_dtmax_s` | 1 | none |
+| `ema_dtmax_s` | 2 | none |
+| `ema_clamp_bps` | 5000 | none |
+| `ema_clamp_bps` | 10000 | none |
+| `cr_liq_bps` | 10500 | (rejected by validate_params: tier A: cr_open >= 20,000 and cr_liq >= 12,500 (SPEC minima)) |
+| `cr_liq_bps` | 100000 | 0 liveness / 118 lender -1 %: B pump 3x/60s -> liquidation; C pump 3x/60s -> liquidation; D@0% pump 3x/60s -> liquidation (+115 more) |
+| `penalty_bps` | 0 | 0 liveness / 306 lender -1 %: A gap 2x -> liquidation; A pump 3x/60s -> liquidation; A pump 2x/20s -> liquidation (+303 more) |
+| `penalty_bps` | 2000 | none |
+| `max_liq_slip_bps` | 500 | none |
+| `max_liq_slip_bps` | 5000 | none |
+| `min_rent_s` | 0 | none |
+| `min_rent_s` | 86400 | none |
+| `impact_pos_bps` | 1000 | none |
+| `impact_mkt_bps` | 5000 | none |
+| `rate_base_bps` | 0 | 2 liveness / 2 lender -1 %: D@0% aged pump 6x/40s noise 0.3% s1 U90 -> liquidation; D@0% aged pump 6x/40s noise 0.3% s3 U90 -> S1; D@50% aged pump 6x/40s noise 0.3% s1 U90 -> liquidation (+1 more) |
+| `rate_base_bps` | 50000 | none |
+| `rate_s1_bps` | 0 | 5 liveness / 4 lender -1 %: RC drain 50%+2.0x/600s noise 0.3% s3 -> open; RC drain 50%+2.0x/120s noise 0.3% s3 -> open; D@0% aged pump 6x/40s noise 0.3% s1 U90 -> liquidation (+6 more) |
+| `rate_s1_bps` | 1000000 | none |
+| `rate_s2_bps` | 0 | 2 liveness / 32 lender -1 %: A aged pump 3x/60s noise 0.3% s1 U90 -> liquidation; A aged pump 3x/60s noise 0.3% s2 U90 -> liquidation; A aged pump 3x/60s noise 0.3% s3 U90 -> liquidation (+31 more) |
+| `rate_s2_bps` | 1000000 | none |
+| `cr_open_bps` | 0 | (rejected by validate_params: tier A: cr_open >= 20,000 and cr_liq >= 12,500 (SPEC minima)) |
+| `cr_open_bps` | 100000 | 13 liveness / 231 lender -1 %: A gap 2x -> open; A pump 3x/60s -> open; A pump 2x/20s -> open (+241 more) |

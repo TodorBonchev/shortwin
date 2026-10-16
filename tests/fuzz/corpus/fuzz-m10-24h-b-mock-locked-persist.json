@@ -1,0 +1,20 @@
+{
+  "profile": "mock",
+  "seed": 20301612,
+  "step": "wind-down",
+  "signature": "tests/fuzz/src/world.rs:4012 | FUZZ-ORACLE liveness (I#/I-P#, I-E#): position(s) still open after the wind-down's closes, keeper exits, deadlines, S# and two days",
+  "minimized": true,
+  "differential": true,
+  "avoid_known": true,
+  "actions": [
+    "ramp 0 1382191429 4188785721",
+    "config_change 0 2159129139 2265080309",
+    "keeper_seconds 0 1031901712 1945897787",
+    "open 0 180108170 635137473",
+    "config_change 0 1543631644 3111983784"
+  ],
+  "finding": "FUZZ-M10-24H-B (the final-tree 24 h run at 4f4849e, `--profile all --seed 20261004 --actions 400`, mock seed 20301612, 1 in 52,272 wind-downs; harness, not program): a `config_change` raised `settle_persist_n` to 320, a short opened and locked it (`ShortPosition::settle_persist_n`, read by `sol_settle` through `engine::arming::terms`), a second `config_change` lowered the config's to 40. In the wind-down the position stayed armed on the S1/S2 legs on the undisturbed mock (at the end, past its deadline: `close_short` InsufficientVault, `liquidate` UseSolSettle, `expire` UseLiquidate); every per-second `sol_settle` landed as a keep, but the wind-down's `persist_seconds` sized its per-second coverage from the config (40 + 30 = 70 s) and its other keeper seconds ran at most 159 in a row before a deadline or day warp broke the arm gap, so the 320 EMA updates were never reached (s_count 894 at ema_count 963: 69 updates). A real keeper keeps an armed position on the per-second cadence until it settles. Replay: `shortwin-fuzz replay tests/fuzz/corpus/fuzz-m10-24h-b-mock-locked-persist.json`; the full run: `one --profile mock --seed 20301612 --actions 400` (338 actions).",
+  "message": "tests/fuzz/src/world.rs:4012\nFUZZ-ORACLE liveness (I8/I-P6, I-E11): position(s) still open after the wind-down's closes, keeper exits, deadlines, S3 and two days\nmarket 254ubePyj3WzbAk8MTGWeWnTJgC6LMz7jxZ7uXpRyoj6 (mock(Spl, fee 10000 ppm)): venue Some(Mock) flags 0x180 ema_warm 0 ema_guard 0 no_route_since 0 pool_fail_since 0 executable Some(true) open 1 now 1790877558\n  position 7Xo5ocx79ikBMm8KjBN9YcLKPbrqHRiEEpFxhAYNBrEK#0: q 25861077665731 v 20715804735 deadline 1790691345 s_armed 1 s_count 894 s_since 1790877489 venue_at_open 6\n    close: InsufficientVault\n    liquidate: UseSolSettle\n    expire: UseLiquidate\n    sol_settle: lands (on a clone)\n",
+  "status": "fixed",
+  "resolution": "Resolved in the fuzzer, no program change: `persist_seconds` covers the largest of the config's and the open positions' locked `settle_persist_n` (+ 30 s), and `s3_cadence` likewise the largest locked `s3_wait_s + max(grad_grace_s, max_migration_pause_s)` (the same staleness, latent). The position settles in the wind-down (`SolSettle(S1)` in the full run); the liveness oracle is unchanged. This file replays as a regression: the run must pass (`corpus_replays`)."
+}

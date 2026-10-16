@@ -1,0 +1,25 @@
+R3A-2 stranded SOL after an honest wind-down (40 seeds x 3,000 ops):
+  v0.3 (surplus recycled into acc_r): inflow 51,169.3 SOL, stranded 68.121466 SOL, worst seed 15.353244, seeds > 0.01 SOL: 34
+  v0.4 (unmatched pot): inflow 50,850.3 SOL, stranded 0.000015 SOL, worst seed 0.000000, seeds > 0.01 SOL: 0
+R3B-2 v0.3: whale 9x captures 1.0943 SOL (33.5 % of lender income), honest 2.1756
+R3B-2 (a) v0.4: continuous rent, lumps vest 6 h, whale holds 0 h: whale 0.0000 SOL (0.0 %), honest 3.2699
+R3B-2 (a) v0.4: continuous rent, lumps vest 6 h, whale holds 1 h: whale 0.1824 SOL (5.6 %), honest 3.0875
+R3B-2 (a) v0.4: continuous rent, lumps vest 6 h, whale holds 3 h: whale 0.5472 SOL (16.7 %), honest 2.7228
+R3B-2 (a) v0.4: continuous rent, lumps vest 6 h, whale holds 6 h: whale 1.0943 SOL (33.5 %), honest 2.1756
+R3B-2 (a) v0.4: continuous rent, lumps vest 6 h, whale holds 24 h: whale 1.0943 SOL (33.5 %), honest 2.1756
+R3B-2 (b) owner option: all lender SOL released over 6 h, whale holds 0 h: whale 0.0000 SOL (0.0 %), honest 3.2699
+R3B-2 (b) owner option: all lender SOL released over 6 h, whale holds 1 h: whale 0.4905 SOL (15.0 %), honest 2.7794
+R3B-2 (b) owner option: all lender SOL released over 6 h, whale holds 3 h: whale 1.4715 SOL (45.0 %), honest 1.7985
+R3B-2 (b) owner option: all lender SOL released over 6 h, whale holds 6 h: whale 2.9429 SOL (90.0 %), honest 0.3270
+R3B-2 (b) owner option: all lender SOL released over 6 h, whale holds 24 h: whale 2.9429 SOL (90.0 %), honest 0.3270
+R3B-1 growing, always busy | v0.3 (PI / running minimum only) | 24 h / 7 d / 30 d / 32 d: 0% / 0% / 0% / 0%
+R3B-1 growing, always busy | v0.4 (PI + lock_until) | 24 h / 7 d / 30 d / 32 d: 0% / 0% / 0% / 100%
+R3B-1 growing, always busy | v0.4 without PI (lock_until only) | 24 h / 7 d / 30 d / 32 d: 0% / 0% / 0% / 100%
+R3B-1 interest fades (100 of 900 stays out) | v0.3 (PI / running minimum only) | 24 h / 7 d / 30 d / 32 d: 94% / 94% / 94% / 94%
+R3B-1 interest fades (100 of 900 stays out) | v0.4 (PI + lock_until) | 24 h / 7 d / 30 d / 32 d: 94% / 94% / 94% / 100%
+R3B-1 interest fades (100 of 900 stays out) | v0.4 without PI (lock_until only) | 24 h / 7 d / 30 d / 32 d: 0% / 0% / 0% / 100%
+R3B-2 post-wipe (v0.4): (4000000000, 0, 2777777, 997222222, 6, 6, True)
+R3A-10 ('v0.3', 1000000000, 0, 0)
+R3A-10 ('v0.4', 0, 0, 1000000000)
+R3B-9 ('v0.3 (global value at every accrual and at the true-up)', 75000000, 775000000, 700000000)
+R3B-9 ('v0.4 (snapshot per position)', 0, 850000000, 850000000)

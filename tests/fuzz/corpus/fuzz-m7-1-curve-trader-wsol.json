@@ -1,0 +1,17 @@
+{
+  "profile": "curve",
+  "seed": 20261063,
+  "step": 1,
+  "signature": "tests/litesvm/src/env.rs:314 | I# violated: market <key>: trader_wsol holds # lamports after a leg",
+  "minimized": true,
+  "differential": true,
+  "avoid_known": false,
+  "actions": [
+    "donate 0 1393677279 2896861536",
+    "open 0 1882242765 4057651422"
+  ],
+  "finding": "FUZZ-M7-1: a System transfer to a curve market's `trader_wsol` address (36,000,001 lamports: `donate` target 1), then an `open_short` on the pump curve: the curve leg does not normalise the `trader_wsol` address (the curve trades through ATA(trader, mint) and native lamports; `TraderAccounts::post_conditions` checks `trader_wsol` only on the WSOL venues), so the address still holds the donation after the leg and the I7 hook (ARCH §8.3 I7: `trader_wsol` closed after every leg) fails. `sweep_trader` recovers the lamports (as a lump to the lenders); no position or lender is affected. Replay: `shortwin-fuzz replay tests/fuzz/corpus/fuzz-m7-1-curve-trader-wsol.json`.",
+  "message": "tests/litesvm/src/env.rs:314\nI7 violated: market 734mkw25Fy72iU1omyWyjVrYGvZvqmZyCFQJsL1EG3Ha: trader_wsol holds 36000001 lamports after a leg\n(instruction 2 of 2)",
+  "status": "fixed",
+  "resolution": "Resolved in the M7 integration by restating I7's `trader_wsol` clause for the curve (ARCH §2.4 rule 5, §8.3 I7): a pump-curve leg never names the address (rule 2 normalises it on the WSOL venues only), so the clause there is a delta — the leg leaves its lamports unchanged, System-owned with no data — and the donation waits for `sweep_trader` or the first PumpSwap leg after the graduation. No program change. This file replays as a regression: the run must pass (`corpus_replays`); the hook's mutant test is `invariants_m2_hooks::i7_trader_wsol_on_a_curve_leg_is_a_delta`, the fork regression `pump_it::exits::a_donation_to_the_trader_wsol_address_survives_curve_legs_until_swept`."
+}

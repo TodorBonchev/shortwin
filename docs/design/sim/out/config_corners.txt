@@ -1,0 +1,2 @@
+core-box corners that pass the relational checks (tau = 5 s): 128; failing on the full battery (1655 runs each): 0
+stress corner (every scanned parameter at its liveness-adverse compiled extreme together): 0 rows worse

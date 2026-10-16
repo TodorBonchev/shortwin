@@ -1,0 +1,75 @@
+# shortwin-gov: the governance layout (M10 WP-7; ARCH §1.1 "Admin", §8.5).
+#
+# The owner's layout (owner decisions 2026-10-02, Q4):
+# - Governance: an autonomous Squads v4 multisig, 3-of-5, Squads time lock 48 h (172,800 s).
+#   Its vault 0 is `governance` and the upgrade authority of short.win; its vault 1 is
+#   `fee_recipient` (pre-funded with its rent-exempt minimum, 890,880 lamports).
+# - Emergency: an autonomous Squads v4 multisig, 2-of-4, time lock 0. Its vault 0 is
+#   `pause_authority`.
+# - `coverage_authority`: the keeper's hot key (O17).
+# - Each multisig's rent collector is its own vault 0; no spending limits; the upgrade
+#   authority moves with the checked transfer (`SetAuthorityChecked`). The four authorities are
+#   pairwise distinct (SQ-G8).
+#
+# The vault addresses are DERIVED (Squads PDAs of the multisigs, which are PDAs of the create
+# keys): they are not configurable, and `shortwin-gov verify` asserts every one of them on chain.
+#
+# This file is the EXAMPLE: every key below is a placeholder (a recognisable base58 string, no
+# one holds its secret key). `example = true` makes the tool refuse to send anything with it.
+# Copy it, put the members' real public keys and the create keys in, and drop the `example` line.
+# The file holds PUBLIC keys only; secret keys are given on the command line as file paths
+# (`--key`, `--payer`, …) and never written here.
+example = true
+
+[governance]
+# The public key of the create-key keypair `create-multisigs --gov-create-key` signs with (the
+# multisig is the Squads PDA ["multisig", "multisig", create_key]). A fresh key used once.
+create_key = "GovCreateKey1111111111111111111111111111111"
+threshold = 3
+# Seconds between the approval that reaches the threshold and the execution (Squads' cap: 90 d).
+time_lock = 172800
+members = [
+  "GovMember1111111111111111111111111111111111",
+  "GovMember2111111111111111111111111111111111",
+  "GovMember3111111111111111111111111111111111",
+  "GovMember4111111111111111111111111111111111",
+  "GovMember5111111111111111111111111111111111",
+]
+
+[emergency]
+create_key = "EmgCreateKey1111111111111111111111111111111"
+threshold = 2
+time_lock = 0
+members = [
+  "EmgMember1111111111111111111111111111111111",
+  "EmgMember2111111111111111111111111111111111",
+  "EmgMember3111111111111111111111111111111111",
+  "EmgMember4111111111111111111111111111111111",
+]
+
+[config]
+# The keeper's `coverage_authority` (O17): a hot key that can only set or clear one market's
+# coverage pause. `stage-authorities` rotates it to whatever this line says.
+coverage_authority = "CoverageKeeperHotKey11111111111111111111111"
+# short.win's own timelock on `propose_config` → `apply_config` (ARCH §3.1; 24 h – 30 d).
+timelock_s = 172800
+# Venues enabled for opens at `init-config` (pump_curve, pump_swap, raydium_v4, raydium_cpmm,
+# jupiter).
+venues = ["pump_curve", "pump_swap", "raydium_v4", "raydium_cpmm"]
+# The sponsored shard-0 SOL/USD `PriceUpdateV2` and its feed id (the program's defaults).
+pyth_sol_usd = "7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE"
+pyth_feed_id = "ef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d"
+# `VenueGuard.guard_slot`: the venue programs' ProgramData deploy slots at launch, in VenueGuard
+# order (pump, PumpSwap, pump-fees, AMM v4, CPMM, Jupiter). `init-config` reads each ProgramData
+# and refuses a slot that differs from the live one. Values read on 2026-10-02 (CPMM and Jupiter
+# were redeployed after `VENUE_GUARD_SLOTS_2026_09_27`): re-read them on the day.
+guard_slots = [449734335, 446462733, 446465969, 445763204, 452376460, 451957263]
+# The parameters, tiers, EMA and kink parameters are the program's compiled defaults (ECON §15);
+# later changes go through `propose_config` (Governance, timelocked).
+
+[upgrade]
+# The programs whose upgrade authority is Governance vault 0 (`stage-upgrade-authority`,
+# `verify`): short.win alone. The straddle helper `complete_curve` was retired before it was
+# ever deployed (design pump-final §11, owner decision D2 of 2026-10-13); a layout that still
+# names it is refused.
+programs = ["shortwin"]

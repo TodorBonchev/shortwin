@@ -1,0 +1,82 @@
+[package]
+name = "shortwin-litesvm-tests"
+version = "0.1.0"
+description = "short.win program integration tests on LiteSVM 0.16 (ARCHITECTURE §8.2, §8.3)"
+edition = "2024"
+# Host-only crate (compiled by the host toolchain). The value is LiteSVM 0.16's MSRV; resolver 3
+# then prefers dependency versions that still build there (ARCH §1.1).
+rust-version = "1.89"
+publish = false
+
+# The harness is a library (src/) so tracks share it; the tests are one binary (tests/it/), so
+# LiteSVM is linked once. The program under test is the SBF build target/deploy/shortwin.so
+# (`anchor build --tools-version v1.57 --arch v3`); the `shortwin` crate is linked on the
+# host only for its instruction and account types.
+[dependencies]
+# `test-venue` (A49): the harness speaks `VenueKind::Mock` and the mock reader; the SBF build it
+# loads for the engine tests is `scripts/build-test-venue.sh`'s (`Env::test_venue`). The host
+# feature does not reach any SBF artifact.
+shortwin = { path = "../../programs/shortwin", features = ["no-entrypoint", "test-venue"] }
+shortwin-math = { path = "../../crates/shortwin-math" }
+shortwin-venue-state = { path = "../../crates/shortwin-venue-state" }
+# The TEST-ONLY mock venue (tests/mock_cpamm, M2; A49): its id, instruction data and pool
+# layout for `src/mock.rs`; the SBF build target/deploy/mock_cpamm.so is what runs.
+mock-cpamm = { path = "../mock_cpamm", features = ["no-entrypoint"] }
+# M10 WP-7: Squads v4 encoders (crates/squads-v4-ix) for `src/squads.rs` and I4's vault path.
+squads-v4-ix = { path = "../../crates/squads-v4-ix" }
+anchor-lang = "=1.2.0"
+anchor-spl = { version = "=1.2.0", default-features = false, features = ["token", "token_2022", "associated_token"] }
+bytemuck = "1.25"
+# The lender track replays `crates/shortwin-math/tests/vectors/pool/*.json` (pool_model traces)
+# through the program (tests/lender_it/traces.rs); same version as shortwin-math's tests.
+serde_json = "1.0.151"
+
+# ARCH §1.1 pins.
+litesvm = "=0.16.0"
+litesvm-token = { version = "=0.16.0", features = ["token-2022"] }
+
+# The solana-* component crates LiteSVM 0.16 speaks (majors as it declares them).
+solana-account = "4.3"
+solana-clock = "~3.1.1"
+solana-instruction = "~3.4"
+solana-keypair = "3.1.2"
+solana-message = "4.2.4"
+solana-program-option = "3.1"
+solana-program-pack = "3.1"
+solana-rent = "~4.3"
+solana-signer = "3.0.1"
+solana-transaction = "4.1.5"
+solana-transaction-error = "~3.3.1"
+# Exact pin (R-MINT §9.1, ARCH §8.4): tests/mint_filter_extensions.rs matches exhaustively on
+# its `ExtensionType`, so a new variant must arrive by a deliberate bump and a review.
+spl-token-2022-interface = "=3.1.2"
+spl-token-interface = "3"
+
+# C1-14 (ARCH §1.1, §8.2): LiteSVM 0.16.0 declares the Agave crates as ^4.2.1 and Mollusk
+# 0.15.1 as ^4.2.0; a fresh resolve would pick 4.3.0 (MSRV 1.97.1), against which Mollusk
+# does not compile (tests/bench/cu_math). Hold the whole Agave runtime line at 4.2.x (4.2.2
+# resolved), the line the T-CU-MATH bench already runs, so both harnesses share one Agave.
+agave-feature-set = "~4.2.2"
+agave-reserved-account-keys = "~4.2.2"
+solana-bpf-loader-program = "~4.2.2"
+solana-builtins = "~4.2.2"
+solana-compute-budget = "~4.2.2"
+solana-compute-budget-instruction = "~4.2.2"
+solana-fee = "~4.2.2"
+solana-program-runtime = "~4.2.2"
+solana-runtime-transaction = "~4.2.2"
+solana-svm-callback = "~4.2.2"
+solana-svm-feature-set = "~4.2.2"
+solana-svm-log-collector = "~4.2.2"
+solana-svm-timings = "~4.2.2"
+solana-syscalls = "~4.2.2"
+solana-system-program = "~4.2.2"
+solana-transaction-context = "~4.2.2"
+
+[dev-dependencies]
+# tests/mock_cpamm.rs: the mock's execution against `quote::cpmm` on generated pools and trades.
+proptest = "1.11.0"
+
+[[test]]
+name = "it"
+path = "tests/it/main.rs"

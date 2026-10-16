@@ -1,0 +1,401 @@
+single integration after an atomic 3x bundle alone in its second: EMA +16.67% (bound +16.7% at dt=1, +28.6% at dt=2, tau=5s); with an honest observation in the same second: +0.00%
+reprice: Y/X >= P in 20,000 random states: yes
+S3 with observation-gap rule off: first S3 600 s after the first outage (route was back, unobserved, from +300 s to +420 s)
+S3 with observation-gap rule 60 s: first S3 1020 s after the first outage (route was back, unobserved, from +300 s to +420 s)
+
+### Opening CR and margin under D4
+
+| market | size | q=Q/X0 | venue fee (one way) | rho=S/B_open | CR if M = m x B_open (literal column) | table CR (enforced) | D4 margin, literal: EMA leg on EMA reserves (% of B_open) | owner option O2 (not built): EMA leg shifted by the open's own sale (% of B_open) |
+|---|---|---|---|---|---|---|---|---|
+| A | 100% of cap | 2.47% | 0.90% | 0.9821 | 1.982 | 2.00 | 111.9% | 101.8% |
+| A | 10% of cap | 0.25% | 0.90% | 0.9822 | 1.982 | 2.00 | 102.8% | 101.8% |
+| B | 100% of cap | 2.47% | 1.00% | 0.9801 | 2.480 | 2.50 | 164.6% | 152.0% |
+| B | 10% of cap | 0.25% | 1.00% | 0.9802 | 2.480 | 2.50 | 153.2% | 152.0% |
+| C | 100% of cap | 2.47% | 1.20% | 0.9762 | 2.976 | 3.00 | 217.6% | 202.4% |
+| C | 10% of cap | 0.25% | 1.20% | 0.9763 | 2.976 | 3.00 | 203.9% | 202.4% |
+| D@0% | 100% of cap | 1.49% | 1.25% | 0.9753 | 3.975 | 4.00 | 314.6% | 302.5% |
+| D@0% | 10% of cap | 0.15% | 1.25% | 0.9753 | 3.975 | 4.00 | 303.7% | 302.5% |
+| D@50% | 100% of cap | 1.49% | 1.25% | 0.9753 | 3.975 | 4.00 | 314.6% | 302.5% |
+| D@50% | 10% of cap | 0.15% | 1.25% | 0.9753 | 3.975 | 4.00 | 303.7% | 302.5% |
+| D@90% | 100% of cap | 1.49% | 1.25% | 0.9753 | 3.975 | 4.00 | 314.6% | 302.5% |
+| D@90% | 10% of cap | 0.15% | 1.25% | 0.9753 | 3.975 | 4.00 | 303.7% | 302.5% |
+| RA | 100% of cap | 0.75% | 0.25% | 0.9950 | 1.995 | 2.00 | 103.5% | 100.5% |
+| RA | 10% of cap | 0.07% | 0.25% | 0.9950 | 1.995 | 2.00 | 100.8% | 100.5% |
+| RB | 100% of cap | 0.75% | 0.25% | 0.9950 | 2.495 | 2.50 | 154.3% | 150.5% |
+| RB | 10% of cap | 0.07% | 0.25% | 0.9950 | 2.495 | 2.50 | 150.9% | 150.5% |
+| RC | 100% of cap | 0.75% | 0.25% | 0.9950 | 2.995 | 3.00 | 205.0% | 200.5% |
+| RC | 10% of cap | 0.07% | 0.25% | 0.9950 | 2.995 | 3.00 | 200.9% | 200.5% |
+
+### Example venues (6-decimal tokens) and a position at the per-position cap
+
+| market | venue | token reserve X | SOL reserve Y | mcap (SOL) | venue fee one way | max Q per position | N_open = B_open (SOL) | margin M (SOL) | vault V (SOL) | open fee (SOL) | OI cap notional (SOL) | S1-S3 keeper reward K_s (SOL) | expiry keeper reward (SOL) | ert (SOL) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| A | PumpSwap | 150.0M | 2,500.00 | 16,667 | 0.90% | 3.704M | 60.795 | 68.034 | 127.741 | 0.1520 | 168.75 | 0.2500 | 0.0500 | 0.0065 |
+| B | PumpSwap | 200.0M | 1,000.00 | 5,000 | 1.00% | 4.939M | 24.342 | 40.075 | 63.934 | 0.0609 | 75.00 | 0.2500 | 0.0253 | 0.0065 |
+| C | PumpSwap | 171.4M | 102.57 | 577 | 1.20% | 4.234M | 2.502 | 5.443 | 7.885 | 0.0063 | 8.94 | 0.0889 | 0.0035 | 0.0065 |
+| D@0% | pump curve | vt 1,073.0M / rt 793.1M | 30.00 (virtual) | 28 | 1.25% | 15.976M | 0.446 | 1.402 | 1.836 | 0.0011 | 1.40 | 0.0284 | 0.0014 | 0.0065 |
+| D@50% | pump curve | vt 676.5M / rt 396.6M | 47.59 (virtual) | 70 | 1.25% | 10.072M | 0.707 | 2.223 | 2.913 | 0.0018 | 2.21 | 0.0391 | 0.0017 | 0.0065 |
+| D@90% | pump curve | vt 359.2M / rt 79.3M | 89.61 (virtual) | 249 | 1.25% | 5.348M | 1.331 | 4.187 | 5.485 | 0.0033 | 4.17 | 0.0649 | 0.0023 | 0.0065 |
+| RA | AMMv4 | 150.0M | 2,500.00 | 16,667 | 0.25% | 1.125M | 18.654 | 19.310 | 37.870 | 0.0466 | 46.87 | 0.2500 | 0.0197 | 0.0000 |
+| RB | CPMM | 200.0M | 1,000.00 | 5,000 | 0.25% | 1.500M | 7.463 | 11.513 | 18.939 | 0.0187 | 18.75 | 0.1994 | 0.0085 | 0.0000 |
+| RC | CPMM | 206.9M | 84.99 | 411 | 0.25% | 1.551M | 0.634 | 1.300 | 1.931 | 0.0016 | 1.59 | 0.0293 | 0.0016 | 0.0000 |
+| D@97% | pump curve | vt 303.7M / rt 23.8M | 106.00 (virtual) | 349 | 1.25% | 4.522M | 1.574 | 4.953 | 6.488 | 0.0039 | 4.93 | 0.0749 | 0.0026 | 0.0065 |
+
+### Price rise to liquidation (spot multiple of post-open price, EMA assumed caught up)
+
+| market | spec (CR_open/L) | actual, tiny size, no rent | actual, size at cap, no rent | actual, size at cap, rent for max duration @80% util |
+|---|---|---|---|---|
+| A | 1.60x | 1.60x | 1.67x | 1.64x |
+| B | 1.85x | 1.85x | 1.93x | 1.90x |
+| C | 2.00x | 2.00x | 2.08x | 2.05x |
+| D@0% | 2.29x | 2.28x | 2.34x | 2.32x |
+| D@50% | 2.29x | 2.28x | 2.34x | 2.32x |
+| D@90% | 2.29x | 2.29x | 2.32x | 2.30x |
+| RA | 1.60x | 1.60x | 1.62x | 1.59x |
+| RC | 2.00x | 2.00x | 2.02x | 2.00x |
+
+### Size caps as fractions of the venue token reserve X
+
+| tier | pos. impact | max Q per position | mkt impact | max total Q (OI cap) | per-wallet (25% of OI cap) | S2 slippage | Q/X at which S2 triggers |
+|---|---|---|---|---|---|---|---|
+| A | 5% | 2.470% of X0 | 20% | 8.713% of X | 2.178% of X | 20% | 16.67% of X |
+| B | 5% | 2.470% of X0 | 20% | 8.713% of X | 2.178% of X | 20% | 16.67% of X |
+| C | 5% | 2.470% of X0 | 20% | 8.713% of X | 2.178% of X | 20% | 16.67% of X |
+| D | 3% | 1.489% of X0 | 10% | 4.654% of X | 1.163% of X | 30% | 23.08% of X |
+
+### Rent curve (APR) and rent as % of mark notional
+
+| tier | base | slope1 (per 100% U) | slope2 (per 100% U) | rate@80% | rate@90% (cap) | rate@100% | min rent @80% | max-duration rent @80% | max-duration rent @90% |
+|---|---|---|---|---|---|---|---|---|---|
+| A | 10% | 50.00% | 1000% | 50% | 150% | 250% | 0.006% | 4.11% | 12.33% |
+| B | 25% | 93.75% | 1500% | 100% | 250% | 400% | 0.011% | 3.84% | 9.59% |
+| C | 50% | 187.50% | 3000% | 200% | 500% | 800% | 0.023% | 3.84% | 9.59% |
+| D | 100% | 375.00% | 5500% | 400% | 950% | 1500% | 0.183% | 3.29% | 7.81% |
+
+### Curve round trip (C1-6) and graduation boost (C1-13)
+
+- sell 10,000,000,000,000 raw then buy it back: proceeds 462,410,820, buyback 474,117,427 lamports -> round-trip cost 2.53% of proceeds (fees only; impact cancels). Buying Q on the pre-sale state costs 485,764,634 -> 5.05% (the same-state bid/ask spread for size Q).
+
+- graduation boost: VQR = 17,584,505,348 lamports (20.69% of migrated SOL); after the zero-fee buy-and-burn the price is 1.4566x the graduation price (constant-product: (1 + 0.2069)^2 = 1.4566), independent of the migrated amount.
+
+- S2 reachability at the per-position cap (price multiple at which each first holds, live state):
+  A: S1 at x2.09, S2 at x48.0
+  C: S1 at x3.08, S2 at x48.0
+  D@0%: S1 at x3.99, S2 at never (curve completes first)
+  RA (all unlocked LP drained): S1 at x2.01, S2 at x125.9
+  RC (all unlocked LP drained): S1 at x2.96, S2 at x125.9
+
+
+### Deterministic scenarios, size at the per-position cap (event at t = 1 h after open)
+
+| market | scenario | outcome | exit vs event | price at exit / terminal | CR spot/EMA at exit | value of Q at terminal price (SOL) | borrower P&L (SOL) | lender gets | lender P&L vs holding at terminal price (SOL, % of Q value) | keeper SOL |
+|---|---|---|---|---|---|---|---|---|---|---|
+| A | gap 2x | liquidation | +10s | 2.00x / 2.00x | 1.04/1.13 | 117.601 | -68.1857 (-100% of M) | 100% + 2.5404 SOL | +2.5404 (+2.2%) | 1.5225 |
+| A | gap 5x | S1 | +47s | 5.00x / 5.00x | 0.41/0.41 | 294.004 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -166.5123 (-56.6%) | 0.2500 |
+| A | gap 10x | S1 | +47s | 10.00x / 10.00x | 0.20/0.20 | 588.007 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -460.5158 (-78.3%) | 0.2500 |
+| A | pump 10x/60s | S1 | +65s | 10.00x / 10.00x | 0.20/0.22 | 588.007 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -460.5158 (-78.3%) | 0.2500 |
+| A | pump 10x/10min | liquidation | +143s | 1.73x / 10.00x | 1.21/1.23 | 588.007 | -51.7113 (-76% of M) | 100% + 2.6515 SOL | +2.6515 (+0.5%) | 1.5891 |
+| A | pump 3x/1h | liquidation | +1691s | 1.68x / 3.00x | 1.25/1.25 | 176.402 | -48.0730 (-71% of M) | 100% + 2.5670 SOL | +2.5670 (+1.5%) | 1.5374 |
+| A | spike 10x/5s | open | +600s | 1.00x / 1.00x | 2.10/2.10 | 58.801 | -1.2391 (-2% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| A | pool disabled | open | +3600s | 1.00x / 1.00x | 0.00/2.10 | 58.801 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| A | route flagged (Emergency) + gap 2x | liquidation | +11s | 2.00x / 2.00x | 1.04/1.13 | 117.601 | -68.1857 (-100% of M) | 100% + 2.5404 SOL | +2.5404 (+2.2%) | 1.5225 |
+| A | dump -50%, close | close | +3600s | 0.50x / 0.50x | 4.23/4.22 | 29.400 | +29.3408 (+43% of M) | 100% + 0.0049 SOL | +0.0049 (+0.0%) | 0.0000 |
+| A | flat to expiry | expiry | +2592001s | 1.00x / 1.00x | 2.06/2.06 | 58.801 | -4.9219 (-7% of M) | 100% + 3.2699 SOL | +3.2699 (+5.6%) | 0.0500 |
+| B | gap 2x | liquidation | +18s | 2.00x / 2.00x | 1.30/1.32 | 47.041 | -28.8347 (-72% of M) | 100% + 1.7239 SOL | +1.7239 (+3.7%) | 1.0329 |
+| B | gap 5x | S1 | +48s | 5.00x / 5.00x | 0.51/0.51 | 117.601 | -40.1359 (-100% of M) | 0% + 63.6839 SOL | -53.9175 (-45.8%) | 0.2500 |
+| B | gap 10x | S1 | +48s | 10.00x / 10.00x | 0.25/0.25 | 235.203 | -40.1359 (-100% of M) | 0% + 63.6839 SOL | -171.5189 (-72.9%) | 0.2500 |
+| B | pump 10x/60s | S1 | +71s | 10.00x / 10.00x | 0.25/0.26 | 235.203 | -40.1359 (-100% of M) | 0% + 63.6839 SOL | -171.5189 (-72.9%) | 0.2500 |
+| B | pump 10x/10min | liquidation | +180s | 2.00x / 10.00x | 1.30/1.33 | 235.203 | -28.7071 (-72% of M) | 100% + 1.7194 SOL | +1.7194 (+0.7%) | 1.0302 |
+| B | pump 3x/1h | liquidation | +2159s | 1.93x / 3.00x | 1.35/1.35 | 70.561 | -27.0324 (-67% of M) | 100% + 1.6667 SOL | +1.6667 (+2.4%) | 0.9975 |
+| B | spike 10x/5s | open | +600s | 1.00x / 1.00x | 2.63/2.63 | 23.520 | -0.5455 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| B | pool disabled | open | +3600s | 1.00x / 1.00x | 0.00/2.63 | 23.520 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| B | route flagged (Emergency) + gap 2x | liquidation | +19s | 2.00x / 2.00x | 1.30/1.32 | 47.041 | -28.8347 (-72% of M) | 100% + 1.7239 SOL | +1.7239 (+3.7%) | 1.0329 |
+| B | dump -50%, close | close | +3600s | 0.50x / 0.50x | 5.28/5.28 | 11.760 | +11.6919 (+29% of M) | 100% + 0.0039 SOL | +0.0039 (+0.0%) | 0.0000 |
+| B | flat to expiry | expiry | +1209601s | 1.00x / 1.00x | 2.59/2.59 | 23.520 | -1.9584 (-5% of M) | 100% + 1.2537 SOL | +1.2537 (+5.3%) | 0.0253 |
+| C | gap 2x | open | +3600s | 2.00x / 2.00x | 1.56/1.56 | 4.825 | -2.6209 (-48% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| C | gap 5x | S1 | +48s | 5.00x / 5.00x | 0.61/0.61 | 12.063 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -4.2666 (-35.4%) | 0.0889 |
+| C | gap 10x | S1 | +48s | 10.00x / 10.00x | 0.30/0.30 | 24.126 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -16.3296 (-67.7%) | 0.0889 |
+| C | pump 10x/60s | liquidation | +28s | 2.93x / 10.00x | 1.06/1.31 | 24.126 | -5.4491 (-100% of M) | 100% + 0.2156 SOL | +0.2156 (+0.9%) | 0.1291 |
+| C | pump 10x/10min | liquidation | +200s | 2.15x / 10.00x | 1.45/1.48 | 24.126 | -3.4536 (-63% of M) | 100% + 0.2186 SOL | +0.2186 (+0.9%) | 0.1308 |
+| C | pump 3x/1h | liquidation | +2406s | 2.08x / 3.00x | 1.50/1.50 | 7.238 | -3.2579 (-60% of M) | 100% + 0.2118 SOL | +0.2118 (+2.9%) | 0.1265 |
+| C | spike 10x/5s | open | +600s | 1.00x / 1.00x | 3.15/3.15 | 2.413 | -0.0662 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| C | pool disabled | open | +3600s | 1.00x / 1.00x | 0.00/3.15 | 2.413 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| C | route flagged (Emergency) + gap 2x | open | +3600s | 2.00x / 2.00x | 1.56/1.56 | 4.825 | -2.6209 (-48% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| C | dump -50%, close | close | +3600s | 0.50x / 0.50x | 6.35/6.34 | 1.206 | +1.1926 (+22% of M) | 100% + 0.0008 SOL | +0.0008 (+0.1%) | 0.0000 |
+| C | flat to expiry | expiry | +604801s | 1.00x / 1.00x | 3.11/3.11 | 2.413 | -0.2118 (-4% of M) | 100% + 0.1287 SOL | +0.1287 (+5.3%) | 0.0035 |
+| D@0% | gap 2x | open | +3600s | 2.00x / 2.00x | 2.05/2.05 | 0.867 | -0.4641 (-33% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@0% | gap 5x | S1 | +51s | 5.00x / 5.00x | 0.81/0.81 | 2.168 | -1.4029 (-100% of M) | 0% + 1.8080 SOL | -0.3603 (-16.6%) | 0.0284 |
+| D@0% | gap 10x | S1 | +49s | 10.00x / 10.00x | 0.40/0.40 | 4.337 | -1.4029 (-100% of M) | 0% + 1.8080 SOL | -2.5286 (-58.3%) | 0.0284 |
+| D@0% | pump 10x/60s | liquidation | +31s | 3.29x / 10.00x | 1.24/1.53 | 4.337 | -1.1977 (-85% of M) | 100% + 0.0748 SOL | +0.0748 (+1.7%) | 0.0445 |
+| D@0% | pump 10x/10min | liquidation | +230s | 2.42x / 10.00x | 1.69/1.73 | 4.337 | -0.7621 (-54% of M) | 100% + 0.0550 SOL | +0.0550 (+1.3%) | 0.0326 |
+| D@0% | pump 3x/1h | liquidation | +2789s | 2.34x / 3.00x | 1.74/1.75 | 1.301 | -0.7246 (-52% of M) | 100% + 0.0533 SOL | +0.0533 (+4.1%) | 0.0316 |
+| D@0% | spike 10x/5s | open | +600s | 1.00x / 1.00x | 4.12/4.12 | 0.434 | -0.0129 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@0% | dump -50%, close | close | +3600s | 0.50x / 0.50x | 8.27/8.26 | 0.217 | +0.2108 (+15% of M) | 100% + 0.0007 SOL | +0.0007 (+0.3%) | 0.0000 |
+| D@0% | flat to expiry | expiry | +259201s | 1.00x / 1.00x | 4.09/4.09 | 0.434 | -0.0367 (-3% of M) | 100% + 0.0210 SOL | +0.0210 (+4.8%) | 0.0014 |
+| D@50% | gap 2x | open | +3600s | 2.00x / 2.00x | 2.05/2.05 | 1.376 | -0.7361 (-33% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@50% | gap 5x | S1 | +51s | 5.00x / 5.00x | 0.81/0.81 | 3.439 | -2.2253 (-100% of M) | 0% + 2.8738 SOL | -0.5657 (-16.4%) | 0.0391 |
+| D@50% | gap 10x | S1 | +52s | 10.00x / 10.00x | 0.39/0.39 | 6.879 | -2.2253 (-100% of M) | 0% + 2.8738 SOL | -4.0051 (-58.2%) | 0.0391 |
+| D@50% | pump 10x/60s | liquidation | +31s | 3.29x / 10.00x | 1.24/1.53 | 6.879 | -1.8999 (-85% of M) | 100% + 0.1186 SOL | +0.1186 (+1.7%) | 0.0705 |
+| D@50% | pump 10x/10min | liquidation | +230s | 2.42x / 10.00x | 1.69/1.73 | 6.879 | -1.2088 (-54% of M) | 100% + 0.0872 SOL | +0.0872 (+1.3%) | 0.0517 |
+| D@50% | pump 3x/1h | liquidation | +2789s | 2.34x / 3.00x | 1.74/1.75 | 2.064 | -1.1494 (-52% of M) | 100% + 0.0845 SOL | +0.0845 (+4.1%) | 0.0501 |
+| D@50% | spike 10x/5s | open | +600s | 1.00x / 1.00x | 4.10/4.10 | 0.688 | -0.0242 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@50% | dump -50%, close | close | +3600s | 0.50x / 0.50x | 8.27/8.26 | 0.344 | +0.3344 (+15% of M) | 100% + 0.0011 SOL | +0.0011 (+0.3%) | 0.0000 |
+| D@50% | flat to expiry | expiry | +259201s | 1.00x / 1.00x | 4.09/4.09 | 0.688 | -0.0577 (-3% of M) | 100% + 0.0334 SOL | +0.0334 (+4.8%) | 0.0017 |
+| D@90% | gap 2x | open | +3600s | 2.00x / 2.00x | 2.03/2.03 | 2.591 | -1.4051 (-34% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@90% | gap 5x | S1 | +52s | 5.00x / 5.00x | 0.80/0.80 | 6.477 | -4.1905 (-100% of M) | 0% + 5.4206 SOL | -1.0564 (-16.3%) | 0.0649 |
+| D@90% | gap 10x | S1 | +52s | 10.00x / 10.00x | 0.39/0.39 | 12.954 | -4.1905 (-100% of M) | 0% + 5.4206 SOL | -7.5334 (-58.2%) | 0.0649 |
+| D@90% | pump 10x/60s | liquidation | +32s | 3.41x / 10.00x | 1.18/1.49 | 12.954 | -3.8167 (-91% of M) | 100% + 0.2332 SOL | +0.2332 (+1.8%) | 0.1387 |
+| D@90% | pump 10x/10min | liquidation | +228s | 2.40x / 10.00x | 1.69/1.73 | 12.954 | -2.2762 (-54% of M) | 100% + 0.1642 SOL | +0.1642 (+1.3%) | 0.0973 |
+| D@90% | pump 3x/1h | liquidation | +2764s | 2.32x / 3.00x | 1.74/1.75 | 3.886 | -2.1641 (-52% of M) | 100% + 0.1592 SOL | +0.1592 (+4.1%) | 0.0943 |
+| D@90% | spike 10x/5s | open | +600s | 1.00x / 1.00x | 4.10/4.10 | 1.295 | -0.0456 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@90% | dump -50%, close | close | +3600s | 0.50x / 0.50x | 8.27/8.26 | 0.648 | +0.6298 (+15% of M) | 100% + 0.0021 SOL | +0.0021 (+0.3%) | 0.0000 |
+| D@90% | flat to expiry | expiry | +259201s | 1.00x / 1.00x | 4.09/4.09 | 1.295 | -0.1077 (-3% of M) | 100% + 0.0628 SOL | +0.0628 (+4.8%) | 0.0023 |
+| RA | gap 2x | liquidation | +9s | 2.00x / 2.00x | 1.01/1.12 | 36.937 | -19.3565 (-100% of M) | 100% + 0.2238 SOL | +0.2238 (+0.6%) | 0.1337 |
+| RA | gap 5x | S1 | +47s | 5.00x / 5.00x | 0.40/0.40 | 92.343 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -54.7227 (-59.3%) | 0.2500 |
+| RA | gap 10x | S1 | +47s | 10.00x / 10.00x | 0.20/0.20 | 184.686 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -147.0658 (-79.6%) | 0.2500 |
+| RA | pump 10x/60s | S1 | +64s | 10.00x / 10.00x | 0.20/0.22 | 184.686 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -147.0658 (-79.6%) | 0.2500 |
+| RA | pump 10x/10min | liquidation | +135s | 1.68x / 10.00x | 1.21/1.23 | 184.686 | -14.4417 (-75% of M) | 100% + 0.7854 SOL | +0.7854 (+0.4%) | 0.4707 |
+| RA | pump 3x/1h | liquidation | +1592s | 1.63x / 3.00x | 1.25/1.25 | 55.406 | -13.3916 (-69% of M) | 100% + 0.7610 SOL | +0.7610 (+1.4%) | 0.4558 |
+| RA | spike 10x/5s | open | +600s | 1.00x / 1.00x | 2.03/2.03 | 18.469 | -0.1409 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RA | drain all unlocked LP (50%) | open | +600s | 1.00x / 1.00x | 2.01/2.01 | 18.469 | -0.2820 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RA | drain 50% + x1.5 | open | +600s | 1.50x / 1.50x | 1.34/1.34 | 27.703 | -9.7754 (-51% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RA | drain 50% + pump 2x/120s | liquidation | +151s | 1.69x / 2.00x | 1.19/1.23 | 36.937 | -15.0201 (-78% of M) | 100% + 0.7989 SOL | +0.7989 (+2.2%) | 0.4788 |
+| RA | pool disabled | open | +3600s | 1.00x / 1.00x | 0.00/2.03 | 18.469 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RA | route flagged (Emergency) + gap 2x | liquidation | +10s | 2.00x / 2.00x | 1.01/1.12 | 36.937 | -19.3565 (-100% of M) | 100% + 0.2238 SOL | +0.2238 (+0.6%) | 0.1337 |
+| RA | dump -50%, close | close | +3600s | 0.50x / 0.50x | 4.07/4.06 | 9.234 | +9.2057 (+48% of M) | 100% + 0.0015 SOL | +0.0015 (+0.0%) | 0.0000 |
+| RA | flat to expiry | expiry | +2592001s | 1.00x / 1.00x | 1.99/1.99 | 18.469 | -1.2915 (-7% of M) | 100% + 1.0182 SOL | +1.0182 (+5.5%) | 0.0197 |
+| RB | gap 2x | liquidation | +15s | 2.00x / 2.00x | 1.26/1.31 | 14.778 | -8.6143 (-75% of M) | 100% + 0.5248 SOL | +0.5248 (+3.6%) | 0.3144 |
+| RB | gap 5x | S1 | +48s | 5.00x / 5.00x | 0.50/0.50 | 36.945 | -11.5320 (-100% of M) | 0% + 18.7396 SOL | -18.2049 (-49.3%) | 0.1994 |
+| RB | gap 10x | S1 | +48s | 10.00x / 10.00x | 0.25/0.25 | 73.889 | -11.5320 (-100% of M) | 0% + 18.7396 SOL | -55.1495 (-74.6%) | 0.1994 |
+| RB | pump 10x/60s | S1 | +70s | 10.00x / 10.00x | 0.25/0.26 | 73.889 | -11.5320 (-100% of M) | 0% + 18.7396 SOL | -55.1495 (-74.6%) | 0.1994 |
+| RB | pump 10x/10min | liquidation | +173s | 1.94x / 10.00x | 1.30/1.33 | 73.889 | -8.1502 (-71% of M) | 100% + 0.5095 SOL | +0.5095 (+0.7%) | 0.3052 |
+| RB | pump 3x/1h | liquidation | +2068s | 1.88x / 3.00x | 1.35/1.35 | 22.167 | -7.6461 (-66% of M) | 100% + 0.4936 SOL | +0.4936 (+2.2%) | 0.2954 |
+| RB | spike 10x/5s | open | +600s | 1.00x / 1.00x | 2.54/2.54 | 7.389 | -0.0569 (-0% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RB | drain all unlocked LP (50%) | open | +600s | 1.00x / 1.00x | 2.52/2.52 | 7.389 | -0.1133 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RB | drain 50% + x1.5 | open | +600s | 1.50x / 1.50x | 1.67/1.67 | 11.083 | -3.9115 (-34% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RB | drain 50% + pump 2x/120s | liquidation | +176s | 1.95x / 2.00x | 1.28/1.33 | 14.778 | -8.4124 (-73% of M) | 100% + 0.5179 SOL | +0.5179 (+3.5%) | 0.3103 |
+| RB | pool disabled | open | +3600s | 1.00x / 1.00x | 0.00/2.54 | 7.389 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RB | route flagged (Emergency) + gap 2x | liquidation | +16s | 2.00x / 2.00x | 1.26/1.31 | 14.778 | -8.6143 (-75% of M) | 100% + 0.5248 SOL | +0.5248 (+3.6%) | 0.3144 |
+| RB | dump -50%, close | close | +3600s | 0.50x / 0.50x | 5.09/5.08 | 3.694 | +3.6823 (+32% of M) | 100% + 0.0012 SOL | +0.0012 (+0.0%) | 0.0000 |
+| RB | flat to expiry | expiry | +1209601s | 1.00x / 1.00x | 2.50/2.50 | 7.389 | -0.4971 (-4% of M) | 100% + 0.3902 SOL | +0.3902 (+5.3%) | 0.0085 |
+| RC | gap 2x | open | +3600s | 2.00x / 2.00x | 1.52/1.52 | 1.256 | -0.6433 (-49% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | gap 5x | S1 | +48s | 5.00x / 5.00x | 0.60/0.60 | 3.139 | -1.3018 (-100% of M) | 0% + 1.9019 SOL | -1.2374 (-39.4%) | 0.0293 |
+| RC | gap 10x | S1 | +48s | 10.00x / 10.00x | 0.30/0.30 | 6.279 | -1.3018 (-100% of M) | 0% + 1.9019 SOL | -4.3767 (-69.7%) | 0.0293 |
+| RC | pump 10x/60s | liquidation | +27s | 2.82x / 10.00x | 1.07/1.33 | 6.279 | -1.3018 (-100% of M) | 100% + 0.0674 SOL | +0.0674 (+1.1%) | 0.0404 |
+| RC | pump 10x/10min | liquidation | +193s | 2.10x / 10.00x | 1.45/1.48 | 6.279 | -0.8120 (-62% of M) | 100% + 0.0535 SOL | +0.0535 (+0.9%) | 0.0320 |
+| RC | pump 3x/1h | liquidation | +2319s | 2.03x / 3.00x | 1.50/1.50 | 1.884 | -0.7651 (-59% of M) | 100% + 0.0519 SOL | +0.0519 (+2.8%) | 0.0310 |
+| RC | spike 10x/5s | open | +600s | 1.00x / 1.00x | 3.04/3.04 | 0.628 | -0.0049 (-0% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | drain all unlocked LP (50%) | open | +600s | 1.00x / 1.00x | 3.02/3.02 | 0.628 | -0.0097 (-1% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | drain 50% + x1.5 | open | +600s | 1.50x / 1.50x | 2.01/2.01 | 0.942 | -0.3325 (-26% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | drain 50% + pump 2x/120s | open | +900s | 2.00x / 2.00x | 1.50/1.50 | 1.256 | -0.6567 (-51% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | pool disabled | open | +3600s | 1.00x / 1.00x | 0.00/3.04 | 0.628 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | route flagged (Emergency) + gap 2x | open | +3600s | 2.00x / 2.00x | 1.52/1.52 | 1.256 | -0.6433 (-49% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | dump -50%, close | close | +3600s | 0.50x / 0.50x | 6.10/6.10 | 0.314 | +0.3128 (+24% of M) | 100% + 0.0002 SOL | +0.0002 (+0.1%) | 0.0000 |
+| RC | flat to expiry | expiry | +604801s | 1.00x / 1.00x | 3.01/3.01 | 0.628 | -0.0432 (-3% of M) | 100% + 0.0332 SOL | +0.0332 (+5.3%) | 0.0016 |
+
+### Raydium incumbent halted, fast-path switch to a thinner pool (R3B-7a; ring L rewritten; #99: only onto a pool on which the position fits the opening caps -- 'open' at 1.00x = no window, frozen on the halted pool)
+
+| market | scenario | outcome | exit vs event | price at exit / terminal | CR spot/EMA at exit | value of Q at terminal price (SOL) | borrower P&L (SOL) | lender gets | lender P&L vs holding at terminal price (SOL, % of Q value) | keeper SOL |
+|---|---|---|---|---|---|---|---|---|---|---|
+| RA | halt -> fast path to a 50% pool, then pump 2x/120s | open | +1500s | 1.00x / 2.00x | 0.00/2.03 | 36.937 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RA | halt -> fast path to a 120% pool, then pump 2x/120s | liquidation | +393s | 1.71x / 2.00x | 1.19/1.23 | 36.937 | -15.0253 (-78% of M) | 100% + 0.7991 SOL | +0.7991 (+2.2%) | 0.4789 |
+| RA | halt -> fast path to a 25% pool, then pump 2x/120s | open | +1500s | 1.00x / 2.00x | 0.00/2.03 | 36.937 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RB | halt -> fast path to a 50% pool, then pump 2x/120s | open | +1500s | 1.00x / 2.00x | 0.00/2.54 | 14.778 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RB | halt -> fast path to a 120% pool, then pump 2x/120s | liquidation | +418s | 1.98x / 2.00x | 1.28/1.33 | 14.778 | -8.4011 (-73% of M) | 100% + 0.5176 SOL | +0.5176 (+3.5%) | 0.3101 |
+| RB | halt -> fast path to a 25% pool, then pump 2x/120s | open | +1500s | 1.00x / 2.00x | 0.00/2.54 | 14.778 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | halt -> fast path to a 50% pool, then pump 2x/120s | open | +1500s | 1.00x / 2.00x | 0.00/3.04 | 1.256 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | halt -> fast path to a 120% pool, then pump 2x/120s | open | +1500s | 2.00x / 2.00x | 1.52/1.52 | 1.256 | -0.6409 (-49% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| RC | halt -> fast path to a 25% pool, then pump 2x/120s | open | +1500s | 1.00x / 2.00x | 0.00/3.04 | 1.256 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+
+#### #99: the positions no candidate fits, continued to their deadline (keeper crank every 30 s on the halted pool; S3 at fair value, the box at the EMA point)
+
+| market | scenario | exit | at (after the halt) | lender gets (SOL) | value of Q at the frozen P_ema (SOL) | lender P&L vs the frozen P_ema | lender P&L vs the terminal price (2.00x) | borrower (SOL) | keeper (SOL) |
+|---|---|---|---|---|---|---|---|---|---|
+| RA | halt -> fast path to a 50% pool, then pump 2x/120s | S3 | +29.96 d (deadline +29.96 d) | 19.7858 | 18.4686 | +1.3172 (+7.1%) | -17.1514 (-46.4%) | 17.8346 | 0.2500 |
+| RA | halt -> fast path to a 25% pool, then pump 2x/120s | S3 | +29.96 d (deadline +29.96 d) | 19.7858 | 18.4686 | +1.3172 (+7.1%) | -17.1514 (-46.4%) | 17.8346 | 0.2500 |
+| RB | halt -> fast path to a 50% pool, then pump 2x/120s | S3 | +13.96 d (deadline +13.96 d) | 7.8957 | 7.3889 | +0.5067 (+6.9%) | -6.8822 (-46.6%) | 10.8440 | 0.1994 |
+| RB | halt -> fast path to a 25% pool, then pump 2x/120s | S3 | +13.96 d (deadline +13.96 d) | 7.8957 | 7.3889 | +0.5067 (+6.9%) | -6.8822 (-46.6%) | 10.8440 | 0.1994 |
+| RC | halt -> fast path to a 50% pool, then pump 2x/120s | S3 | +6.96 d (deadline +6.96 d) | 0.6709 | 0.6279 | +0.0431 (+6.9%) | -0.5848 (-46.6%) | 1.2309 | 0.0293 |
+| RC | halt -> fast path to a 25% pool, then pump 2x/120s | S3 | +6.96 d (deadline +6.96 d) | 0.6709 | 0.6279 | +0.0431 (+6.9%) | -0.5848 (-46.6%) | 1.2309 | 0.0293 |
+
+### Graduation mid-position (Tier D; event at t = 1 h; migration 2 s after completion; boost 20.69 % spent over 6 min)
+
+| market | scenario | outcome | exit vs event | price at exit / terminal | CR spot/EMA at exit | value of Q at terminal price (SOL) | borrower P&L (SOL) | lender gets | lender P&L vs holding at terminal price (SOL, % of Q value) | keeper SOL |
+|---|---|---|---|---|---|---|---|---|---|---|
+| D@50% | graduation gap (1 buy completes curve) | S1 | +52s | 6.39x / 6.39x | 0.62/0.63 | 4.398 | -2.2253 (-100% of M) | 0% + 2.8738 SOL | -1.5243 (-34.7%) | 0.0391 |
+| D@50% | graduation, then +2x on AMM over 60s | S1 | +52s | 8.33x / 8.33x | 0.47/0.51 | 5.729 | -2.2253 (-100% of M) | 0% + 2.8738 SOL | -2.8548 (-49.8%) | 0.0391 |
+| D@50% | graduation, then +3x on AMM over 60s | S1 | +52s | 9.72x / 9.72x | 0.40/0.45 | 6.687 | -2.2253 (-100% of M) | 0% + 2.8738 SOL | -3.8131 (-57.0%) | 0.0391 |
+| D@50% | graduation, migration stuck | S3 | +4200s | 6.02x / 6.02x | 0.00/0.66 | 4.138 | -2.2253 (-100% of M) | 0% + 2.8738 SOL | -1.2645 (-30.6%) | 0.0391 |
+| D@80% | graduation gap (1 buy completes curve) | liquidation | +12s | 2.58x / 2.58x | 1.57/1.58 | 2.738 | -2.0880 (-61% of M) | 100% + 0.1434 SOL | +0.1434 (+5.2%) | 0.0850 |
+| D@80% | graduation, then +2x on AMM over 60s | liquidation | +12s | 2.58x / 2.58x | 1.57/1.58 | 2.738 | -2.0880 (-61% of M) | 100% + 0.1434 SOL | +0.1434 (+5.2%) | 0.0850 |
+| D@80% | graduation, then +3x on AMM over 60s | liquidation | +12s | 2.58x / 2.58x | 1.57/1.58 | 2.738 | -2.0880 (-61% of M) | 100% + 0.1434 SOL | +0.1434 (+5.2%) | 0.0850 |
+| D@80% | graduation, migration stuck | S3 | +4200s | 2.53x / 2.53x | 0.00/1.60 | 2.683 | -2.0814 (-61% of M) | 0% + 3.0872 SOL | +0.4045 (+15.1%) | 0.0549 |
+| D@90% | graduation gap (1 buy completes curve) | liquidation | +302s | 2.34x / 2.34x | 1.73/1.74 | 3.038 | -2.1951 (-52% of M) | 100% + 0.1606 SOL | +0.1606 (+5.3%) | 0.0951 |
+| D@90% | graduation, then +2x on AMM over 60s | liquidation | +60s | 2.60x / 2.60x | 1.56/1.68 | 3.365 | -2.5777 (-62% of M) | 100% + 0.1780 SOL | +0.1780 (+5.3%) | 0.1056 |
+| D@90% | graduation, then +3x on AMM over 60s | liquidation | +52s | 2.74x / 2.74x | 1.48/1.65 | 3.551 | -2.7946 (-67% of M) | 100% + 0.1878 SOL | +0.1878 (+5.3%) | 0.1115 |
+| D@90% | graduation, migration stuck | open | +10800s | 1.70x / 1.70x | 0.00/2.40 | 2.198 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@97% | graduation gap (1 buy completes curve) | open | +1800s | 1.77x / 1.77x | 2.31/2.31 | 2.706 | -1.2834 (-26% of M) | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+| D@97% | graduation, then +2x on AMM over 60s | liquidation | +87s | 2.60x / 2.60x | 1.56/1.68 | 3.978 | -3.0457 (-61% of M) | 100% + 0.2104 SOL | +0.2104 (+5.3%) | 0.1248 |
+| D@97% | graduation, then +3x on AMM over 60s | liquidation | +70s | 2.77x / 2.77x | 1.46/1.63 | 4.238 | -3.3499 (-68% of M) | 100% + 0.2242 SOL | +0.2242 (+5.3%) | 0.1331 |
+| D@97% | graduation, migration stuck | open | +10800s | 1.21x / 1.21x | 0.00/3.37 | 1.858 | - | 100% + 0.0000 SOL | +0.0000 (+0.0%) | 0.0000 |
+
+### Buyback larger than remaining real_token_reserves (Tier D opened at 97% progress)
+
+| policy | scenario | outcome | exit vs event | price at exit | buyback cost (SOL) | B_open (SOL) | borrower P&L (SOL) |
+|---|---|---|---|---|---|---|---|
+| synthetic v3 (one transaction) | rt -> Q/2, borrower closes 30s later | close | +30s | 1.193x | 1.8837 | 1.5745 | -0.3550 |
+| synthetic v3 (one transaction) | rt -> Q/2, then others complete curve at +10min, close after | close | +30s | 1.193x | 1.8837 | 1.5745 | -0.3550 |
+| straddle quote B_str (bundle path, retired) | rt -> Q/2, borrower closes 30s later | close | +30s | 1.193x | 1.9227 | 1.5745 | -0.3939 |
+| straddle quote B_str (bundle path, retired) | rt -> Q/2, then others complete curve at +10min, close after | close | +30s | 1.193x | 1.9227 | 1.5745 | -0.3939 |
+| no straddle quote | rt -> Q/2, borrower closes 30s later | S1 | +56s | 1.193x | 0.0000 | 1.5745 | -4.9566 |
+| no straddle quote | rt -> Q/2, then others complete curve at +10min, close after | S1 | +56s | 1.193x | 0.0000 | 1.5745 | -4.9566 |
+
+### SOL settlements: S1 uncapped (SPEC), S2/S3 fair-value cap (D3)
+
+| market | who exits (Emergency flag set, position expires) | outcome | V - K_s (SOL) | FV (SOL) | lenders get (SOL) | tokens returned | borrower gets (SOL) | keeper (SOL) |
+|---|---|---|---|---|---|---|---|---|
+| A | honest keeper: expire() | expiry | 127.4912 | - | 1.2216 | 100% | 65.6736 | 0.0500 |
+| A | lender-keeper: sol_settle(S3), FV with the expiry fee (default) | S3 | 127.4912 | 62.0177 | 62.0177 | 0% | 65.4736 | 0.2500 |
+| A | lender-keeper: sol_settle(S3), FV with the tier penalty (R3A-8a reading) | S3 | 127.4912 | 63.8415 | 63.8415 | 0% | 63.6497 | 0.2500 |
+| RA | honest keeper: expire() | expiry | 37.6204 | - | 0.3749 | 100% | 18.8219 | 0.0197 |
+| RA | lender-keeper: sol_settle(S3), FV with the expiry fee (default) | S3 | 37.6204 | 19.0289 | 19.0289 | 0% | 18.5915 | 0.2500 |
+| RA | lender-keeper: sol_settle(S3), FV with the tier penalty (R3A-8a reading) | S3 | 37.6204 | 19.5885 | 19.5885 | 0% | 18.0319 | 0.2500 |
+| C | honest keeper: expire() | expiry | 7.7963 | - | 0.0510 | 100% | 5.3287 | 0.0035 |
+| C | lender-keeper: sol_settle(S3), FV with the expiry fee (default) | S3 | 7.7963 | 2.5530 | 2.5530 | 0% | 5.2434 | 0.0889 |
+| C | lender-keeper: sol_settle(S3), FV with the tier penalty (R3A-8a reading) | S3 | 7.7963 | 2.7031 | 2.7031 | 0% | 5.0933 | 0.0889 |
+| D@0% | honest keeper: expire() | expiry | 1.8080 | - | 0.0096 | 100% | 1.3796 | 0.0014 |
+| D@0% | lender-keeper: sol_settle(S3), FV with the expiry fee (default) | S3 | 1.8080 | 0.4554 | 0.4554 | 0% | 1.3527 | 0.0284 |
+| D@0% | lender-keeper: sol_settle(S3), FV with the tier penalty (R3A-8a reading) | S3 | 1.8080 | 0.4910 | 0.4910 | 0% | 1.3170 | 0.0284 |
+
+| market | scenario | outcome | price at exit | V - K_s (SOL) | FV (SOL) | lender SOL | spot value of Q (SOL) | lender P&L vs holding | borrower P&L |
+|---|---|---|---|---|---|---|---|---|---|
+| D@80% | graduation, migration stuck | S3 | 2.53x | 4.4384 | 3.0872 | 3.0872 | 2.6827 | +15.1% | -2.0814 (-61% of M) |
+| A | gap 10x | S1 | 10.00x | 127.4912 | - | 127.4912 | 588.0071 | -78.3% | -68.1857 (-100% of M) |
+| D@0% | gap 10x | S1 | 10.00x | 1.8080 | - | 1.8080 | 4.3366 | -58.3% | -1.4029 (-100% of M) |
+| RA | pool disabled | open | 1.00x | 37.6204 | - | 0.0000 | 18.4686 | +0.0% | - |
+
+### Keeper latency sensitivity (size at cap; 'pump 10x/60s' and 'gap 5x')
+
+| keeper latency | market | scenario | outcome | exit vs event | price at exit / terminal | CR spot/EMA at exit | value of Q at terminal price (SOL) | borrower P&L (SOL) | lender gets | lender P&L vs holding at terminal price (SOL, % of Q value) | keeper SOL |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1s | A | gap 5x | S1 | +47s | 5.00x / 5.00x | 0.41/0.41 | 294.004 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -166.5123 (-56.6%) | 0.2500 |
+| 1s | A | pump 10x/60s | S1 | +65s | 10.00x / 10.00x | 0.20/0.22 | 588.007 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -460.5158 (-78.3%) | 0.2500 |
+| 1s | C | gap 5x | S1 | +48s | 5.00x / 5.00x | 0.61/0.61 | 12.063 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -4.2666 (-35.4%) | 0.0889 |
+| 1s | C | pump 10x/60s | liquidation | +28s | 2.93x / 10.00x | 1.06/1.31 | 24.126 | -5.4491 (-100% of M) | 100% + 0.2156 SOL | +0.2156 (+0.9%) | 0.1291 |
+| 1s | D@0% | gap 5x | S1 | +51s | 5.00x / 5.00x | 0.81/0.81 | 2.168 | -1.4029 (-100% of M) | 0% + 1.8080 SOL | -0.3603 (-16.6%) | 0.0284 |
+| 1s | D@0% | pump 10x/60s | liquidation | +31s | 3.29x / 10.00x | 1.24/1.53 | 4.337 | -1.1977 (-85% of M) | 100% + 0.0748 SOL | +0.0748 (+1.7%) | 0.0445 |
+| 1s | RA | gap 5x | S1 | +47s | 5.00x / 5.00x | 0.40/0.40 | 92.343 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -54.7227 (-59.3%) | 0.2500 |
+| 1s | RA | pump 10x/60s | S1 | +64s | 10.00x / 10.00x | 0.20/0.22 | 184.686 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -147.0658 (-79.6%) | 0.2500 |
+| 5s | A | gap 5x | S1 | +51s | 5.00x / 5.00x | 0.41/0.41 | 294.004 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -166.5123 (-56.6%) | 0.2500 |
+| 5s | A | pump 10x/60s | S1 | +66s | 10.00x / 10.00x | 0.20/0.21 | 588.007 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -460.5158 (-78.3%) | 0.2500 |
+| 5s | C | gap 5x | S1 | +52s | 5.00x / 5.00x | 0.61/0.61 | 12.063 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -4.2666 (-35.4%) | 0.0889 |
+| 5s | C | pump 10x/60s | S1 | +75s | 10.00x / 10.00x | 0.30/0.30 | 24.126 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -16.3296 (-67.7%) | 0.0889 |
+| 5s | D@0% | gap 5x | S1 | +53s | 5.00x / 5.00x | 0.81/0.81 | 2.168 | -1.4029 (-100% of M) | 0% + 1.8080 SOL | -0.3603 (-16.6%) | 0.0284 |
+| 5s | D@0% | pump 10x/60s | liquidation | +35s | 3.83x / 10.00x | 1.06/1.31 | 4.337 | -1.4029 (-100% of M) | 100% + 0.0525 SOL | +0.0525 (+1.2%) | 0.0311 |
+| 5s | RA | gap 5x | S1 | +51s | 5.00x / 5.00x | 0.40/0.40 | 92.343 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -54.7227 (-59.3%) | 0.2500 |
+| 5s | RA | pump 10x/60s | S1 | +65s | 10.00x / 10.00x | 0.20/0.22 | 184.686 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -147.0658 (-79.6%) | 0.2500 |
+| 30s | A | gap 5x | S1 | +76s | 5.00x / 5.00x | 0.41/0.41 | 294.004 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -166.5123 (-56.6%) | 0.2500 |
+| 30s | A | pump 10x/60s | S1 | +91s | 10.00x / 10.00x | 0.20/0.20 | 588.007 | -68.1857 (-100% of M) | 0% + 127.4912 SOL | -460.5158 (-78.3%) | 0.2500 |
+| 30s | C | gap 5x | S1 | +77s | 5.00x / 5.00x | 0.61/0.61 | 12.063 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -4.2666 (-35.4%) | 0.0889 |
+| 30s | C | pump 10x/60s | S1 | +97s | 10.00x / 10.00x | 0.30/0.30 | 24.126 | -5.4491 (-100% of M) | 0% + 7.7963 SOL | -16.3296 (-67.7%) | 0.0889 |
+| 30s | D@0% | gap 5x | S1 | +78s | 5.00x / 5.00x | 0.81/0.81 | 2.168 | -1.4029 (-100% of M) | 0% + 1.8080 SOL | -0.3603 (-16.6%) | 0.0284 |
+| 30s | D@0% | pump 10x/60s | S1 | +100s | 10.00x / 10.00x | 0.40/0.40 | 4.337 | -1.4029 (-100% of M) | 0% + 1.8080 SOL | -2.5286 (-58.3%) | 0.0284 |
+| 30s | RA | gap 5x | S1 | +76s | 5.00x / 5.00x | 0.40/0.40 | 92.343 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -54.7227 (-59.3%) | 0.2500 |
+| 30s | RA | pump 10x/60s | S1 | +90s | 10.00x / 10.00x | 0.20/0.20 | 184.686 | -19.3565 (-100% of M) | 0% + 37.6204 SOL | -147.0658 (-79.6%) | 0.2500 |
+
+### Exit bounds and persistence vs genuine fast moves (size at cap, keeper latency 1 s)
+
+| market | setting | pump 10x/60s | pump 10x/3min | pump 10x/10min | gap 5x |
+|---|---|---|---|---|---|
+| A | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | no liquidation persistence (1 update) | S1 @10.00x +65s, lender -78% | liqu @1.82x +47s, lender +0% | liqu @1.72x +141s, lender +0% | S1 @5.00x +45s, lender -57% |
+| A | persistence 5 updates (above the compiled maximum) | S1 @10.00x +65s, lender -78% | liqu @1.92x +51s, lender +1% | liqu @1.74x +145s, lender +0% | S1 @5.00x +49s, lender -57% |
+| A | fixed delta 1 % (below the compiled minimum) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +65s, lender -78% | liqu @1.87x +49s, lender +0% | liqu @1.73x +143s, lender +0% | S1 @5.00x +47s, lender -57% |
+| A | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +67s, lender -78% | liqu @1.94x +52s, lender +1% | liqu @1.75x +146s, lender +0% | S1 @5.00x +48s, lender -57% |
+| A | tau 10 s (v0.1 value) | S1 @10.00x +69s, lender -78% | liqu @2.00x +54s, lender +0% | liqu @1.76x +148s, lender +0% | S1 @5.00x +49s, lender -57% |
+| C | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | liqu @2.93x +28s, lender +1% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | no liquidation persistence (1 update) | liqu @2.71x +26s, lender +1% | liqu @2.27x +64s, lender +1% | liqu @2.14x +198s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | persistence 5 updates (above the compiled maximum) | S1 @10.00x +75s, lender -68% | liqu @2.39x +68s, lender +1% | liqu @2.17x +202s, lender +1% | S1 @5.00x +50s, lender -35% |
+| C | fixed delta 1 % (below the compiled minimum) | liqu @2.93x +28s, lender +1% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +75s, lender -68% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +75s, lender -68% | liqu @2.33x +66s, lender +1% | liqu @2.15x +200s, lender +1% | S1 @5.00x +48s, lender -35% |
+| C | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +77s, lender -68% | liqu @2.42x +69s, lender +1% | liqu @2.18x +203s, lender +1% | S1 @5.00x +51s, lender -35% |
+| C | tau 10 s (v0.1 value) | S1 @10.00x +79s, lender -68% | liqu @2.48x +71s, lender +1% | liqu @2.20x +205s, lender +1% | S1 @5.00x +54s, lender -35% |
+| D@0% | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | liqu @3.29x +31s, lender +2% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | no liquidation persistence (1 update) | liqu @3.04x +29s, lender +2% | liqu @2.58x +74s, lender +1% | liqu @2.40x +228s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | persistence 5 updates (above the compiled maximum) | liqu @3.55x +33s, lender +2% | liqu @2.71x +78s, lender +1% | liqu @2.44x +232s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | fixed delta 1 % (below the compiled minimum) | liqu @3.29x +31s, lender +2% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +82s, lender -58% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +82s, lender -58% | liqu @2.64x +76s, lender +1% | liqu @2.42x +230s, lender +1% | S1 @5.00x +51s, lender -17% |
+| D@0% | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +84s, lender -58% | liqu @2.71x +78s, lender +1% | liqu @2.45x +233s, lender +1% | S1 @5.00x +57s, lender -17% |
+| D@0% | tau 10 s (v0.1 value) | S1 @10.00x +86s, lender -58% | liqu @2.78x +80s, lender +1% | liqu @2.46x +235s, lender +1% | S1 @5.00x +60s, lender -17% |
+| RA | v0.4 default (tau 5 s, fresh ref, kappa <= 25 %, fixed delta 2 %, persist 3) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | no liquidation persistence (1 update) | S1 @10.00x +64s, lender -80% | liqu @1.78x +45s, lender +0% | liqu @1.67x +133s, lender +0% | S1 @5.00x +45s, lender -59% |
+| RA | persistence 5 updates (above the compiled maximum) | S1 @10.00x +64s, lender -80% | liqu @1.87x +49s, lender +0% | liqu @1.69x +137s, lender +0% | S1 @5.00x +49s, lender -59% |
+| RA | fixed delta 1 % (below the compiled minimum) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | EMA-only reference, delta 16.7 % (critic's C0-1 suggestion) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | kappa 15 % (reviewer's suggested minimum) | S1 @10.00x +64s, lender -80% | liqu @1.82x +47s, lender +0% | liqu @1.68x +135s, lender +0% | S1 @5.00x +47s, lender -59% |
+| RA | tau 8 s (reviewer's suggested maximum) | S1 @10.00x +66s, lender -80% | liqu @1.90x +50s, lender +0% | liqu @1.70x +138s, lender +0% | S1 @5.00x +48s, lender -59% |
+| RA | tau 10 s (v0.1 value) | S1 @10.00x +68s, lender -80% | liqu @1.94x +52s, lender +0% | liqu @1.71x +140s, lender +0% | S1 @5.00x +49s, lender -59% |
+
+### Loss given an instantaneous gap (lender P&L vs holding, % of value of Q at post-gap price)
+
+| gap | A | B | C | D@0% | D@50% | D@90% | RA |
+|---|---|---|---|---|---|---|---|
+| 1.5x | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) |
+| 1.75x | +2.6% (liqu) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +2.5% (liqu) |
+| 2x | +2.2% (liqu) | +3.7% (liqu) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.0% (open) | +0.6% (liqu) |
+| 2.25x | -3.6% (S1) | +3.7% (liqu) | +4.2% (liqu) | +0.0% (open) | +0.0% (open) | +0.0% (open) | -9.5% (S1) |
+| 2.5x | -13.3% (S1) | +1.9% (liqu) | +4.2% (liqu) | +5.2% (liqu) | +5.2% (liqu) | +5.3% (liqu) | -18.5% (S1) |
+| 3x | -27.7% (S1) | -9.7% (S1) | +1.7% (liqu) | +5.2% (liqu) | +5.2% (liqu) | +5.3% (liqu) | -32.1% (S1) |
+| 3.5x | -38.1% (S1) | -22.6% (S1) | -7.7% (S1) | +5.3% (liqu) | +5.3% (liqu) | +5.3% (liqu) | -41.8% (S1) |
+| 4x | -45.8% (S1) | -32.3% (S1) | -19.2% (S1) | +4.2% (S1) | +4.4% (S1) | +4.6% (S1) | -49.1% (S1) |
+| 5x | -56.6% (S1) | -45.8% (S1) | -35.4% (S1) | -16.6% (S1) | -16.4% (S1) | -16.3% (S1) | -59.3% (S1) |
+| 6x | -63.9% (S1) | -54.9% (S1) | -46.1% (S1) | -30.5% (S1) | -30.4% (S1) | -30.3% (S1) | -66.1% (S1) |
+| 8x | -72.9% (S1) | -66.2% (S1) | -59.6% (S1) | -47.9% (S1) | -47.8% (S1) | -47.7% (S1) | -74.5% (S1) |
+| 10x | -78.3% (S1) | -72.9% (S1) | -67.7% (S1) | -58.3% (S1) | -58.2% (S1) | -58.2% (S1) | -79.6% (S1) |
+| 15x | -85.5% (S1) | -81.9% (S1) | -78.5% (S1) | -72.2% (S1) | -72.1% (S1) | -72.1% (S1) | -86.4% (S1) |
+| 20x | -89.2% (S1) | -86.5% (S1) | -83.8% (S1) | -79.2% (S1) | -79.1% (S1) | -79.1% (S1) | -89.8% (S1) |
+| 50x | -95.7% (S1) | -94.6% (S1) | -93.5% (S1) | -91.7% (S1) | -91.6% (S1) | -91.6% (S1) | -95.9% (S1) |
+
+### Break-even gap frequency: lender income vs. expected gap loss per position
+
+E[gap P&L per position] ~= lambda_up x T_max x E_J[P&L | one up-gap], J ~ Pareto(alpha, xmin=1.5x),
+truncated at 50x.  Lender income = 85% of rent at 80% utilization over T_max + 2% expiry fee.
+lambda* = income / (T_max x |E_J|) is the up-gap rate at which lenders break even.
+
+| market | T_max | lender income per position (% of notional) | expiry fee share of it | alpha=1.5: E_J / break-even rate | alpha=2: E_J / break-even rate | alpha=3: E_J / break-even rate |
+|---|---|---|---|---|---|---|
+| A | 30 d | 5.49% | 36% | -196.5% / 1 per 1,073 d | -98.0% / 1 per 535 d | -34.2% / 1 per 187 d |
+| B | 14 d | 5.26% | 38% | -169.9% / 1 per 452 d | -76.9% / 1 per 205 d | -21.1% / 1 per 56 d |
+| C | 7 d | 5.26% | 38% | -150.5% / 1 per 200 d | -63.1% / 1 per 84 d | -14.2% / 1 per 19 d |
+| D@0% | 3 d | 4.79% | 42% | -123.6% / 1 per 77 d | -45.4% / 1 per 28 d | -6.6% / 1 per 4 d |
+| D@50% | 3 d | 4.79% | 42% | -123.4% / 1 per 77 d | -45.2% / 1 per 28 d | -6.5% / 1 per 4 d |
+| RA | 30 d | 5.49% | 36% | -204.7% / 1 per 1,118 d | -105.0% / 1 per 574 d | -39.4% / 1 per 215 d |
+
+### Monte Carlo: lender and borrower outcome per position (ILLUSTRATIVE jump-diffusion)
+
+Position at the per-position cap, held to expiry unless liquidated/settled; 80% utilization;
+price = GBM(sigma) x Poisson up/down gaps with Pareto(alpha, 1.5x) multiples (<= 50x) that persist;
+1 s resolution for 15 min after each gap and near expiry, EMA/keeper modelled exactly there.
+
+| regime | market | assumptions | paths | outcomes | E[lender P&L vs holding] (% of N_open) | P(lender loss > 10% of N_open) | E[borrower P&L] (% of M) |
+|---|---|---|---|---|---|---|---|
+| calm | A | sigma=1.5, up/dn gaps 0.002/d, alpha=2 | 400 | S1 7%, expiry 86%, liquidation 6% | -2.10% +/- 2.14% | 5.0% | -6.4% |
+| calm | B | sigma=2.5, up/dn gaps 0.005/d, alpha=2 | 400 | S1 4%, expiry 89%, liquidation 6% | -0.08% +/- 1.84% | 3.2% | -7.2% |
+| calm | C | sigma=4, up/dn gaps 0.02/d, alpha=2 | 400 | S1 4%, expiry 89%, liquidation 7% | -13.57% +/- 8.62% | 3.8% | -4.5% |
+| calm | D@0% | sigma=6, up/dn gaps 0.05/d, alpha=2 | 400 | S1 2%, expiry 90%, liquidation 8% | -0.70% +/- 3.10% | 2.0% | -5.6% |
+| calm | D@50% | sigma=6, up/dn gaps 0.05/d, alpha=2 | 400 | S1 5%, expiry 86%, liquidation 9% | -3.82% +/- 2.79% | 4.0% | -10.6% |
+| calm | RA | sigma=1.5, up/dn gaps 0.002/d, alpha=2 | 400 | S1 6%, expiry 88%, liquidation 6% | +0.89% +/- 1.02% | 5.5% | -5.1% |
+| stressed | A | sigma=1.5, up/dn gaps 0.02/d, alpha=1.5 | 400 | S1 26%, expiry 62%, liquidation 12% | -71.60% +/- 14.53% | 23.5% | -20.0% |
+| stressed | B | sigma=2.5, up/dn gaps 0.05/d, alpha=1.5 | 400 | S1 24%, expiry 64%, liquidation 12% | -99.63% +/- 19.02% | 21.5% | -23.0% |
+| stressed | C | sigma=4, up/dn gaps 0.2/d, alpha=1.5 | 400 | S1 24%, expiry 55%, liquidation 21% | -121.25% +/- 22.16% | 21.5% | -30.2% |
+| stressed | D@0% | sigma=6, up/dn gaps 1/d, alpha=1.5 | 400 | S1 28%, expiry 40%, liquidation 32% | -188.00% +/- 37.36% | 26.5% | -44.3% |
+| stressed | D@50% | sigma=6, up/dn gaps 1/d, alpha=1.5 | 400 | S1 30%, expiry 39%, liquidation 31% | -155.48% +/- 26.96% | 25.8% | -46.0% |
+| stressed | RA | sigma=1.5, up/dn gaps 0.02/d, alpha=1.5 | 400 | S1 24%, expiry 66%, liquidation 9% | -107.47% +/- 25.84% | 21.5% | -11.8% |
+
+### Exit fuzz (attacker bundles, attacker-only seconds, sandwiches; invariants asserted)
+
+{'runs': 1000, 'exits': 697, 'sandwich_attempts': 8948, 'bundles': 253491, 'attacker_only_seconds': 772, 'blocker_runs': 192, 'noisy_runs': 490, 'freezer_runs': 267, 'frozen_seconds': 2905, 'penalty_truncated_by_sandwich': 22, 'max_loss_over_bref_bps': 102, 'max_settle_box_bps': 94, 'reserve_waits_liq': 0, 'reserve_waits_exp': 0, 'kinds': {'liquidation': 224, 'expiry': 281, 'S1': 147, 'S2': 10, 'S3': 35}}

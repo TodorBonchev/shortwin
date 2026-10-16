@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc fda77ceea7109801f11bed464411a52b43c6eb52bd3fc3379fae95c6106255d2 # shrinks to p = 1000000000, h = 1000000000, lam = 1000, c_bps = 5000, secs = [(false, []), (false, []), (false, []), (false, [Withdraw]), (false, [Withdraw]), (false, []), (false, [Withdraw]), (false, [Withdraw]), (false, [])]
+cc 813a28046ad1e82cded4ddf2afe75b5d06ecf04cce0691fd773441e8c0abaebb # shrinks to p = 1000000000, h = 1000000, pre_bps = 2500, lam = 1000, lam_min = 2000, c_bps = 5000, secs = [(false, []), (false, []), (false, []), (false, []), (false, []), (false, []), (false, []), (false, [])]
+cc c96e92cb39e97e009c18a87318f6828eb72e24cfa23ec75187da1ad6b3231e10 # shrinks to x = 1000000000, y = 1000000000, counter = 1000000, lam = 4982, lam_min = 2000, k = 1, push = 1, guard = true, w_bps = 0

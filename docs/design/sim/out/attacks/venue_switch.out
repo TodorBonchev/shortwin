@@ -1,0 +1,152 @@
+| market | scenario | ring at the venue change | outcome | exit vs event | price at exit | lender P&L | seconds with the settlement box wider than 1 % in L (first 60 s after the change) |
+|---|---|---|---|---|---|---|---|
+| D@90% | graduation, then +2x on AMM over 60s | carried over (v0.3 ARCH) | liquidation | +60s | 2.60x | +5.3% | 0 |
+| D@90% | graduation, then +2x on AMM over 60s | rewritten to lp_supply (M6) | liquidation | +60s | 2.60x | +5.3% | 0 |
+| D@90% | graduation, then +3x on AMM over 60s | carried over (v0.3 ARCH) | liquidation | +52s | 2.74x | +5.3% | 0 |
+| D@90% | graduation, then +3x on AMM over 60s | rewritten to lp_supply (M6) | liquidation | +52s | 2.74x | +5.3% | 0 |
+| D@97% | graduation, then +2x on AMM over 60s | carried over (v0.3 ARCH) | liquidation | +87s | 2.60x | +5.3% | 0 |
+| D@97% | graduation, then +2x on AMM over 60s | rewritten to lp_supply (M6) | liquidation | +87s | 2.60x | +5.3% | 0 |
+| RA | halt -> fast path to a 120% pool, then pump 2x/120s | carried over (v0.3 ARCH) | liquidation | +393s | 1.71x | +2.2% | 4 (4 in the gate) |
+| RA | halt -> fast path to a 120% pool, then pump 2x/120s | rewritten to the anchor (M4R) | liquidation | +393s | 1.71x | +2.2% | 0 |
+| RB | halt -> fast path to a 120% pool, then pump 2x/120s | carried over (v0.3 ARCH) | liquidation | +418s | 1.98x | +3.5% | 4 (4 in the gate) |
+| RB | halt -> fast path to a 120% pool, then pump 2x/120s | rewritten to the anchor (M4R) | liquidation | +418s | 1.98x | +3.5% | 0 |
+| RC | halt -> fast path to a 120% pool, then pump 2x/120s | carried over (v0.3 ARCH) | open | +1500s | 2.00x | +0.0% | 4 (4 in the gate) |
+| RC | halt -> fast path to a 120% pool, then pump 2x/120s | rewritten to the anchor (M4R) | open | +1500s | 2.00x | +0.0% | 0 |
+
+(b) Honest fast path (incumbent halted at t0; window at +120 s, adoption at +180 s; then pump 2x/120s from +300 s) onto thinner, deeper and lambda < lambda_min candidates.  Window floor: locked SOL at P_ema >= 25 SOL (M4R: at min(P_ema, P_cand) at the proposal, the same here; v0.4.1: real SOL >= 25 and lambda >= 50 %).  M4R: L_ema / √(X·Y) at the switch -> at the gate (8 integrations later); the wide seconds inside the warm-up gate decide nothing.  #99: M4R also needs the capped position to fit the candidate's opening caps as an open right after the adoption (X0 <= min(L_slow, D)/sqrt(P)): a candidate whose locked depth D is below the incumbent's L_slow does not carry it: no window, the position frozen on the halted pool.
+
+| market | candidate: √(X·Y) / λ / D vs `pool_d` | real / locked SOL | eligible v0.4.1 / M4, M4R | rewrite | `L_ema` / √(X·Y) at the switch | outcome | exit vs event | price at exit | lender P&L | seconds with the box wider than 1 % in L (first 60 s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| RA | 25% / 90% / 45% | 625.0 / 562.4 | yes / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 1.000 | liquidation | +388s | 1.66x | +2.2% | 0 |
+| RA | 25% / 90% / 45% | 625.0 / 562.4 | yes / yes | M4 as built: min(L_rec, L_live, cap) | 1.000 | liquidation | +388s | 1.66x | +2.2% | 0 |
+| RA | 25% / 90% / 45% | 625.0 / 562.4 | yes / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+| RA | 150% / 90% / 270% | 3750.0 / 3374.6 | yes / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 0.667 | liquidation | +394s | 1.72x | +2.2% | 5 |
+| RA | 150% / 90% / 270% | 3750.0 / 3374.6 | yes / yes | M4 as built: min(L_rec, L_live, cap) | 1.000 | liquidation | +394s | 1.72x | +2.2% | 0 |
+| RA | 150% / 90% / 270% | 3750.0 / 3374.6 | yes / yes | M4R: cap + 8-bucket warm-up (proposed) | 1.800 → 1.000 | liquidation | +394s | 1.72x | +2.2% | 0 |
+| RA | 100% / 25% / 50% | 2500.0 / 624.7 | no / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 1.000 | liquidation | +393s | 1.71x | +2.2% | 0 |
+| RA | 100% / 25% / 50% | 2500.0 / 624.7 | no / yes | M4 as built: min(L_rec, L_live, cap) | 0.500 | liquidation | +393s | 1.71x | +2.2% | 20 |
+| RA | 100% / 25% / 50% | 2500.0 / 624.7 | no / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+| RA | 200% / 25% / 100% | 5000.0 / 1249.5 | no / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 0.500 | liquidation | +394s | 1.72x | +2.2% | 4 |
+| RA | 200% / 25% / 100% | 5000.0 / 1249.5 | no / yes | M4 as built: min(L_rec, L_live, cap) | 0.500 | liquidation | +394s | 1.72x | +2.2% | 20 |
+| RA | 200% / 25% / 100% | 5000.0 / 1249.5 | no / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+| RB | 25% / 90% / 45% | 250.0 / 225.0 | yes / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 1.000 | liquidation | +413s | 1.92x | +3.5% | 0 |
+| RB | 25% / 90% / 45% | 250.0 / 225.0 | yes / yes | M4 as built: min(L_rec, L_live, cap) | 1.000 | liquidation | +413s | 1.92x | +3.5% | 0 |
+| RB | 25% / 90% / 45% | 250.0 / 225.0 | yes / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+| RB | 150% / 90% / 270% | 1500.0 / 1349.8 | yes / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 0.667 | liquidation | +419s | 1.99x | +3.5% | 5 |
+| RB | 150% / 90% / 270% | 1500.0 / 1349.8 | yes / yes | M4 as built: min(L_rec, L_live, cap) | 1.000 | liquidation | +419s | 1.99x | +3.5% | 0 |
+| RB | 150% / 90% / 270% | 1500.0 / 1349.8 | yes / yes | M4R: cap + 8-bucket warm-up (proposed) | 1.800 → 1.000 | liquidation | +419s | 1.99x | +3.5% | 0 |
+| RB | 100% / 25% / 50% | 1000.0 / 249.9 | no / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 1.000 | liquidation | +418s | 1.98x | +3.5% | 0 |
+| RB | 100% / 25% / 50% | 1000.0 / 249.9 | no / yes | M4 as built: min(L_rec, L_live, cap) | 0.500 | liquidation | +418s | 1.98x | +3.5% | 20 |
+| RB | 100% / 25% / 50% | 1000.0 / 249.9 | no / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+| RB | 200% / 25% / 100% | 2000.0 / 499.8 | no / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 0.500 | liquidation | +419s | 1.99x | +3.5% | 4 |
+| RB | 200% / 25% / 100% | 2000.0 / 499.8 | no / yes | M4 as built: min(L_rec, L_live, cap) | 0.500 | liquidation | +419s | 1.99x | +3.5% | 20 |
+| RB | 200% / 25% / 100% | 2000.0 / 499.8 | no / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+| RC | 25% / 90% / 45% | 21.2 / 19.1 | no / no | v0.4.1: min(√(X·Y)_live, L_ema) | 1.000 | liquidation | +426s | 2.00x | +4.2% | 0 |
+| RC | 25% / 90% / 45% | 21.2 / 19.1 | no / no | M4 as built: min(L_rec, L_live, cap) | no adoption (window floor) | open | +1500s | 1.00x | +0.0% | n/a |
+| RC | 25% / 90% / 45% | 21.2 / 19.1 | no / no | M4R: cap + 8-bucket warm-up (proposed) | no adoption (window floor) | open | +1500s | 1.00x | +0.0% | n/a |
+| RC | 150% / 90% / 270% | 127.5 / 114.7 | yes / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 0.667 | open | +1500s | 2.00x | +0.0% | 5 |
+| RC | 150% / 90% / 270% | 127.5 / 114.7 | yes / yes | M4 as built: min(L_rec, L_live, cap) | 1.000 | open | +1500s | 2.00x | +0.0% | 0 |
+| RC | 150% / 90% / 270% | 127.5 / 114.7 | yes / yes | M4R: cap + 8-bucket warm-up (proposed) | 1.800 → 1.000 | open | +1500s | 2.00x | +0.0% | 0 |
+| RC | 100% / 25% / 50% | 85.0 / 21.2 | no / no | v0.4.1: min(√(X·Y)_live, L_ema) | 1.000 | open | +1500s | 2.00x | +0.0% | 0 |
+| RC | 100% / 25% / 50% | 85.0 / 21.2 | no / no | M4 as built: min(L_rec, L_live, cap) | no adoption (window floor) | open | +1500s | 1.00x | +0.0% | n/a |
+| RC | 100% / 25% / 50% | 85.0 / 21.2 | no / no | M4R: cap + 8-bucket warm-up (proposed) | no adoption (window floor) | open | +1500s | 1.00x | +0.0% | n/a |
+| RC | 200% / 25% / 100% | 170.0 / 42.5 | no / yes | v0.4.1: min(√(X·Y)_live, L_ema) | 0.500 | open | +1500s | 2.00x | +0.0% | 4 |
+| RC | 200% / 25% / 100% | 170.0 / 42.5 | no / yes | M4 as built: min(L_rec, L_live, cap) | 0.500 | open | +1500s | 2.00x | +0.0% | 20 |
+| RC | 200% / 25% / 100% | 170.0 / 42.5 | no / yes | M4R: cap + 8-bucket warm-up (proposed) | no adoption (#99: the position does not fit) | open | +1500s | 1.00x | +0.0% | n/a |
+
+(c) LP moves around the two sampling instructions of the M4 rules (RA; the round trip costs no swap fee): 'deposit' = as much again as the pool's LP counter around the instruction (lambda halves, D stays), 'withdraw' = every unlocked LP withdrawn around it (√(X·Y) falls to D).  Cells: L_ema / √(X·Y) at the switch (M4R: -> at the gate), seconds with the box wider than 1 % in L (first 60 s; M4R: of which inside the warm-up gate).  M4R reads no sample, so its column is the same in every row.
+
+| candidate: √(X·Y) / λ | LP move | v0.4.1: min(√(X·Y)_live, L_ema) | M4 review fix: min(L_rec, cap) | M4 as built: min(L_rec, L_live, cap) | M4R: cap + 8-bucket warm-up (proposed) | exit (every rule) |
+|---|---|---|---|---|---|---|
+| 150% / 99.78% | none | 0.667, 17 s | 1.000, 0 s | 1.000, 0 s | 1.995 → 1.000, 0 s | liquidation, +394s, 1.72x, +2.2% |
+| 150% / 99.78% | deposit around the recording proposal (M4V-2) | 0.667, 17 s | 1.995, 24 s | 1.000, 0 s | 1.995 → 1.000, 0 s | liquidation, +394s, 1.72x, +2.2% |
+| 150% / 99.78% | deposit around the execution (M4-SEC-5) | 0.667, 17 s | 1.000, 0 s | 1.000, 0 s | 1.995 → 1.000, 0 s | liquidation, +394s, 1.72x, +2.2% |
+| 150% / 99.78% | withdraw around the recording proposal | 0.667, 17 s | 0.998, 0 s | 0.998, 0 s | 1.995 → 1.000, 0 s | liquidation, +394s, 1.72x, +2.2% |
+| 150% / 99.78% | withdraw around the execution (M4-SEC-5) | 0.667, 17 s | 1.000, 0 s | 0.998, 0 s | 1.995 → 1.000, 0 s | liquidation, +394s, 1.72x, +2.2% |
+| 200% / 25.00% | none | 0.500, 4 s | 0.500, 20 s | 0.500, 20 s | no adoption (#99: the position does not fit) | liquidation, +394s, 1.72x, +2.2% / open, +1500s, 1.00x, +0.0% |
+| 200% / 25.00% | deposit around the recording proposal (M4V-2) | 0.500, 4 s | 0.500, 20 s | 0.500, 20 s | no adoption (#99: the position does not fit) | liquidation, +394s, 1.72x, +2.2% / open, +1500s, 1.00x, +0.0% |
+| 200% / 25.00% | deposit around the execution (M4-SEC-5) | 0.500, 4 s | 0.500, 20 s | 0.500, 20 s | no adoption (#99: the position does not fit) | liquidation, +394s, 1.72x, +2.2% / open, +1500s, 1.00x, +0.0% |
+| 200% / 25.00% | withdraw around the recording proposal | 0.500, 4 s | 0.250, 25 s | 0.250, 25 s | no adoption (#99: the position does not fit) | liquidation, +394s, 1.72x, +2.2% / open, +1500s, 1.00x, +0.0% |
+| 200% / 25.00% | withdraw around the execution (M4-SEC-5) | 0.250, 4 s | 0.500, 20 s | 0.250, 25 s | no adoption (#99: the position does not fit) | liquidation, +394s, 1.72x, +2.2% / open, +1500s, 1.00x, +0.0% |
+
+(d1) Held drain of every unlocked LP (the lowest L any instruction or observation can read is D) on pools of the same locked depth D at lambda 50 / 25 / 10 %; capped position opened on the pool, and RA's capped position carried by the fast path onto a candidate whose unlocked LP is then drained.  #99: a candidate with D = 25 % of pool_d (pool_fast_min_bps) no longer carries it (an open on it right after the adoption is sized on min(L_slow, D) = D, an eighth of the incumbent's depth): refused, the position stays frozen on the halted pool (1.00x; S3 at fair value at its deadline); the thinnest candidate that carries it has D = the incumbent's whole depth (twice pool_d at lambda 50 %).
+
+| market | pool | λ | Q (raw) | scenario | outcome | exit vs event | price at exit | CR spot/EMA at exit | lender P&L |
+|---|---|---|---|---|---|---|---|---|---|
+| RA | opened on it | 50% | 1,124,774,998,898 | drain all unlocked LP | open | +600s | 1.00x | 2.01/2.01 | +0.0% |
+| RA | opened on it | 50% | 1,124,774,998,898 | drain all unlocked LP + x1.5 | open | +600s | 1.50x | 1.34/1.34 | +0.0% |
+| RA | opened on it | 50% | 1,124,774,998,898 | drain all unlocked LP + pump 2x/120s | liquidation | +151s | 1.69x | 1.19/1.23 | +2.2% |
+| RA | opened on it | 25% | 1,124,549,998,898 | drain all unlocked LP | open | +600s | 1.00x | 1.99/1.99 | +0.0% |
+| RA | opened on it | 25% | 1,124,549,998,898 | drain all unlocked LP + x1.5 | open | +600s | 1.50x | 1.32/1.32 | +0.0% |
+| RA | opened on it | 25% | 1,124,549,998,898 | drain all unlocked LP + pump 2x/120s | liquidation | +149s | 1.67x | 1.19/1.23 | +2.1% |
+| RA | opened on it | 10% | 1,123,874,998,899 | drain all unlocked LP | open | +600s | 1.00x | 1.98/1.98 | +0.0% |
+| RA | opened on it | 10% | 1,123,874,998,899 | drain all unlocked LP + x1.5 | open | +600s | 1.50x | 1.31/1.31 | +0.0% |
+| RA | opened on it | 10% | 1,123,874,998,899 | drain all unlocked LP + pump 2x/120s | liquidation | +148s | 1.66x | 1.19/1.23 | +2.1% |
+| RC | opened on it | 50% | 1,551,439,631,523 | drain all unlocked LP | open | +600s | 1.00x | 3.02/3.02 | +0.0% |
+| RC | opened on it | 50% | 1,551,439,631,523 | drain all unlocked LP + x1.5 | open | +600s | 1.50x | 2.01/2.01 | +0.0% |
+| RC | opened on it | 50% | 1,551,439,631,523 | drain all unlocked LP + pump 2x/120s | open | +900s | 2.00x | 1.50/1.50 | +0.0% |
+| RC | opened on it | 25% | 1,551,129,281,526 | drain all unlocked LP | open | +600s | 1.00x | 2.99/2.99 | +0.0% |
+| RC | opened on it | 25% | 1,551,129,281,526 | drain all unlocked LP + x1.5 | open | +600s | 1.50x | 1.99/1.99 | +0.0% |
+| RC | opened on it | 25% | 1,551,129,281,526 | drain all unlocked LP + pump 2x/120s | liquidation | +190s | 2.00x | 1.48/1.49 | +4.1% |
+| RC | opened on it | 10% | 1,550,198,231,537 | drain all unlocked LP | open | +600s | 1.00x | 2.97/2.97 | +0.0% |
+| RC | opened on it | 10% | 1,550,198,231,537 | drain all unlocked LP + x1.5 | open | +600s | 1.50x | 1.97/1.97 | +0.0% |
+| RC | opened on it | 10% | 1,550,198,231,537 | drain all unlocked LP + pump 2x/120s | liquidation | +187s | 2.00x | 1.47/1.49 | +4.1% |
+| RA | #99: 25% √(X·Y) (D 25% of pool_d) refused, frozen on the halted pool | 50% | 1,124,774,998,898 | drain all unlocked LP | open | +1500s | 1.00x | 0.00/2.03 | +0.0% |
+| RA | #99: 25% √(X·Y) (D 25% of pool_d) refused, frozen on the halted pool | 50% | 1,124,774,998,898 | drain all unlocked LP + x1.5 | open | +1500s | 1.00x | 0.00/2.03 | +0.0% |
+| RA | #99: 25% √(X·Y) (D 25% of pool_d) refused, frozen on the halted pool | 50% | 1,124,774,998,898 | drain all unlocked LP + pump 2x/120s | open | +1500s | 1.00x | 0.00/2.03 | +0.0% |
+| RA | #99: 50% √(X·Y) (D 25% of pool_d) refused, frozen on the halted pool | 25% | 1,124,774,998,898 | drain all unlocked LP | open | +1500s | 1.00x | 0.00/2.03 | +0.0% |
+| RA | #99: 50% √(X·Y) (D 25% of pool_d) refused, frozen on the halted pool | 25% | 1,124,774,998,898 | drain all unlocked LP + x1.5 | open | +1500s | 1.00x | 0.00/2.03 | +0.0% |
+| RA | #99: 50% √(X·Y) (D 25% of pool_d) refused, frozen on the halted pool | 25% | 1,124,774,998,898 | drain all unlocked LP + pump 2x/120s | open | +1500s | 1.00x | 0.00/2.03 | +0.0% |
+| RA | carried: fast path at +180 s onto 200% √(X·Y) (D 200% of pool_d), drained at +400 s | 50% | 1,124,774,998,898 | drain all unlocked LP | open | +1500s | 1.00x | 2.03/2.03 | +0.0% |
+| RA | carried: fast path at +180 s onto 200% √(X·Y) (D 200% of pool_d), drained at +400 s | 50% | 1,124,774,998,898 | drain all unlocked LP + x1.5 | open | +1500s | 1.50x | 1.35/1.35 | +0.0% |
+| RA | carried: fast path at +180 s onto 200% √(X·Y) (D 200% of pool_d), drained at +400 s | 50% | 1,124,774,998,898 | drain all unlocked LP + pump 2x/120s | liquidation | +553s | 1.71x | 1.18/1.22 | +2.2% |
+| RA | carried: fast path at +180 s onto 400% √(X·Y) (D 200% of pool_d), drained at +400 s | 25% | 1,124,774,998,898 | drain all unlocked LP | open | +1500s | 1.00x | 2.03/2.03 | +0.0% |
+| RA | carried: fast path at +180 s onto 400% √(X·Y) (D 200% of pool_d), drained at +400 s | 25% | 1,124,774,998,898 | drain all unlocked LP + x1.5 | open | +1500s | 1.50x | 1.35/1.35 | +0.0% |
+| RA | carried: fast path at +180 s onto 400% √(X·Y) (D 200% of pool_d), drained at +400 s | 25% | 1,124,774,998,898 | drain all unlocked LP + pump 2x/120s | liquidation | +553s | 1.71x | 1.18/1.22 | +2.2% |
+
+(d2) k consecutive attacker-only seconds in which every observation is withdraw-wrapped (L = D), and the evaluating instruction wrapped too (live legs at D); RA's capped position at a flat price, EMA converged.  L values relative to the pool's √(X·Y).
+
+| λ | k | `L_ema` | `L_lo` | `L_hi` | CR spot at D / EMA | liquidatable | S1 legs | S2 legs | refuted |
+|---|---|---|---|---|---|---|---|---|---|
+| 50% | 1 | 0.917 | 0.917 | 0.917 | 2.01 / 2.03 | no | no | no | yes |
+| 50% | 3 | 0.789 | 0.789 | 0.789 | 2.01 / 2.03 | no | no | no | yes |
+| 50% | 4 | 0.741 | 0.500 | 0.741 | 2.01 / 2.02 | no | no | no | yes |
+| 50% | 5 | 0.701 | 0.500 | 0.701 | 2.01 / 2.02 | no | no | no | yes |
+| 50% | 8 | 0.616 | 0.500 | 0.616 | 2.01 / 2.02 | no | no | no | yes |
+| 50% | 40 | 0.500 | 0.500 | 0.500 | 2.01 / 2.01 | no | no | no | yes |
+| 25% | 1 | 0.917 | 0.917 | 0.917 | 1.99 / 2.01 | no | no | no | yes |
+| 25% | 3 | 0.770 | 0.770 | 0.770 | 1.99 / 2.01 | no | no | no | yes |
+| 25% | 4 | 0.706 | 0.250 | 0.706 | 1.99 / 2.01 | no | no | no | yes |
+| 25% | 5 | 0.647 | 0.250 | 0.647 | 1.99 / 2.01 | no | no | no | yes |
+| 25% | 8 | 0.499 | 0.250 | 0.499 | 1.99 / 2.01 | no | no | no | yes |
+| 25% | 40 | 0.251 | 0.250 | 0.251 | 1.99 / 1.99 | no | no | no | yes |
+| 10% | 1 | 0.917 | 0.917 | 0.917 | 1.98 / 2.01 | no | no | no | yes |
+| 10% | 3 | 0.770 | 0.770 | 0.770 | 1.98 / 2.00 | no | no | no | yes |
+| 10% | 4 | 0.706 | 0.100 | 0.706 | 1.98 / 2.00 | no | no | no | yes |
+| 10% | 5 | 0.647 | 0.100 | 0.647 | 1.98 / 2.00 | no | no | no | yes |
+| 10% | 8 | 0.499 | 0.100 | 0.499 | 1.98 / 2.00 | no | no | no | yes |
+| 10% | 40 | 0.102 | 0.100 | 0.102 | 1.98 / 1.98 | no | no | no | yes |
+
+(d3) A contrary LP observation every second (an unlocked LP holder's [withdraw, crank, re-deposit] next to the honest crank: no swap fee): S2/S3 amount spread across the box, bps (settles only if <= fv_dev_bps = 100); capped position, expired at a flat price or liquidatable after a pump.
+
+| market | fee | state | λ 50% | λ 33% | λ 25% | λ 10% |
+|---|---|---|---|---|---|---|
+| RA | 0.25% | expired, flat | 75 | 100 | 113 | 136 |
+| RA | 0.25% | liquidatable (x1.6) | 97 | 129 | 145 | 174 |
+| RA | 1.00% | expired, flat | 253 | 340 | 384 | 464 |
+| RA | 1.00% | liquidatable (x1.6) | 325 | 437 | 493 | 596 |
+| RC | 0.25% | expired, flat | 75 | 100 | 113 | 136 |
+| RC | 0.25% | liquidatable (x2.0) | 109 | 145 | 163 | 196 |
+| RC | 1.00% | expired, flat | 253 | 340 | 384 | 464 |
+| RC | 1.00% | liquidatable (x2.0) | 366 | 492 | 556 | 672 |
+
+(d4) S2 reachability at the per-position cap after the full drain (price multiple at which each first holds on the live state; ECON §8.6's check on pools of the same D at lambda 50 / 25 / 10 %).
+
+| market | λ | S1 at | S2 at |
+|---|---|---|---|
+| RA | 50% | x2.01 | x125.9 |
+| RA | 25% | x1.97 | x124.7 |
+| RA | 10% | x1.97 | x124.7 |
+| RC | 50% | x2.96 | x125.9 |
+| RC | 25% | x2.93 | x124.7 |
+| RC | 10% | x2.90 | x124.7 |

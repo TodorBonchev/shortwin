@@ -1,0 +1,20 @@
+# The build context of Dockerfile is the repository root (the indexer links programs/ and crates/
+# by path). BuildKit reads this file for this Dockerfile only (it overrides a root .dockerignore).
+# Never send build output, dependencies, local data or keys into the image's build stage.
+**/target
+**/node_modules
+**/.pnpm-store
+.git
+fuzz-out
+docs
+.anchor
+.surfpool
+test-ledger
+# Program-id keypairs (never committed; docs/DEVELOPMENT.md "Program id and keypair").
+keys
+**/keys
+**/*-keypair.json
+# Deployment secrets and environment files.
+services/indexer/deploy/secrets
+**/.env
+**/.env.*

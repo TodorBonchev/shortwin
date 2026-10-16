@@ -1,0 +1,1762 @@
+openapi: 3.1.0
+info:
+  title: short.win indexer API
+  version: 1.0.0
+  summary: Markets, positions, lenders, settlements, fees and analytics of the short.win protocol.
+  description: |
+    The read API of the short.win indexer (docs/design/INDEXER.md §9; ARCHITECTURE §7.2). Every
+    path is under `/v1`; every response is JSON. This document is the contract the API track
+    implements and the contract tests check (§11.2).
+
+    **Conventions (§9.1).**
+    - Integers wider than 32 bits (lamports, token amounts in raw units, WAD prices, shares,
+      slots are the exception: slots and unix seconds are JSON numbers) are **decimal strings**
+      (`U64`, `U128`, `I128`), so JavaScript clients lose no precision.
+    - Prices are WAD: lamports per raw token unit × 10^18. Token amounts are raw units (the
+      mint's `decimals` is on the market).
+    - Times are chain seconds (unix); windows such as "24 h" use the chain clock (the newest
+      ingested block time).
+    - Keys and signatures are base58; markets are always addressed by **mint**.
+    - Rows derived from transactions carry `slot` and `finalized` (the transaction is at or below
+      the finalized watermark, §3.2). Projections (current state) are at `confirmed`.
+    - Lists are keyset-paginated: `limit` (1–500, default 100) and the opaque `cursor` from the
+      previous page's `next_cursor`; `next_cursor` is `null` on the last page.
+    - Errors are RFC 9457 `application/problem+json` (`Problem`).
+
+    **Headers on every response (§9.1, §10.1):** `X-Indexer-Slot` (newest ingested slot),
+    `X-Indexer-Finalized-Slot`, `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`;
+    `Retry-After` on 429 and 503 (see `components.headers`).
+
+    **WebSocket.** `GET /v1/ws` upgrades to a WebSocket; its messages are the `Ws*` schemas
+    (§9.3).
+
+    **Limits (§10).** Every database-backed operation may answer `503` (`unavailable`: the
+    database is unreachable or the query semaphore is saturated; `timeout`: the statement or the
+    request timed out) with `Retry-After`. `/v1/health` and `/v1/status` are probes: they are not
+    rate-limited, and they read only a cached `X-Api-Key` (a key the API has not seen is not
+    looked up on a probe). An optional `X-Api-Key` (`ApiKey`) lifts the anonymous limit to the
+    key's; an unknown or disabled key is served as anonymous (never 401). The API is GET-only: any
+    other method answers `405` (`application/problem+json`, code `bad_request`). Heavy requests
+    cost 5 of the client's requests: `/candles`, `/v1/stats/timeseries`, `/v1/search`,
+    `/v1/keepers`, `/v1/markets` with `q` (however the parameter name is encoded), and a
+    WebSocket `subscribe` with `since` (its replay).
+  license:
+    name: Apache-2.0
+    identifier: Apache-2.0
+security:
+  - {}
+  - ApiKey: []
+servers:
+  - url: https://api.short.win
+    description: Production (planned)
+  - url: http://localhost:8080
+    description: Local
+tags:
+  - name: meta
+  - name: markets
+  - name: positions
+  - name: lenders
+  - name: analytics
+  - name: admin
+  - name: misc
+
+paths:
+  /v1/health:
+    get:
+      tags: [meta]
+      operationId: getHealth
+      summary: Liveness of the API process.
+      responses:
+        '200':
+          description: The process is up.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, const: ok }
+
+  /v1/status:
+    get:
+      tags: [meta]
+      operationId: getStatus
+      summary: Ingest progress and lag.
+      responses:
+        '200':
+          description: The ingest watermarks.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IngestStatus' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets:
+    get:
+      tags: [markets]
+      operationId: listMarkets
+      summary: Markets, filtered and sorted.
+      parameters:
+        - name: q
+          in: query
+          description: Mint (exact) or symbol / name prefix (case-insensitive).
+          schema: { type: string, minLength: 1, maxLength: 64 }
+        - name: venue
+          in: query
+          schema: { $ref: '#/components/schemas/VenueName' }
+        - name: tier
+          in: query
+          schema: { $ref: '#/components/schemas/TierName' }
+        - name: has_positions
+          in: query
+          schema: { type: boolean }
+        - name: sort
+          in: query
+          schema: { type: string, enum: [tvl, oi, util, created, open_positions], default: tvl }
+        - name: order
+          in: query
+          schema: { type: string, enum: [asc, desc], default: desc }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of markets.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/MarketSummary' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}:
+    get:
+      tags: [markets]
+      operationId: getMarket
+      summary: One market with its analytics.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+      responses:
+        '200':
+          description: The market.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MarketDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/positions:
+    get:
+      tags: [markets, positions]
+      operationId: listMarketPositions
+      summary: Positions of a market, newest first.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - { $ref: '#/components/parameters/PositionStatusFilter' }
+        - name: borrower
+          in: query
+          schema: { $ref: '#/components/schemas/Pubkey' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of positions.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PositionPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/lenders:
+    get:
+      tags: [markets, lenders]
+      operationId: listMarketLenders
+      summary: Lenders of a market, largest share first.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - name: active
+          in: query
+          description: Only lenders with shares > 0.
+          schema: { type: boolean, default: true }
+        - name: epoch
+          in: query
+          description: |
+            Only lenders whose `epoch` is before the market's share epoch (`behind`: a rebase or
+            full-wipe record they have not converted through, parked lenders included) or at it
+            (`current`); absent, both. The order and the cursor are the same either way. The web's
+            claim reads the `behind` lenders first for its pot-only syncs (FRONTEND §3.6, FE-30).
+          schema: { type: string, enum: [behind, current] }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of lender positions.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/LenderPosition' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/pools:
+    get:
+      tags: [markets]
+      operationId: getMarketPools
+      summary: Pools proposed and adopted, and the pool-selection history.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+      responses:
+        '200':
+          description: The market's pools.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MarketPools' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/coverage:
+    get:
+      tags: [markets, analytics]
+      operationId: getMarketCoverage
+      summary: Keeper coverage of a market (gaps, pauses, observations).
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+      responses:
+        '200':
+          description: The market's coverage.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MarketCoverage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/liquidations:
+    get:
+      tags: [markets, analytics]
+      operationId: listMarketLiquidations
+      summary: Recent liquidations, expiries and SOL settlements of a market (SPEC §8).
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of exits, newest first.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExitPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/events:
+    get:
+      tags: [markets]
+      operationId: listMarketEvents
+      summary: Decoded program events of a market, newest first.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - { $ref: '#/components/parameters/EventKinds' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of events.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/snapshots:
+    get:
+      tags: [markets, analytics]
+      operationId: listMarketSnapshots
+      summary: Price, liquidity, tier and utilisation per crank (PriceCranked), oldest first.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of snapshots.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/PriceSnapshot' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/trades:
+    get:
+      tags: [markets]
+      operationId: listMarketTrades
+      summary: Venue trades of the market's pools, newest first (a pool that is not the market's — its listing curve or pool, its graduated pool, a pool it proposed or adopted — is not the market's, whatever mint it names).
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - name: shortwin_only
+          in: query
+          description: Only short.win's own legs (opens, closes, liquidations, expiries).
+          schema: { type: boolean, default: false }
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of trades.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/VenueTrade' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/candles:
+    get:
+      tags: [markets, analytics]
+      operationId: getMarketCandles
+      summary: OHLCV candles from the market's pools' venue trades (at most 1,000 buckets per request).
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - name: interval
+          in: query
+          required: true
+          schema: { type: string, enum: ['1m', '5m', '15m', '1h', '4h', '1d'] }
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+      responses:
+        '200':
+          description: Candles, oldest first; empty buckets are omitted.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [interval, data]
+                properties:
+                  interval: { type: string }
+                  data:
+                    type: array
+                    maxItems: 1000
+                    items: { $ref: '#/components/schemas/Candle' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/stats:
+    get:
+      tags: [markets, analytics]
+      operationId: getMarketStats
+      summary: The market's hourly or daily time series (§8.6), oldest first.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+        - { $ref: '#/components/parameters/StatsInterval' }
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+      responses:
+        '200':
+          description: At most 1,000 buckets.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [interval, data]
+                properties:
+                  interval: { type: string, enum: ['1h', '1d'] }
+                  data:
+                    type: array
+                    maxItems: 1000
+                    items: { $ref: '#/components/schemas/StatsBucket' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/markets/{mint}/fees:
+    get:
+      tags: [markets, analytics]
+      operationId: getMarketFees
+      summary: Fees by type (§8.2), all time and the last 24 h.
+      parameters:
+        - { $ref: '#/components/parameters/Mint' }
+      responses:
+        '200':
+          description: One row per fee type present.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeeLine' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/positions/{pubkey}:
+    get:
+      tags: [positions]
+      operationId: getPosition
+      summary: One position and its event timeline.
+      parameters:
+        - name: pubkey
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Pubkey' }
+      responses:
+        '200':
+          description: The position.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PositionDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/borrowers/{owner}/positions:
+    get:
+      tags: [positions]
+      operationId: listBorrowerPositions
+      summary: A wallet's positions across markets, newest first.
+      parameters:
+        - { $ref: '#/components/parameters/Owner' }
+        - { $ref: '#/components/parameters/PositionStatusFilter' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of positions (empty for an unknown wallet).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PositionPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/lenders/{owner}:
+    get:
+      tags: [lenders]
+      operationId: getLender
+      summary: A wallet's lender positions across markets.
+      parameters:
+        - { $ref: '#/components/parameters/Owner' }
+      responses:
+        '200':
+          description: The lender (empty `positions` for an unknown wallet).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LenderDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/lenders/{owner}/events:
+    get:
+      tags: [lenders]
+      operationId: listLenderEvents
+      summary: A wallet's lender events (Deposit, Withdraw, ClaimSol, DeficitCovered, LenderSynced).
+      parameters:
+        - { $ref: '#/components/parameters/Owner' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of events.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/stats:
+    get:
+      tags: [analytics]
+      operationId: getGlobalStats
+      summary: Protocol-wide analytics (SPEC §8, §13).
+      responses:
+        '200':
+          description: Current values.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlobalStats' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/stats/timeseries:
+    get:
+      tags: [analytics]
+      operationId: getGlobalTimeseries
+      summary: One protocol-wide metric over time (§8.6).
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [tvl, oi, open_positions, fees_protocol, fees_lenders, fees_keeper, opens,
+                   closes, liquidations, expiries, settlements_s1, settlements_s2, settlements_s3,
+                   realised_lender_loss, shortwin_volume, creator_fees, coverage_gaps,
+                   coverage_gap_s, markets, lender_sol, inventory_value, notional_opened,
+                   settlement_lender_pnl, deposits, withdrawals, positions_open_s,
+                   coverage_paused_s, observations]
+        - { $ref: '#/components/parameters/StatsInterval' }
+        - { $ref: '#/components/parameters/From' }
+        - { $ref: '#/components/parameters/To' }
+      responses:
+        '200':
+          description: At most 1,000 points, oldest first.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Timeseries' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/settlements:
+    get:
+      tags: [analytics]
+      operationId: listSettlements
+      summary: SOL settlements with their realised lender loss (§8.4), newest first.
+      parameters:
+        - name: condition
+          in: query
+          schema: { type: string, enum: [S1, S2, S3] }
+        - name: mint
+          in: query
+          schema: { $ref: '#/components/schemas/Pubkey' }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of settlements.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Settlement' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/liquidations:
+    get:
+      tags: [analytics]
+      operationId: listLiquidations
+      summary: Liquidations, expiries and SOL settlements across markets, newest first.
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of exits.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExitPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/keepers:
+    get:
+      tags: [analytics]
+      operationId: listKeepers
+      summary: Keeper wallets by rewards earned (§8.5).
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of keepers.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/KeeperActivity' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/admin/config:
+    get:
+      tags: [admin]
+      operationId: getProtocolConfig
+      summary: The protocol configuration in force (authorities, parameters, flags).
+      responses:
+        '200':
+          description: The configuration.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProtocolConfig' }
+        '404':
+          description: The configuration has not been ingested yet.
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/admin/changes:
+    get:
+      tags: [admin]
+      operationId: listConfigChanges
+      summary: Governance changes (proposed, applied, cancelled), newest first.
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending, applied, cancelled, superseded] }
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of changes.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/PageMeta' }
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/ConfigChange' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/admin/events:
+    get:
+      tags: [admin]
+      operationId: listAdminEvents
+      summary: Admin, emergency and latch events (§6.6), newest first.
+      parameters:
+        - { $ref: '#/components/parameters/Limit' }
+        - { $ref: '#/components/parameters/Cursor' }
+      responses:
+        '200':
+          description: A page of events.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EventPage' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/venues:
+    get:
+      tags: [admin]
+      operationId: getVenues
+      summary: Venue status (upgrade latch, enabled bits, route-broken bits, extras, admin state).
+      responses:
+        '200':
+          description: The venues.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VenueStatus' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/search:
+    get:
+      tags: [misc]
+      operationId: search
+      summary: Find markets by mint, symbol or name; results are always keyed by mint.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 64 }
+      responses:
+        '200':
+          description: At most 20 matches, exact mint first, then symbol, then name.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    maxItems: 20
+                    items: { $ref: '#/components/schemas/SearchHit' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/tx/{signature}:
+    get:
+      tags: [misc]
+      operationId: getTransaction
+      summary: What the indexer decoded from one transaction.
+      parameters:
+        - name: signature
+          in: path
+          required: true
+          schema: { $ref: '#/components/schemas/Signature' }
+      responses:
+        '200':
+          description: The transaction.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TxDetail' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+  /v1/ws:
+    get:
+      tags: [misc]
+      operationId: openWebSocket
+      summary: WebSocket upgrade (§9.3). Messages are the `Ws*` schemas.
+      parameters:
+        - name: Upgrade
+          in: header
+          required: true
+          schema: { type: string, const: websocket }
+      responses:
+        '101':
+          description: Switching protocols; JSON text frames follow.
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+      description: Optional partner or internal key (§10.1); looked up by its SHA-256. Without one, or with an unknown or disabled one, the anonymous limit applies.
+  parameters:
+    Mint:
+      name: mint
+      in: path
+      required: true
+      description: The market's token mint.
+      schema: { $ref: '#/components/schemas/Pubkey' }
+    Owner:
+      name: owner
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/Pubkey' }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+    Cursor:
+      name: cursor
+      in: query
+      description: Opaque; the previous page's `next_cursor`.
+      schema: { type: string, maxLength: 256 }
+    From:
+      name: from
+      in: query
+      description: Start (inclusive), unix seconds of chain time.
+      schema: { type: integer, minimum: 0 }
+    To:
+      name: to
+      in: query
+      description: End (exclusive), unix seconds of chain time.
+      schema: { type: integer, minimum: 0 }
+    StatsInterval:
+      name: interval
+      in: query
+      schema: { type: string, enum: ['1h', '1d'], default: '1h' }
+    PositionStatusFilter:
+      name: status
+      in: query
+      description: '`exited` = every status but `open`.'
+      schema: { type: string, enum: [open, closed, liquidated, expired, settled, exited] }
+    EventKinds:
+      name: kind
+      in: query
+      description: Comma-separated event kinds (`EventKind`).
+      schema: { type: string, maxLength: 512 }
+
+  headers:
+    X-Indexer-Slot:
+      description: The newest ingested slot.
+      schema: { type: integer }
+    X-Indexer-Finalized-Slot:
+      description: The finalized watermark.
+      schema: { type: integer }
+    RateLimit-Limit:
+      schema: { type: integer }
+    RateLimit-Remaining:
+      schema: { type: integer }
+    RateLimit-Reset:
+      description: Seconds until the bucket refills.
+      schema: { type: integer }
+    Retry-After:
+      schema: { type: integer }
+
+  responses:
+    BadRequest:
+      description: Invalid parameter (`bad_request`, `invalid_pubkey`, `invalid_signature`, `invalid_cursor`, `limit_out_of_range`, `range_too_large`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Unknown market, position or transaction (`not_found`).
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: Rate limited (`rate_limited`); see `Retry-After`.
+      headers:
+        Retry-After: { $ref: '#/components/headers/Retry-After' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unavailable:
+      description: The database is unreachable or the query timed out (`unavailable`, `timeout`).
+      headers:
+        Retry-After: { $ref: '#/components/headers/Retry-After' }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  schemas:
+    # ---- primitives --------------------------------------------------------------------------
+    Pubkey:
+      type: string
+      pattern: '^[1-9A-HJ-NP-Za-km-z]{32,44}$'
+    Signature:
+      type: string
+      pattern: '^[1-9A-HJ-NP-Za-km-z]{64,88}$'
+    U64:
+      description: Unsigned 64-bit integer as a decimal string.
+      type: string
+      pattern: '^(0|[1-9][0-9]{0,19})$'
+    U128:
+      description: Unsigned 128-bit integer as a decimal string (WAD prices, shares).
+      type: string
+      pattern: '^(0|[1-9][0-9]{0,38})$'
+    I128:
+      description: Signed integer as a decimal string.
+      type: string
+      pattern: '^(0|-?[1-9][0-9]{0,38})$'
+    BigNum:
+      description: Non-negative aggregate (sum of u64) as a decimal string; may exceed u64.
+      type: string
+      pattern: '^(0|[1-9][0-9]{0,39})$'
+    Hex32:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+    VenueName:
+      type: string
+      enum: [none, pump_curve, pump_migrating, pump_swap, raydium_v4, raydium_cpmm, mock, unknown]
+    TierName:
+      type: string
+      enum: [A, B, C, D]
+    PositionStatus:
+      type: string
+      enum: [open, closed, liquidated, expired, settled]
+    EventKind:
+      type: string
+      enum: [MarketCreated, Deposit, Withdraw, ClaimSol, DeficitCovered, LenderSynced, Open,
+             Close, Liquidate, Expire, SolSettle, SettleArmed, SettleDisarmed, EpochRolled,
+             ProtocolFeesSwept, MarginAdded, PriceCranked, VenueStateChanged, RouteChainChanged,
+             PoolProposed, PoolSwitched, PoolSwitchCancelled, TraderSwept, VenueRewardsClaimed,
+             MintSafetyTripped, VenueUpgradeFlagged, VenueRevalidated, CoverageGap,
+             CoveragePauseSet, ConfigProposed, ConfigApplied, ConfigCancelled, PauseSet,
+             VenueDisabled, RouteBrokenSet, VenueExtrasSet]
+    FeeType:
+      type: string
+      enum: [creation_fee, open_fee, venue_rent, rent_lender, rent_protocol, liq_penalty_lender,
+             liq_penalty_protocol, liq_penalty_keeper, liq_keeper_topup, expiry_fee,
+             expiry_keeper_reward, settle_keeper_reward, trader_sweep_lenders, trader_sweep_wipe,
+             trader_sweep_protocol, venue_rewards_lenders, venue_rewards_wipe,
+             venue_rewards_protocol]
+
+    # ---- envelopes ---------------------------------------------------------------------------
+    PageMeta:
+      type: object
+      required: [next_cursor]
+      properties:
+        next_cursor: { type: [string, 'null'] }
+    Problem:
+      type: object
+      required: [type, title, status, code]
+      properties:
+        type: { type: string, description: 'A URI; `about:blank` or `https://short.win/problems/<code>`.' }
+        title: { type: string }
+        status: { type: integer, minimum: 400, maximum: 599 }
+        detail: { type: string }
+        code:
+          type: string
+          enum: [bad_request, invalid_pubkey, invalid_signature, invalid_cursor,
+                 limit_out_of_range, range_too_large, not_found, rate_limited, timeout,
+                 unavailable, internal]
+    ChainRef:
+      description: Where a row came from.
+      type: object
+      required: [signature, slot, tx_index, ix_index, ts, finalized]
+      properties:
+        signature: { $ref: '#/components/schemas/Signature' }
+        slot: { type: integer }
+        tx_index: { type: integer }
+        ix_index: { type: integer }
+        ts: { type: integer, description: The event's program-clock `ts` (unix seconds). }
+        finalized: { type: boolean }
+
+    # ---- meta --------------------------------------------------------------------------------
+    IngestStatus:
+      type: object
+      required: [confirmed_slot, finalized_slot, latest_block_time, lag_s, streams, rollups_complete_before,
+                 quarantined, layout_warnings, missing, logs_truncated]
+      properties:
+        confirmed_slot: { type: integer }
+        finalized_slot: { type: integer }
+        latest_block_time: { type: [integer, 'null'] }
+        lag_s: { type: [integer, 'null'], description: Wall clock minus the newest block time. }
+        streams:
+          type: array
+          items:
+            type: object
+            required: [stream, newest_slot, backfill_complete]
+            properties:
+              stream: { type: string }
+              newest_slot: { type: [integer, 'null'] }
+              backfill_complete: { type: boolean }
+        rollups_complete_before: { type: integer }
+        quarantined: { type: integer, description: 'short.win event payloads the indexer could not decode, not applied to the projections (an alert: the program and the indexer disagree on a layout).' }
+        layout_warnings: { type: integer, description: 'short.win events longer than the indexer''s layout (a newer program version appended fields), applied on their known prefix (an alert: upgrade the indexer).' }
+        missing: { type: integer, description: 'Notified signatures the RPC node has not served yet; asked for again until ingested or proven abandoned (an alert while above 0).' }
+        logs_truncated: { type: integer, description: 'Transactions of the last 24 h of chain time whose log stream was cut or absent: their log events (CoverageGap, exit-path MintSafetyTripped) may be missing.' }
+
+    # ---- markets -----------------------------------------------------------------------------
+    MarketFlags:
+      type: object
+      required: [paused_opens, paused_coverage, mint_unsafe, route_broken, wipe_live]
+      properties:
+        paused_opens: { type: boolean }
+        paused_coverage: { type: boolean }
+        mint_unsafe: { type: boolean }
+        route_broken: { type: boolean }
+        wipe_live: { type: boolean }
+    MarketSummary:
+      type: object
+      required: [market, mint, symbol, name, decimals, venue, tier, created_ts, flags,
+                 tokens_free, borrowed_q, inventory_tokens, util_bps, open_positions,
+                 ema_price, price_ts, oi_lamports, tvl_lamports, tvl_usd]
+      properties:
+        market: { $ref: '#/components/schemas/Pubkey' }
+        mint: { $ref: '#/components/schemas/Pubkey' }
+        symbol: { type: [string, 'null'] }
+        name: { type: [string, 'null'] }
+        decimals: { type: [integer, 'null'] }
+        venue: { $ref: '#/components/schemas/VenueName' }
+        tier: { $ref: '#/components/schemas/TierName' }
+        created_ts: { type: integer }
+        flags: { $ref: '#/components/schemas/MarketFlags' }
+        tokens_free: { $ref: '#/components/schemas/U64' }
+        borrowed_q: { $ref: '#/components/schemas/U64' }
+        inventory_tokens: { $ref: '#/components/schemas/BigNum' }
+        util_bps: { type: integer, minimum: 0, maximum: 10000 }
+        open_positions: { type: integer }
+        ema_price:
+          description: P_ema (WAD); null before the first price.
+          oneOf: [{ $ref: '#/components/schemas/U128' }, { type: 'null' }]
+        price_ts: { type: [integer, 'null'] }
+        oi_lamports: { $ref: '#/components/schemas/BigNum' }
+        tvl_lamports: { $ref: '#/components/schemas/BigNum' }
+        tvl_usd: { type: [number, 'null'], description: At the latest SOL/USD (OracleCache); null without one. }
+    MarketDetail:
+      allOf:
+        - { $ref: '#/components/schemas/MarketSummary' }
+        - type: object
+          required: [creator, coin_creator, token_program, bonding_curve, canonical_pool,
+                     ray_pool, graduated_at, total_shares, share_epoch, total_notional_open,
+                     open_vault_lamports, lender_sol, protocol_fees, lender_count,
+                     lender_value_lamports, inventory_value_lamports, spot_wad, route_chains,
+                     fees, exits, lender_loss,
+                     creator_exposure, coverage, tier_terms, quarantined_events]
+          properties:
+            creator: { $ref: '#/components/schemas/Pubkey' }
+            coin_creator: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+            token_program: { $ref: '#/components/schemas/Pubkey' }
+            bonding_curve: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+            canonical_pool: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+            ray_pool: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+            graduated_at: { type: [integer, 'null'] }
+            total_shares: { $ref: '#/components/schemas/U128' }
+            share_epoch: { type: integer }
+            total_notional_open: { $ref: '#/components/schemas/U64' }
+            open_vault_lamports: { $ref: '#/components/schemas/U64' }
+            lender_sol: { $ref: '#/components/schemas/U64' }
+            protocol_fees: { $ref: '#/components/schemas/U64' }
+            lender_count: { type: integer }
+            lender_value_lamports: { $ref: '#/components/schemas/BigNum' }
+            inventory_value_lamports: { $ref: '#/components/schemas/BigNum', description: 'Lendable inventory (T + ΣB_Q) at P_ema, lamports (§8.7).' }
+            spot_wad: { oneOf: [{ $ref: '#/components/schemas/U128' }, { type: 'null' }] }
+            route_chains:
+              type: object
+              required: [no_route_since, pool_fail_since]
+              properties:
+                no_route_since: { type: integer, description: 0 when the chain is not running. }
+                pool_fail_since: { type: integer }
+            fees:
+              type: array
+              items: { $ref: '#/components/schemas/FeeLine' }
+            exits: { $ref: '#/components/schemas/ExitCounts' }
+            lender_loss: { $ref: '#/components/schemas/LenderLoss' }
+            creator_exposure: { $ref: '#/components/schemas/CreatorExposure' }
+            coverage: { $ref: '#/components/schemas/CoverageStats' }
+            quarantined_events: { type: integer, description: 'Event payloads naming this market that were not applied (undecodable): when above 0 the projection may be incomplete.' }
+            tier_terms:
+              description: The tier's parameters in force (protocol_params_history), null before the configuration is ingested.
+              type: [object, 'null']
+              additionalProperties: true
+    FeeLine:
+      type: object
+      required: [fee_type, recipient, 'n', total, last_24h]
+      properties:
+        fee_type: { $ref: '#/components/schemas/FeeType' }
+        recipient: { type: string, enum: [protocol, lenders, keeper, venue] }
+        n: { type: integer }
+        total: { $ref: '#/components/schemas/BigNum' }
+        last_24h: { $ref: '#/components/schemas/BigNum' }
+    ExitCounts:
+      type: object
+      required: [positions, open, closes, liquidations_cr, liquidations_expired, expiries,
+                 settlements_s1, settlements_s2, settlements_s3, exits, avg_duration_s,
+                 close_rate_bps, liquidation_rate_bps, expiry_rate_bps, settlement_rate_bps,
+                 avg_open_impact_bps, avg_exit_slippage_bps, borrower_pnl]
+      properties:
+        positions: { type: integer }
+        open: { type: integer }
+        closes: { type: integer }
+        liquidations_cr: { type: integer }
+        liquidations_expired: { type: integer }
+        expiries: { type: integer }
+        settlements_s1: { type: integer }
+        settlements_s2: { type: integer }
+        settlements_s3: { type: integer }
+        exits: { type: integer }
+        avg_duration_s: { type: [number, 'null'] }
+        close_rate_bps: { type: [integer, 'null'], description: 'Closes per 10,000 exits (SPEC §13 close vs liquidation vs SOL-settlement rate); null before the first exit.' }
+        liquidation_rate_bps: { type: [integer, 'null'], description: 'Liquidations (CR and expired) per 10,000 exits.' }
+        expiry_rate_bps: { type: [integer, 'null'] }
+        settlement_rate_bps: { type: [integer, 'null'], description: 'SOL settlements (S1–S3) per 10,000 exits.' }
+        avg_open_impact_bps: { type: [number, 'null'], description: "Mean price impact of the opens' sales vs the pre-trade spot (§8.3)." }
+        avg_exit_slippage_bps: { type: [number, 'null'], description: "Mean slippage of the exits' buybacks vs the live quote (§8.3)." }
+        borrower_pnl: { $ref: '#/components/schemas/I128' }
+    LenderLoss:
+      type: object
+      required: [settlements, token_value, lender_amount, lender_pnl, realised_lender_loss,
+                 loss_events, loss_bps_of_value, loss_bps_of_notional, realised_lender_loss_s1,
+                 realised_lender_loss_s2, realised_lender_loss_s3]
+      properties:
+        settlements: { type: integer }
+        token_value: { $ref: '#/components/schemas/BigNum' }
+        lender_amount: { $ref: '#/components/schemas/BigNum' }
+        lender_pnl: { $ref: '#/components/schemas/I128' }
+        realised_lender_loss: { $ref: '#/components/schemas/BigNum' }
+        loss_events: { type: integer }
+        loss_bps_of_value: { type: [integer, 'null'] }
+        loss_bps_of_notional: { type: [integer, 'null'] }
+        realised_lender_loss_s1: { $ref: '#/components/schemas/BigNum' }
+        realised_lender_loss_s2: { $ref: '#/components/schemas/BigNum' }
+        realised_lender_loss_s3: { $ref: '#/components/schemas/BigNum' }
+    CreatorExposure:
+      description: SPEC R1 and ARCH C0-18.
+      type: object
+      required: [coin_creator, coin_creator_shares, coin_creator_share_bps,
+                 coin_creator_deposited_tokens, creator_fee_income_lamports,
+                 shortwin_volume_lamports]
+      properties:
+        coin_creator: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+        coin_creator_shares: { $ref: '#/components/schemas/U128' }
+        coin_creator_share_bps: { type: [integer, 'null'] }
+        coin_creator_deposited_tokens: { $ref: '#/components/schemas/U64' }
+        creator_fee_income_lamports: { $ref: '#/components/schemas/BigNum' }
+        shortwin_volume_lamports: { $ref: '#/components/schemas/BigNum' }
+    CoverageStats:
+      type: object
+      required: [gaps, gap_s_total, gap_s_max, gaps_24h, gap_s_24h, coverage_pauses,
+                 coverage_paused_s, paused_coverage, observations_24h, failed_observations_24h]
+      properties:
+        gaps: { type: integer }
+        gap_s_total: { type: integer }
+        gap_s_max: { type: [integer, 'null'] }
+        gaps_24h: { type: integer }
+        gap_s_24h: { type: integer }
+        coverage_pauses: { type: integer }
+        coverage_paused_s: { type: integer }
+        paused_coverage: { type: boolean }
+        observations_24h: { type: integer }
+        failed_observations_24h: { type: integer }
+    MarketCoverage:
+      type: object
+      required: [mint, stats, recent_gaps, pauses]
+      properties:
+        mint: { $ref: '#/components/schemas/Pubkey' }
+        stats: { $ref: '#/components/schemas/CoverageStats' }
+        recent_gaps:
+          type: array
+          maxItems: 100
+          items:
+            allOf:
+              - { $ref: '#/components/schemas/ChainRef' }
+              - type: object
+                required: [gap_s, open_positions]
+                properties:
+                  gap_s: { type: integer }
+                  open_positions: { type: integer }
+        pauses:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [paused_at, resumed_at, paused_s, ongoing, by]
+            properties:
+              paused_at: { type: integer }
+              resumed_at: { type: integer }
+              paused_s: { type: integer }
+              ongoing: { type: boolean }
+              by: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+    MarketPools:
+      type: object
+      required: [mint, current, window, pools, events]
+      properties:
+        mint: { $ref: '#/components/schemas/Pubkey' }
+        current: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+        window:
+          description: The open fast-path collection window, if any.
+          type: [object, 'null']
+          properties:
+            candidate: { $ref: '#/components/schemas/Pubkey' }
+            d_cand: { $ref: '#/components/schemas/U128' }
+            window_ends: { type: integer }
+        pools:
+          type: array
+          items:
+            type: object
+            required: [pool, venue, first_seen_ts, last_d, proposals, adopted_ts, retired_ts, is_current]
+            properties:
+              pool: { $ref: '#/components/schemas/Pubkey' }
+              venue: { oneOf: [{ $ref: '#/components/schemas/VenueName' }, { type: 'null' }] }
+              first_seen_ts: { type: integer }
+              last_d: { $ref: '#/components/schemas/U128' }
+              proposals: { type: integer }
+              adopted_ts: { type: [integer, 'null'] }
+              retired_ts: { type: [integer, 'null'] }
+              is_current: { type: boolean }
+        events:
+          type: array
+          maxItems: 200
+          items: { $ref: '#/components/schemas/Event' }
+
+    # ---- positions ---------------------------------------------------------------------------
+    Position:
+      type: object
+      required: [position, market, mint, borrower, nonce, status, tier, venue, q, s, m,
+                 margin_added, v, n_open, fee_open, entry_price, deadline, opened_ts,
+                 open_signature, armed, exit]
+      properties:
+        position: { $ref: '#/components/schemas/Pubkey' }
+        market: { $ref: '#/components/schemas/Pubkey' }
+        mint: { $ref: '#/components/schemas/Pubkey' }
+        borrower: { $ref: '#/components/schemas/Pubkey' }
+        nonce: { $ref: '#/components/schemas/U64' }
+        status: { $ref: '#/components/schemas/PositionStatus' }
+        tier: { $ref: '#/components/schemas/TierName' }
+        venue: { $ref: '#/components/schemas/VenueName' }
+        q: { $ref: '#/components/schemas/U64' }
+        s: { $ref: '#/components/schemas/U64' }
+        m: { $ref: '#/components/schemas/U64' }
+        margin_added: { $ref: '#/components/schemas/U64' }
+        v: { $ref: '#/components/schemas/U64' }
+        n_open: { $ref: '#/components/schemas/U64' }
+        fee_open: { $ref: '#/components/schemas/U64' }
+        entry_price: { $ref: '#/components/schemas/U128' }
+        deadline: { type: integer }
+        opened_ts: { type: integer }
+        open_signature: { $ref: '#/components/schemas/Signature' }
+        armed: { type: boolean }
+        exit:
+          description: null while open.
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [ts, signature, keeper, buyback_cost, rent_paid, penalty, expiry_fee,
+                         keeper_paid, borrower_payout, settle_condition, borrower_pnl, duration_s]
+              properties:
+                ts: { type: integer }
+                signature: { $ref: '#/components/schemas/Signature' }
+                keeper: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+                buyback_cost: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+                rent_paid: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+                penalty: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+                expiry_fee: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+                keeper_paid: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+                borrower_payout: { $ref: '#/components/schemas/U64' }
+                settle_condition: { type: [string, 'null'], enum: [S1, S2, S3, null] }
+                borrower_pnl: { $ref: '#/components/schemas/I128' }
+                duration_s: { type: integer }
+    PositionPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageMeta' }
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Position' }
+    PositionDetail:
+      type: object
+      required: [position, events, settlement]
+      properties:
+        position: { $ref: '#/components/schemas/Position' }
+        events:
+          type: array
+          maxItems: 1000
+          items: { $ref: '#/components/schemas/Event' }
+        settlement: { oneOf: [{ $ref: '#/components/schemas/Settlement' }, { type: 'null' }] }
+    ExitEvent:
+      allOf:
+        - { $ref: '#/components/schemas/ChainRef' }
+        - type: object
+          required: [kind, market, mint, position, keeper, q, buyback_cost, lender_amount, keeper_paid, borrower_payout, settle_condition, expired]
+          properties:
+            kind: { type: string, enum: [liquidation, expiry, settlement] }
+            market: { $ref: '#/components/schemas/Pubkey' }
+            mint: { $ref: '#/components/schemas/Pubkey' }
+            position: { $ref: '#/components/schemas/Pubkey' }
+            keeper: { $ref: '#/components/schemas/Pubkey' }
+            q: { $ref: '#/components/schemas/U64' }
+            buyback_cost: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+            lender_amount: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+            keeper_paid: { $ref: '#/components/schemas/U64' }
+            borrower_payout: { $ref: '#/components/schemas/U64' }
+            settle_condition: { type: [string, 'null'], enum: [S1, S2, S3, null] }
+            expired: { type: boolean }
+    ExitPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageMeta' }
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/ExitEvent' }
+    Settlement:
+      allOf:
+        - { $ref: '#/components/schemas/ChainRef' }
+        - type: object
+          required: [position, market, mint, keeper, condition, q, n_open, expired, b_live, b_rs,
+                     b_ema, p_lo, p_hi, fv, k_s, lender_amount, lump, borrower_amount,
+                     ema_age_s, p_ref, p_ref_source, token_value, lender_pnl,
+                     realised_lender_loss]
+          properties:
+            position: { $ref: '#/components/schemas/Pubkey' }
+            market: { $ref: '#/components/schemas/Pubkey' }
+            mint: { $ref: '#/components/schemas/Pubkey' }
+            keeper: { $ref: '#/components/schemas/Pubkey' }
+            condition: { type: string, enum: [S1, S2, S3] }
+            q: { $ref: '#/components/schemas/U64' }
+            n_open: { $ref: '#/components/schemas/U64' }
+            expired: { type: boolean }
+            b_live: { $ref: '#/components/schemas/U64' }
+            b_rs: { $ref: '#/components/schemas/U64' }
+            b_ema: { $ref: '#/components/schemas/U64' }
+            p_lo: { $ref: '#/components/schemas/U128' }
+            p_hi: { $ref: '#/components/schemas/U128' }
+            fv: { $ref: '#/components/schemas/U64' }
+            k_s: { $ref: '#/components/schemas/U64' }
+            lender_amount: { $ref: '#/components/schemas/U64' }
+            lump: { $ref: '#/components/schemas/U64' }
+            borrower_amount: { $ref: '#/components/schemas/U64' }
+            ema_age_s: { type: integer }
+            p_ref: { $ref: '#/components/schemas/U128' }
+            p_ref_source: { type: string, enum: [crank_clamped, box_point, box_mid] }
+            token_value: { $ref: '#/components/schemas/U64' }
+            lender_pnl: { $ref: '#/components/schemas/I128' }
+            realised_lender_loss: { $ref: '#/components/schemas/U64' }
+
+    # ---- lenders -----------------------------------------------------------------------------
+    LenderPosition:
+      type: object
+      required: [market, mint, owner, shares, share_bps, epoch, lock, lock_until,
+                 deposited_tokens, withdrawn_tokens, sol_paid, pot_draw, deficit_covered,
+                 deposits, withdrawals, claims, is_coin_creator, is_market_creator,
+                 first_ts, last_ts]
+      properties:
+        market: { $ref: '#/components/schemas/Pubkey' }
+        mint: { $ref: '#/components/schemas/Pubkey' }
+        owner: { $ref: '#/components/schemas/Pubkey' }
+        shares: { $ref: '#/components/schemas/U128' }
+        share_bps: { type: [integer, 'null'], description: '⌊shares·10⁴/S⌋ at the current epoch.' }
+        epoch: { type: integer }
+        lock: { $ref: '#/components/schemas/U128' }
+        lock_until: { type: integer }
+        deposited_tokens: { $ref: '#/components/schemas/U64' }
+        withdrawn_tokens: { $ref: '#/components/schemas/U64' }
+        sol_paid: { $ref: '#/components/schemas/U64' }
+        pot_draw: { $ref: '#/components/schemas/U64' }
+        deficit_covered: { $ref: '#/components/schemas/U64' }
+        deposits: { type: integer }
+        withdrawals: { type: integer }
+        claims: { type: integer }
+        is_coin_creator: { type: boolean, description: The token's creator wallet (SPEC R1). }
+        is_market_creator: { type: boolean }
+        first_ts: { type: integer }
+        last_ts: { type: integer }
+    LenderDetail:
+      type: object
+      required: [owner, positions, totals]
+      properties:
+        owner: { $ref: '#/components/schemas/Pubkey' }
+        positions:
+          type: array
+          items: { $ref: '#/components/schemas/LenderPosition' }
+        totals:
+          type: object
+          required: [markets, sol_paid]
+          properties:
+            markets: { type: integer }
+            sol_paid: { $ref: '#/components/schemas/BigNum' }
+
+    # ---- events ------------------------------------------------------------------------------
+    Event:
+      allOf:
+        - { $ref: '#/components/schemas/ChainRef' }
+        - type: object
+          required: [id, kind, invocation, source, market, data]
+          properties:
+            id: { type: integer, description: Ingestion sequence (the WebSocket resume key). }
+            kind: { $ref: '#/components/schemas/EventKind' }
+            invocation: { type: string, description: The emitting instruction (snake_case). }
+            source: { type: string, enum: [cpi, log] }
+            market: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+            data:
+              description: Every field of the event by its program name (INDEXER.md §4.2 encoding).
+              type: object
+              additionalProperties: true
+    EventPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageMeta' }
+        - type: object
+          required: [data]
+          properties:
+            data:
+              type: array
+              items: { $ref: '#/components/schemas/Event' }
+
+    # ---- prices and trades -------------------------------------------------------------------
+    PriceSnapshot:
+      allOf:
+        - { $ref: '#/components/schemas/ChainRef' }
+        - type: object
+          required: [spot_wad, ema_price, ema_liq, liq_slow, ema_count, tier, util_bps, vest_bal, cranker]
+          properties:
+            spot_wad: { $ref: '#/components/schemas/U128' }
+            ema_price: { $ref: '#/components/schemas/U128' }
+            ema_liq: { $ref: '#/components/schemas/U128' }
+            liq_slow: { $ref: '#/components/schemas/U128' }
+            ema_count: { $ref: '#/components/schemas/U64' }
+            tier: { $ref: '#/components/schemas/TierName' }
+            util_bps: { type: integer }
+            vest_bal: { $ref: '#/components/schemas/U64' }
+            cranker: { $ref: '#/components/schemas/Pubkey' }
+    VenueTrade:
+      allOf:
+        - { $ref: '#/components/schemas/ChainRef' }
+        - type: object
+          required: [venue, pool, mint, side, token_amount, sol_amount, price_wad, fee_creator_lamports, user, is_shortwin, shortwin_invocation]
+          properties:
+            venue: { $ref: '#/components/schemas/VenueName' }
+            pool: { $ref: '#/components/schemas/Pubkey' }
+            mint: { $ref: '#/components/schemas/Pubkey' }
+            side: { type: string, enum: [buy, sell] }
+            token_amount: { $ref: '#/components/schemas/U64' }
+            sol_amount: { $ref: '#/components/schemas/U64' }
+            price_wad: { oneOf: [{ $ref: '#/components/schemas/U128' }, { type: 'null' }] }
+            fee_creator_lamports: { oneOf: [{ $ref: '#/components/schemas/U64' }, { type: 'null' }] }
+            user: { $ref: '#/components/schemas/Pubkey' }
+            is_shortwin: { type: boolean }
+            shortwin_invocation: { type: [string, 'null'] }
+    Candle:
+      type: object
+      required: [t, open, high, low, close, volume_sol, volume_tokens, trades]
+      properties:
+        t: { type: integer, description: Bucket start (unix seconds). }
+        open: { $ref: '#/components/schemas/U128' }
+        high: { $ref: '#/components/schemas/U128' }
+        low: { $ref: '#/components/schemas/U128' }
+        close: { $ref: '#/components/schemas/U128' }
+        volume_sol: { $ref: '#/components/schemas/BigNum' }
+        volume_tokens: { $ref: '#/components/schemas/BigNum' }
+        trades: { type: integer }
+
+    # ---- analytics ---------------------------------------------------------------------------
+    StatsBucket:
+      type: object
+      required: [t, tvl_lamports, oi_lamports, util_bps, open_positions, fees_protocol,
+                 fees_lenders, fees_keeper, opens, closes, liquidations, expiries,
+                 settlements_s1, settlements_s2, settlements_s3, realised_lender_loss,
+                 shortwin_volume, creator_fees, coverage_gaps, coverage_gap_s]
+      properties:
+        t: { type: integer }
+        tvl_lamports: { $ref: '#/components/schemas/BigNum' }
+        oi_lamports: { $ref: '#/components/schemas/BigNum' }
+        util_bps: { type: [integer, 'null'] }
+        open_positions: { type: integer }
+        fees_protocol: { $ref: '#/components/schemas/BigNum' }
+        fees_lenders: { $ref: '#/components/schemas/BigNum' }
+        fees_keeper: { $ref: '#/components/schemas/BigNum' }
+        opens: { type: integer }
+        closes: { type: integer }
+        liquidations: { type: integer }
+        expiries: { type: integer }
+        settlements_s1: { type: integer }
+        settlements_s2: { type: integer }
+        settlements_s3: { type: integer }
+        realised_lender_loss: { $ref: '#/components/schemas/BigNum' }
+        shortwin_volume: { $ref: '#/components/schemas/BigNum' }
+        creator_fees: { $ref: '#/components/schemas/BigNum' }
+        coverage_gaps: { type: integer }
+        coverage_gap_s: { type: integer }
+    Timeseries:
+      type: object
+      required: [metric, interval, points]
+      properties:
+        metric: { type: string }
+        interval: { type: string, enum: ['1h', '1d'] }
+        points:
+          type: array
+          maxItems: 1000
+          items:
+            type: object
+            required: [t, value]
+            properties:
+              t: { type: integer }
+              value: { type: string, description: 'Decimal string (counts too, for uniformity).' }
+    GlobalStats:
+      type: object
+      required: [markets, markets_with_positions, tvl_lamports, tvl_usd, oi_lamports,
+                 notional_open_lamports, open_positions, lender_sol, protocol_fees_unswept,
+                 protocol_revenue, lender_fee_income, keeper_income, closes, liquidations,
+                 expiries, settlements_s1, settlements_s2, settlements_s3,
+                 realised_lender_loss, settlement_lender_pnl, unique_lenders,
+                 unique_borrowers, repeat_lenders, repeat_borrowers, avg_duration_s,
+                 coverage_gap_s, creator_fee_income, sol_usd, inventory_value_lamports,
+                 util_bps, rental_fees, avg_open_impact_bps, avg_exit_slippage_bps]
+      properties:
+        markets: { type: integer }
+        markets_with_positions: { type: integer }
+        tvl_lamports: { $ref: '#/components/schemas/BigNum' }
+        tvl_usd: { type: [number, 'null'] }
+        oi_lamports: { $ref: '#/components/schemas/BigNum' }
+        notional_open_lamports: { $ref: '#/components/schemas/BigNum' }
+        open_positions: { type: integer }
+        lender_sol: { $ref: '#/components/schemas/BigNum' }
+        protocol_fees_unswept: { $ref: '#/components/schemas/BigNum' }
+        protocol_revenue: { $ref: '#/components/schemas/BigNum' }
+        lender_fee_income: { $ref: '#/components/schemas/BigNum' }
+        keeper_income: { $ref: '#/components/schemas/BigNum' }
+        closes: { type: integer }
+        liquidations: { type: integer }
+        expiries: { type: integer }
+        settlements_s1: { type: integer }
+        settlements_s2: { type: integer }
+        settlements_s3: { type: integer }
+        realised_lender_loss: { $ref: '#/components/schemas/BigNum' }
+        settlement_lender_pnl: { $ref: '#/components/schemas/I128' }
+        unique_lenders: { type: integer }
+        unique_borrowers: { type: integer }
+        repeat_lenders: { type: integer }
+        repeat_borrowers: { type: integer }
+        avg_duration_s: { type: [number, 'null'] }
+        coverage_gap_s: { type: integer }
+        creator_fee_income: { $ref: '#/components/schemas/BigNum' }
+        sol_usd: { type: [number, 'null'] }
+        inventory_value_lamports: { $ref: '#/components/schemas/BigNum' }
+        util_bps: { type: [integer, 'null'], description: 'Global utilisation: OI at mark / Σ inventory at mark (§8.7), rounded up; null without a priced inventory.' }
+        rental_fees: { $ref: '#/components/schemas/BigNum', description: "Σ rent (the lenders' and the protocol's legs)." }
+        avg_open_impact_bps: { type: [number, 'null'] }
+        avg_exit_slippage_bps: { type: [number, 'null'] }
+    KeeperActivity:
+      type: object
+      required: [keeper, liquidations, expiries, settlements, rewards_lamports, markets, failures]
+      properties:
+        keeper: { $ref: '#/components/schemas/Pubkey' }
+        liquidations: { type: integer }
+        expiries: { type: integer }
+        settlements: { type: integer }
+        rewards_lamports: { $ref: '#/components/schemas/BigNum' }
+        markets: { type: integer }
+        failures: { type: integer, description: 'Failed exit, crank, pool and coverage attempts paid by this key (one per transaction and instruction; the counters of v_keeper_failures, kept within the invocation retention).' }
+
+    # ---- admin -------------------------------------------------------------------------------
+    ProtocolConfig:
+      type: object
+      required: [as_of_slot, source, governance, pause_authority, coverage_authority,
+                 fee_recipient, timelock_s, venue_enabled, paused_opens, route_broken_bits,
+                 params, tiers, ema, util_kink_bps, pyth_sol_usd, pyth_feed_id]
+      properties:
+        as_of_slot: { type: integer }
+        source: { type: string, enum: [initialize_config, apply_config, disable_venue, account], description: 'What wrote the configuration row in force: initialize_config, an applied ConfigChange, or the Emergency''s disable_venue (which clears a venue_enabled bit at once).' }
+        governance: { $ref: '#/components/schemas/Pubkey' }
+        pause_authority: { $ref: '#/components/schemas/Pubkey' }
+        coverage_authority: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+        fee_recipient: { $ref: '#/components/schemas/Pubkey' }
+        timelock_s: { type: integer }
+        venue_enabled: { type: integer }
+        paused_opens: { type: boolean }
+        route_broken_bits: { type: integer }
+        params: { type: object, additionalProperties: true }
+        tiers:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items: { type: object, additionalProperties: true }
+        ema: { type: object, additionalProperties: true }
+        util_kink_bps: { type: integer }
+        pyth_sol_usd: { $ref: '#/components/schemas/Pubkey' }
+        pyth_feed_id: { $ref: '#/components/schemas/Hex32' }
+    ConfigChange:
+      type: object
+      required: [kind, hash, payload, payload_verified, not_before, status, proposed, applied, cancelled]
+      properties:
+        kind: { type: string, enum: [Params, EmaParams, Kink, Authorities, Timelock, EnableVenues, OracleFeed, Unknown] }
+        hash: { $ref: '#/components/schemas/Hex32' }
+        payload: { type: [object, 'null'], additionalProperties: true }
+        payload_verified: { type: boolean }
+        not_before: { type: integer }
+        status: { type: string, enum: [pending, applied, cancelled, superseded] }
+        proposed: { $ref: '#/components/schemas/ChainRef' }
+        applied: { oneOf: [{ $ref: '#/components/schemas/ChainRef' }, { type: 'null' }] }
+        cancelled:
+          oneOf:
+            - type: 'null'
+            - allOf:
+                - { $ref: '#/components/schemas/ChainRef' }
+                - type: object
+                  required: [by]
+                  properties:
+                    by: { $ref: '#/components/schemas/Pubkey' }
+    VenueStatus:
+      type: object
+      required: [venue_enabled, route_broken_bits, paused_opens, guards, extras, admin_changes]
+      properties:
+        venue_enabled: { type: [integer, 'null'] }
+        route_broken_bits: { type: integer }
+        paused_opens: { type: boolean }
+        guards:
+          type: array
+          items:
+            type: object
+            required: [venue, name, upgraded, guard_slot, programdata_slot, flagged_at, last_ts]
+            properties:
+              venue: { type: integer }
+              name: { type: string, enum: [pump, pump_amm, pump_fees, raydium_v4, raydium_cpmm, jupiter, unknown] }
+              upgraded: { type: boolean }
+              guard_slot: { $ref: '#/components/schemas/U64' }
+              programdata_slot: { $ref: '#/components/schemas/U64' }
+              flagged_at: { type: [integer, 'null'] }
+              last_ts: { type: integer }
+        extras:
+          type: array
+          items:
+            type: object
+            required: [venue, ix, version, keys, stable_version]
+            properties:
+              venue: { type: integer }
+              ix: { type: integer }
+              version: { type: integer }
+              keys:
+                type: array
+                items: { type: string }
+              stable_version: { type: integer }
+        admin_changes:
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required: [account, field, venue, old_value, new_value, observed_slot]
+            properties:
+              account: { $ref: '#/components/schemas/Pubkey' }
+              field: { type: string }
+              venue: { type: string }
+              old_value: { type: [string, 'null'] }
+              new_value: { type: string }
+              observed_slot: { type: integer }
+
+    # ---- misc --------------------------------------------------------------------------------
+    SearchHit:
+      type: object
+      required: [mint, market, symbol, name, match]
+      properties:
+        mint: { $ref: '#/components/schemas/Pubkey' }
+        market: { $ref: '#/components/schemas/Pubkey' }
+        symbol: { type: [string, 'null'] }
+        name: { type: [string, 'null'] }
+        match: { type: string, enum: [mint, symbol, name] }
+    TxDetail:
+      type: object
+      required: [signature, slot, tx_index, block_time, commitment, fee_payer, fee, ok, err_code, events, invocations, venue_trades]
+      properties:
+        signature: { $ref: '#/components/schemas/Signature' }
+        slot: { type: integer }
+        tx_index: { type: integer }
+        block_time: { type: [integer, 'null'] }
+        commitment: { type: string, enum: [confirmed, finalized] }
+        fee_payer: { $ref: '#/components/schemas/Pubkey' }
+        fee: { $ref: '#/components/schemas/U64' }
+        ok: { type: boolean }
+        err_code: { type: [integer, 'null'] }
+        events:
+          type: array
+          items: { $ref: '#/components/schemas/Event' }
+        invocations:
+          type: array
+          items:
+            type: object
+            required: [ix_index, inner_index, stack_height, program, name, market, args]
+            properties:
+              ix_index: { type: integer }
+              inner_index: { type: integer }
+              stack_height: { type: integer }
+              program: { $ref: '#/components/schemas/Pubkey' }
+              name: { type: string }
+              market: { oneOf: [{ $ref: '#/components/schemas/Pubkey' }, { type: 'null' }] }
+              args: { type: [object, 'null'], additionalProperties: true }
+        venue_trades:
+          type: array
+          items: { $ref: '#/components/schemas/VenueTrade' }
+
+    # ---- WebSocket (§9.3) --------------------------------------------------------------------
+    WsChannel:
+      description: |
+        `markets` (market summaries on change), `market:<mint>` (every event of a market),
+        `position:<pubkey>`, `lender:<owner>`, `liquidations` (Liquidate / Expire / SolSettle,
+        all markets), `admin` (§6.6 events), `coverage` (CoverageGap / CoveragePauseSet),
+        `trades:<mint>` (venue trades), `stats` (GlobalStats every 10 s).
+      type: string
+      pattern: '^(markets|liquidations|admin|coverage|stats|(market|position|lender|trades):[1-9A-HJ-NP-Za-km-z]{32,44})$'
+    WsClientMessage:
+      oneOf:
+        - type: object
+          required: [op, channels]
+          properties:
+            op: { type: string, enum: [subscribe, unsubscribe] }
+            channels:
+              type: array
+              minItems: 1
+              maxItems: 50
+              items: { $ref: '#/components/schemas/WsChannel' }
+            since:
+              type: integer
+              description: Replay events with `id` > since (at most 1,000) before live ones (event channels only).
+        - type: object
+          required: [op]
+          properties:
+            op: { type: string, const: ping }
+    WsServerMessage:
+      oneOf:
+        - type: object
+          required: [type, channels]
+          properties:
+            type: { type: string, enum: [subscribed, unsubscribed] }
+            channels:
+              type: array
+              items: { $ref: '#/components/schemas/WsChannel' }
+        - type: object
+          required: [type, channel, id, data]
+          properties:
+            type: { type: string, const: event }
+            channel: { $ref: '#/components/schemas/WsChannel' }
+            id: { type: integer }
+            data: { $ref: '#/components/schemas/Event' }
+        - type: object
+          required: [type, channel, data]
+          properties:
+            type: { type: string, enum: [market, trade, stats] }
+            channel: { $ref: '#/components/schemas/WsChannel' }
+            data:
+              oneOf:
+                - { $ref: '#/components/schemas/MarketSummary' }
+                - { $ref: '#/components/schemas/VenueTrade' }
+                - { $ref: '#/components/schemas/GlobalStats' }
+        - type: object
+          required: [type, slot]
+          properties:
+            type: { type: string, const: rollback }
+            slot: { type: integer, description: Every row at or above this slot that was not finalized was removed; refetch. }
+        - type: object
+          required: [type]
+          properties:
+            type: { type: string, enum: [pong, heartbeat] }
+        - type: object
+          required: [type, code, message]
+          properties:
+            type: { type: string, const: error }
+            code: { type: string, enum: [bad_message, too_many_subscriptions, rate_limited, lagged, unavailable], description: '`rate_limited` on a `since` replay means the client''s request budget is spent (a replay costs 5 requests); `unavailable`: the replay could not run now (the query budget is saturated) — refetch through REST. Neither ends the subscription.' }
+            message: { type: string }

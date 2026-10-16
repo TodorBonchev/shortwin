@@ -1,0 +1,41 @@
+[package]
+name = "mock-cpamm"
+version = "0.1.0"
+description = "TEST-ONLY constant-product venue for short.win's M2 position engine (ARCHITECTURE §1.2, §9 M2, A49); never deployed"
+edition = "2021"
+# Built by the platform-tools rustc (v1.57 = 1.95) through `anchor build` (ARCHITECTURE §1.1).
+rust-version = "1.89"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "mock_cpamm"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+# No-op here. `anchor build ... -- --features test-venue` passes the flag to every program of
+# the Anchor workspace, and cargo refuses a feature the package does not declare. The feature
+# gates `VenueKind::Mock` in short.win only (A49).
+test-venue = []
+
+[dependencies]
+anchor-lang = "=1.2.0"
+anchor-spl = { version = "=1.2.0", default-features = false, features = ["token", "token_2022"] }
+# `#[account(zero_copy)]` derives `::bytemuck::{Pod, Zeroable}` from the local crate.
+bytemuck = { version = "1.25", features = ["derive", "min_const_generics"] }
+
+# Differential tests of the swap arithmetic against shortwin-math `quote::cpmm` (host only;
+# the program itself never depends on shortwin-math: it mirrors a venue's own code).
+[dev-dependencies]
+shortwin-math = { path = "../../crates/shortwin-math" }
+proptest = "1.11.0"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

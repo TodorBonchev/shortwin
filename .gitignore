@@ -1,0 +1,49 @@
+# Rust / Anchor / Solana
+/target/
+**/target/
+**/*.rs.bk
+.anchor/
+test-ledger/
+.surfpool/
+.crates/
+# The invariant fuzzer's local output (tests/fuzz: `shortwin-fuzz run --out fuzz-out`, crash files
+# and summary.json).
+/fuzz-out/
+
+# Program-id keypairs are never committed (address squatting); see docs/DEVELOPMENT.md.
+/keys/
+**/keys/
+*-keypair.json
+
+# JS
+node_modules/
+.pnpm-store/
+dist/
+# apps/web production source maps, kept out of the deployed dist/ (FRONTEND.md §2.2, §9.3)
+dist-sourcemaps/
+coverage/
+*.tsbuildinfo
+.vite/
+playwright-report/
+test-results/
+# apps/web E2E working directory (validator ledger, generated keys, state; FRONTEND.md §10.2)
+.e2e/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Environment, editors, OS
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+.DS_Store

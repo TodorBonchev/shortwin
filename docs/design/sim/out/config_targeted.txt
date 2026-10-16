@@ -1,0 +1,24 @@
+| parameter | value | rows worse on the 1,655-run battery (liveness / lender -1 %) | first liveness rows |
+|---|---|---|---|
+| `tau` | 6 | 83 / 5 | C pump 10x/60s noise 0.3% s3 -> S1; C pump 10x/60s noise 1.0% s1 -> S1 |
+| `tau` | 7 | 223 / 9 | C pump 10x/60s -> S1; D@0% pump 10x/60s -> S1 |
+| `kappa_liq_bps` | 2,250 | 38 / 0 | D@0% pump 6x/40s -> S1; D@0% pump 8x/50s -> S1 |
+| `kappa_liq_bps` | 2,000 | 104 / 0 | C pump 10x/60s -> S1; D@0% pump 10x/60s -> S1 |
+| `kappa_growth_n` | 5 | 0 / 0 |  |
+| `liq_persist_n` | 4 | 58 / 12 | C pump 10x/60s noise 1.0% s3 -> S1; B pump 8x/70s -> S1 |
+| `liq_persist_n` | 5 | 144 / 37 | C pump 10x/60s -> S1; RC pump 10x/60s -> S1 |
+| `delta_liq_bps` | 150 | 27 / 0 | D@0% pump 6x/40s -> S1; D@50% pump 6x/40s -> S1 |
+| `delta_liq_bps` | 100 | 27 / 0 | D@0% pump 6x/40s -> S1; D@50% pump 6x/40s -> S1 |
+| `settle_fixed` | 20,000,000 | 5 / 4 | RC pump 6x/40s size 0.5 lat 1 -> S1; RC pump 8x/50s size 0.5 lat 1 -> S1 |
+| `settle_fixed` | 50,000,000 | 21 / 88 | RC pump 8x/50s -> S1; RC pump 6x/40s size 0.5 lat 1 -> S1 |
+| `settle_bps` | 200 | 10 / 12 | RC pump 6x/40s size 0.5 lat 1 -> S1; RC pump 8x/50s size 0.5 lat 1 -> S1 |
+| `settle_bps` | 500 | 31 / 176 | RC pump 8x/50s -> S1; C pump 8x/50s size 0.5 lat 1 -> S1 |
+| `settle_cap` | 1,000,000,000 | 4 / 0 | A pump 8x/100s size 1.0 lat 2 -> S1; B pump 4x/50s size 1.0 lat 2 -> S1 |
+| `cr_liq_bps` | 12,500 | 362 / 121 | C pump 10x/60s -> S1; D@0% pump 10x/60s -> S1 |
+| `cr_open_bps` | 0 | 102 / 890 | A gap 2x -> S1; A pump 2x/20s -> S1 |
+| `rate_base_bps` | 0 | 2 / 2 | D@0% aged pump 6x/40s noise 0.3% s3 U90 -> S1; D@50% aged pump 6x/40s noise 0.3% s3 U90 -> S1 |
+| `rate_s1_bps` | 0 | 5 / 4 | D@0% aged pump 6x/40s noise 0.3% s3 U90 -> S1; D@50% aged pump 6x/40s noise 0.3% s3 U90 -> S1 |
+| `rate_s2_bps` | 0 | 2 / 32 | D@0% aged pump 6x/40s noise 0.3% s3 U90 -> S1; D@50% aged pump 6x/40s noise 0.3% s3 U90 -> S1 |
+| `exec_tol_bps` | 0 | 0 / 0 |  |
+| `penalty_bps` | 2,000 | 0 / 0 |  |
+| `pool_lock_min_bps` | 10,000 | 0 / 0 |  |

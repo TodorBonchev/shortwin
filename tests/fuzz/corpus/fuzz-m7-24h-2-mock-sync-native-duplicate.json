@@ -1,0 +1,19 @@
+{
+  "profile": "mock",
+  "seed": 20263501,
+  "step": 3,
+  "signature": "tests/litesvm/src/mock.rs:481 | sync_native: AlreadyProcessed",
+  "minimized": true,
+  "differential": true,
+  "avoid_known": true,
+  "actions": [
+    "ramp 0 376476726 3513108314",
+    "extras_shock 0 3780136882 3184869695",
+    "wrapped_open 0 108399537 2412148710",
+    "shock 0 2030311918 3689402925"
+  ],
+  "finding": "FUZZ-M7-24H-2 (the 24 h fuzz at eb82a2a, profile all; harness, not program): `wrapped_open`'s price push funds the trader's WSOL (`mock::wrap`: an airdrop, then a `SyncNative` of the account, which carries no amount and did not expire the blockhash); its probe of the move fails (the `extras_shock` before it), so the VM is restored from the clone taken after the wrap — the blockhash the `SyncNative` used is the latest again. The next action's push (`shock`) wraps the same account: a different airdrop, but the same `SyncNative` under the same blockhash, refused `AlreadyProcessed` by LiteSVM before any program ran. Replay: `shortwin-fuzz replay tests/fuzz/corpus/fuzz-m7-24h-2-mock-sync-native-duplicate.json`.",
+  "message": "tests/litesvm/src/mock.rs:481\nsync_native: AlreadyProcessed",
+  "status": "fixed",
+  "resolution": "Resolved in the harness, no program change: every helper of `tests/litesvm` that sends around `Env::send` (the litesvm-token builders' `.send()` in `tokens.rs`, `mock::wrap`, `fork::{wrap, fund_wsol, fund_token}`, the airdrops of `Env::fund` and `tokens::holder`) goes through `env::send_direct`, which expires the blockhash after the send as `Env::send` does, so the latest blockhash is never one a committed transaction used; `Env::send` panics on `AlreadyProcessed` (a duplicate is the harness's fault, never a refusal an oracle may count). No invariant changed. Regression test: `harness::identical_helper_calls_in_a_row_are_not_duplicates` (tests/litesvm/tests/it). This file replays as a regression: the run must pass (`corpus_replays`)."
+}

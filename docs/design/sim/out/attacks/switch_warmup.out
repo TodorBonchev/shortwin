@@ -1,0 +1,1183 @@
+## selftest
+
+honest switch onto 52 SOL at lambda 50.00 %: L_ema/sqrt(XY) 1.000 at the adoption, 1.000 at the gate (+9 s); P_ema/P 1.000; box wide 0 s in the warm-up, 0 s after; guard cleared at +9 s
+honest switch onto 150 SOL at lambda 99.78 %: L_ema/sqrt(XY) 1.995 at the adoption, 1.000 at the gate (+9 s); P_ema/P 1.000; box wide 0 s in the warm-up, 0 s after; guard cleared at +9 s
+honest switch onto 240 SOL at lambda 25.00 %: L_ema/sqrt(XY) 0.500 at the adoption, 1.000 at the gate (+9 s); P_ema/P 1.000; box wide 4 s in the warm-up, 0 s after; guard cleared at +9 s
+gate: a genuinely liquidatable position (2.2x) is liquidated at +9 s (the 8th warm-up integration lands at +9 s)
+
+## 1. M4R-1: a lambda 50 % candidate (52 SOL at the pre-halt price) whose every unlocked LP unit the
+attacker holds; the position carried from a 100-SOL fully locked AMM v4 (Tier C, cr_liq 1.5).  The
+candidate trades at m x the pre-halt price, flat after the adoption.  Every second after the adoption:
+the keeper's honest crank and plain liquidation attempt; the attacker's [withdraw all, crank, deposit]
+and [withdraw all, liquidate, deposit].  Cells: outcome, k = keeper / a = attacker, seconds after the
+adoption, (borrower SOL at the exit, or equity if open).  120 s.  The honest threshold is m 2.01 (the
+'none' rows): every earlier exit in a wrapped row is forced.
+
+### q = 0.40 % of the incumbent's X
+
+| m | LP wraps of the two samples | M4 as built | M4R |
+|---|---|---|---|
+| 1.96 | none | open (0.419) | open (0.419) |
+| 1.96 | withdraw around execute | open (0.419) | open (0.419) |
+| 1.96 | withdraw around proposal | open (0.419) | open (0.419) |
+| 1.96 | withdraw around both | open (0.419) | open (0.419) |
+| 1.97 | none | open (0.415) | open (0.415) |
+| 1.97 | withdraw around execute | open (0.415) | open (0.415) |
+| 1.97 | withdraw around proposal | open (0.415) | open (0.415) |
+| 1.97 | withdraw around both | open (0.415) | open (0.415) |
+| 1.98 | none | open (0.411) | open (0.411) |
+| 1.98 | withdraw around execute | liquidation a +41s (0.335) | open (0.411) |
+| 1.98 | withdraw around proposal | liquidation a +41s (0.335) | open (0.411) |
+| 1.98 | withdraw around both | liquidation a +41s (0.335) | open (0.411) |
+| 1.99 | none | open (0.407) | open (0.407) |
+| 1.99 | withdraw around execute | liquidation a +27s (0.331) | open (0.407) |
+| 1.99 | withdraw around proposal | liquidation a +27s (0.331) | open (0.407) |
+| 1.99 | withdraw around both | liquidation a +27s (0.331) | open (0.407) |
+| 2.00 | none | open (0.403) | open (0.403) |
+| 2.00 | withdraw around execute | liquidation a +24s (0.326) | open (0.403) |
+| 2.00 | withdraw around proposal | liquidation a +24s (0.326) | open (0.403) |
+| 2.00 | withdraw around both | liquidation a +24s (0.326) | open (0.403) |
+| 2.01 | none | liquidation k +28s (0.331) | liquidation k +9s (0.331) |
+| 2.01 | withdraw around execute | liquidation k +22s (0.331) | liquidation k +9s (0.331) |
+| 2.01 | withdraw around proposal | liquidation k +22s (0.331) | liquidation k +9s (0.331) |
+| 2.01 | withdraw around both | liquidation k +22s (0.331) | liquidation k +9s (0.331) |
+| 2.02 | none | liquidation k +24s (0.327) | liquidation k +9s (0.327) |
+| 2.02 | withdraw around execute | liquidation k +20s (0.327) | liquidation k +9s (0.327) |
+| 2.02 | withdraw around proposal | liquidation k +20s (0.327) | liquidation k +9s (0.327) |
+| 2.02 | withdraw around both | liquidation k +20s (0.327) | liquidation k +9s (0.327) |
+| 2.05 | none | liquidation k +20s (0.314) | liquidation k +9s (0.314) |
+| 2.05 | withdraw around execute | liquidation k +18s (0.314) | liquidation k +9s (0.314) |
+| 2.05 | withdraw around proposal | liquidation k +18s (0.314) | liquidation k +9s (0.314) |
+| 2.05 | withdraw around both | liquidation k +18s (0.314) | liquidation k +9s (0.314) |
+
+### q = 0.74 % of the incumbent's X
+
+| m | LP wraps of the two samples | M4 as built | M4R |
+|---|---|---|---|
+| 1.96 | none | open (0.779) | open (0.779) |
+| 1.96 | withdraw around execute | open (0.779) | open (0.779) |
+| 1.96 | withdraw around proposal | open (0.779) | open (0.779) |
+| 1.96 | withdraw around both | open (0.779) | open (0.779) |
+| 1.97 | none | open (0.772) | open (0.772) |
+| 1.97 | withdraw around execute | liquidation a +29s (0.622) | open (0.772) |
+| 1.97 | withdraw around proposal | liquidation a +29s (0.622) | open (0.772) |
+| 1.97 | withdraw around both | liquidation a +29s (0.622) | open (0.772) |
+| 1.98 | none | open (0.764) | open (0.764) |
+| 1.98 | withdraw around execute | liquidation a +25s (0.613) | open (0.764) |
+| 1.98 | withdraw around proposal | liquidation a +25s (0.613) | open (0.764) |
+| 1.98 | withdraw around both | liquidation a +25s (0.613) | open (0.764) |
+| 1.99 | none | open (0.757) | open (0.757) |
+| 1.99 | withdraw around execute | liquidation a +22s (0.605) | open (0.757) |
+| 1.99 | withdraw around proposal | liquidation a +22s (0.605) | open (0.757) |
+| 1.99 | withdraw around both | liquidation a +22s (0.605) | open (0.757) |
+| 2.00 | none | open (0.749) | open (0.749) |
+| 2.00 | withdraw around execute | liquidation a +21s (0.596) | open (0.749) |
+| 2.00 | withdraw around proposal | liquidation a +21s (0.596) | open (0.749) |
+| 2.00 | withdraw around both | liquidation a +21s (0.596) | open (0.749) |
+| 2.01 | none | liquidation k +30s (0.622) | liquidation k +9s (0.622) |
+| 2.01 | withdraw around execute | liquidation k +19s (0.622) | liquidation k +9s (0.622) |
+| 2.01 | withdraw around proposal | liquidation k +19s (0.622) | liquidation k +9s (0.622) |
+| 2.01 | withdraw around both | liquidation k +19s (0.622) | liquidation k +9s (0.622) |
+| 2.02 | none | liquidation k +25s (0.614) | liquidation k +9s (0.614) |
+| 2.02 | withdraw around execute | liquidation k +18s (0.614) | liquidation k +9s (0.614) |
+| 2.02 | withdraw around proposal | liquidation k +18s (0.614) | liquidation k +9s (0.614) |
+| 2.02 | withdraw around both | liquidation k +18s (0.614) | liquidation k +9s (0.614) |
+| 2.05 | none | liquidation k +20s (0.589) | liquidation k +9s (0.589) |
+| 2.05 | withdraw around execute | liquidation k +16s (0.589) | liquidation k +9s (0.589) |
+| 2.05 | withdraw around proposal | liquidation k +16s (0.589) | liquidation k +9s (0.589) |
+| 2.05 | withdraw around both | liquidation k +16s (0.589) | liquidation k +9s (0.589) |
+
+Control (q 0.40 %, withdraw around execute, NO per-second wrapped crank; the attacker still tries a
+withdraw-wrapped liquidation every second):
+
+| m | M4 as built | M4R |
+|---|---|---|
+| 1.98 | open (0.411) | open (0.411) |
+| 1.99 | open (0.407) | open (0.407) |
+| 2.00 | open (0.403) | open (0.403) |
+
+## 2. lambda < lambda_min candidates under the M4R-1 attacker
+
+### 2a. 240 SOL at 25 % / 400 SOL at 10 % (engine W; withdraw-wrapped execute, per-second withdraw-
+wrapped crank and liquidation), q 0.74 %, flat at m.  Honest: liquidatable at 2.05, not at 2.03.
+
+| candidate | m | honest (M4R) | M4 as built | M4R |
+|---|---|---|---|---|
+| 240 SOL, 25 % | 1.99 | open (0.780) | open (0.780) | open (0.780) |
+| 240 SOL, 25 % | 2.00 | open (0.773) | open (0.773) | open (0.773) |
+| 240 SOL, 25 % | 2.01 | open (0.765) | liquidation a +37s (0.626) | open (0.765) |
+| 240 SOL, 25 % | 2.02 | open (0.758) | liquidation a +27s (0.618) | open (0.758) |
+| 240 SOL, 25 % | 2.03 | open (0.751) | liquidation a +24s (0.610) | open (0.751) |
+| 240 SOL, 25 % | 2.05 | liquidation k +9s (0.615) | liquidation k +20s (0.615) | liquidation k +9s (0.615) |
+| 400 SOL, 10 % | 1.99 | open (0.783) | open (0.783) | open (0.783) |
+| 400 SOL, 10 % | 2.00 | open (0.775) | liquidation a +28s (0.620) | open (0.775) |
+| 400 SOL, 10 % | 2.01 | open (0.768) | liquidation a +24s (0.612) | open (0.768) |
+| 400 SOL, 10 % | 2.02 | open (0.761) | liquidation a +22s (0.603) | open (0.761) |
+| 400 SOL, 10 % | 2.03 | open (0.753) | liquidation a +21s (0.595) | open (0.753) |
+| 400 SOL, 10 % | 2.05 | liquidation k +9s (0.618) | liquidation k +19s (0.618) | liquidation k +9s (0.618) |
+
+### 2b. The fine grid of a 104-SOL lambda 25 % candidate (engine P, R100, position at the size cap):
+honest vs attacker a2 (every sample withdraw-wrapped, its wrapped liquidation first in each second).
+
+| rule | m | honest only | a2 attacked | L_ema / √(X·Y) at the switch (a2) |
+|---|---|---|---|---|
+| M4 as built | 2.00 | open (120 s) | liquidation +21 s by attacker @2.001x | 0.250 |
+| M4 as built | 2.01 | open (120 s) | liquidation +19 s by attacker @2.011x | 0.250 |
+| M4 as built | 2.02 | open (120 s) | liquidation +18 s by attacker @2.021x | 0.250 |
+| M4 as built | 2.03 | liquidation +30 s @2.031x | liquidation +18 s by attacker @2.031x | 0.250 |
+| M4 as built | 2.04 | liquidation +25 s @2.041x | liquidation +17 s by attacker @2.041x | 0.250 |
+| M4R | 2.00 | open (120 s) | open (120 s) | 0.500 |
+| M4R | 2.01 | open (120 s) | open (120 s) | 0.500 |
+| M4R | 2.02 | open (120 s) | open (120 s) | 0.500 |
+| M4R | 2.03 | liquidation +9 s @2.031x | liquidation +9 s by attacker @2.031x | 0.500 |
+| M4R | 2.04 | liquidation +9 s @2.041x | liquidation +9 s by attacker @2.041x | 0.500 |
+
+## 3. Honest fast path onto thinner / deeper (M4-SEC-6) / lambda < lambda_min (M4V-3) candidates;
+incumbent 100 SOL fully locked; honest keeper; then a 2.3x/120 s pump from +30 s (q 0.40 %).  Columns:
+L_ema / √(X·Y) right after the adoption and at the gate (M4R), seconds the box is wider than 1 % in L
+during the warm-up / in the 60 s after it (M4 as built: the first 60 s), the exit in the pump, and the
+second the guard cleared (M4R).
+
+| candidate (SOL at the pre-halt price, lambda) | rule | L at adoption | L at the gate | box wide: warm-up / after | exit in the pump | guard cleared |
+|---|---|---|---|---|---|---|
+| 30 SOL, 99.78 % | M4 as built | 1.000 | - | 0 / 0 | liquidation k +137s (0.286) | - |
+| 30 SOL, 99.78 % | M4R | 1.995 | 1.000 | 0 / 0 | liquidation k +137s (0.286) | +9 s |
+| 52 SOL, 50.00 % | M4 as built | 1.000 | - | 0 / 0 | liquidation k +138s (0.287) | - |
+| 52 SOL, 50.00 % | M4R | 1.000 | 1.000 | 0 / 0 | liquidation k +138s (0.287) | +9 s |
+| 150 SOL, 90.00 % | M4 as built | 1.000 | - | 0 / 0 | liquidation k +139s (0.287) | - |
+| 150 SOL, 90.00 % | M4R | 1.800 | 1.000 | 0 / 0 | liquidation k +139s (0.287) | +9 s |
+| 150 SOL, 99.78 % | M4 as built | 1.000 | - | 0 / 0 | liquidation k +139s (0.287) | - |
+| 150 SOL, 99.78 % | M4R | 1.995 | 1.000 | 0 / 0 | liquidation k +139s (0.287) | +9 s |
+| 120 SOL, 25.00 % | M4 as built | 0.500 | - | 0 / 20 | liquidation k +139s (0.286) | - |
+| 120 SOL, 25.00 % | M4R | 0.500 | 1.000 | 4 / 0 | liquidation k +139s (0.286) | +9 s |
+| 240 SOL, 25.00 % | M4 as built | 0.500 | - | 0 / 20 | liquidation k +140s (0.282) | - |
+| 240 SOL, 25.00 % | M4R | 0.500 | 1.000 | 4 / 0 | liquidation k +140s (0.282) | +9 s |
+| 400 SOL, 10.00 % | M4 as built | 0.200 | - | 0 / 26 | liquidation k +140s (0.283) | - |
+| 400 SOL, 10.00 % | M4R | 0.200 | 1.000 | 4 / 0 | liquidation k +140s (0.283) | +9 s |
+
+## 4. Capital deposit freeze: the attacker deposits as much again as the pool's LP counter around
+sampling instructions (capital only, no swap fee) and around one crank every second from the adoption
+(up-freeze).  'M4R without the guard' is an analysis row: the exit reference would read the frozen L_ema.
+
+### 4a. RA -> 630 SOL, lambda 99.78 % (D = 50 % of pool_d; q = 3.0 % of the candidate's X); genuine pump 3x/120 s from the adoption (engine P).  Cells: L_ema / √(X·Y) at the
+switch; seconds with the box > 1 % wide in L (first 60 s); outcome (time after the adoption, price vs
+pre-halt, lender P&L at the exit price, borrower remainder).
+
+| LP move | M4 as built | M4R | M4R without the guard (analysis) |
+|---|---|---|---|
+| none | 1.000; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 |
+| deposit around the recording proposal (M4V-2) | 1.000; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 |
+| deposit around the execution | 1.000; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 |
+| deposit around both | 1.995; 24 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 0 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 |
+| deposit freeze after the adoption only | 1.000; 54 s; liquidation +59 s @1.701x, lender +0.819, borrower 3.495 | 1.995; 56 s; liquidation +61 s @1.732x, lender +0.834, borrower 2.847 | 1.995; 56 s; liquidation +61 s @1.732x, lender +0.834, borrower 2.847 |
+| both + deposit freeze after | 1.995; 56 s; S1 +123 s @3.000x, lender -17.785, borrower 0.000 | 1.995; 56 s; liquidation +61 s @1.732x, lender +0.834, borrower 2.847 | 1.995; 56 s; liquidation +61 s @1.732x, lender +0.834, borrower 2.847 |
+
+### 4a. RA -> 314 SOL, lambda 99.78 % (D = 25 % of pool_d, the fast-path minimum; q = 6.0 %); genuine pump 3x/120 s from the adoption (engine P).  Cells: L_ema / √(X·Y) at the
+switch; seconds with the box > 1 % wide in L (first 60 s); outcome (time after the adoption, price vs
+pre-halt, lender P&L at the exit price, borrower remainder).
+
+| LP move | M4 as built | M4R | M4R without the guard (analysis) |
+|---|---|---|---|
+| none | 1.000; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 |
+| deposit around the recording proposal (M4V-2) | 1.000; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 |
+| deposit around the execution | 1.000; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 |
+| deposit around both | 1.995; 24 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 0 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 |
+| deposit freeze after the adoption only | 1.000; 50 s; liquidation +55 s @1.639x, lender +0.821, borrower 3.402 | 1.995; 54 s; liquidation +59 s @1.701x, lender +0.853, borrower 2.063 | 1.995; 54 s; liquidation +59 s @1.701x, lender +0.853, borrower 2.063 |
+| both + deposit freeze after | 1.995; 56 s; S1 +120 s @2.973x, lender -17.281, borrower 0.000 | 1.995; 54 s; liquidation +59 s @1.701x, lender +0.853, borrower 2.063 | 1.995; 54 s; liquidation +59 s @1.701x, lender +0.853, borrower 2.063 |
+
+### 4b. Engine W (honest keeper every second): near-threshold rows and the big carried position (1 %-fee
+incumbent of 200 SOL at lambda 100 %, q at the size cap, onto a 50-SOL lambda 99.78 % 1 %-fee candidate,
+D = 25 % of pool_d).  Cells: outcome, seconds after the adoption (borrower / lender SOL, or equity if
+open).  Honest threshold of the q 0.40 % position: m 2.01.
+
+| attack | m | M4 as built | M4R |
+|---|---|---|---|
+| deposit-wrapped crank every second (up-freeze) | 2.01 | liquidation k +28s @2.01x (0.331 / 0.032) | open (0.399) |
+| deposit-wrapped crank every second (up-freeze) | 2.02 | liquidation k +24s @2.02x (0.327 / 0.033) | liquidation k +9s @2.02x (0.327 / 0.033) |
+| deposit-wrapped crank every second (up-freeze) | 2.03 | liquidation k +22s @2.03x (0.323 / 0.033) | liquidation k +9s @2.03x (0.323 / 0.033) |
+| deposit-wrapped crank every second (up-freeze) | 2.05 | liquidation k +20s @2.05x (0.314 / 0.033) | liquidation k +9s @2.05x (0.314 / 0.033) |
+| deposit-wrapped crank every second + deposit-wrapped execute | 2.05 | liquidation k +20s @2.05x (0.314 / 0.033) | liquidation k +9s @2.05x (0.314 / 0.033) |
+| deposit-wrapped crank + withdraw-wrapped liquidation every second | 1.99 | open (0.407) | open (0.407) |
+| big carried position, no attacker | 2.00 | liquidation k +14s @2.00x (3.462 / 0.448) | liquidation k +9s @2.00x (3.462 / 0.448) |
+| big carried position, deposit-wrapped crank every second (capital = the pool) | 2.00 | liquidation k +14s @2.00x (3.462 / 0.448) | open (4.356) |
+| big carried position, deposit-wrapped crank every second (capital = the pool) | 2.50 | liquidation k +8s @2.51x (0.142 / 0.571) | liquidation k +9s @2.51x (0.142 / 0.571) |
+| big carried position, deposit-wrapped crank every second (capital = the pool) | 3.00 | S1 k +60s @3.01x (0.000 / 15.375) | S1 k +49s @3.01x (0.000 / 15.375) |
+
+### 4c. The freeze held (M4X-2): the deposit freeze runs from the adoption for W seconds at a flat price,
+then the part-4 genuine pump 3x/120 s (engine P; the freeze goes on).  dep = capital of the pool's size,
+dep3 = three times.  Before M4X-2, L_slow integrated the frozen L_ema (lobs) while the guard was set --
++1/tau_slow per second -- and L_b = max(L_live, min(L_ema, L_mlo), L_slow) took it unguarded: the
+reference blocked again after 10-30 min and the pump ended in S1.  Cells: outcome; L_slow / sqrt(X*Y) at
+the end.
+
+| candidate | freeze | W (s) | M4R | M4R with L_slow unguarded (analysis; before M4X-2) |
+|---|---|---|---|---|
+| RA -> 314 SOL, lambda 99.78 % | dep | 600 | liquidation +643 s @1.717x, lender +0.862, borrower 1.710; 0.998 | liquidation +643 s @1.717x, lender +0.852, borrower 1.730; 1.173 |
+| RA -> 314 SOL, lambda 99.78 % | dep | 1800 | liquidation +1843 s @1.717x, lender +0.862, borrower 1.710; 0.998 | S1 +1903 s @2.717x, lender -12.553, borrower 0.000; 1.416 |
+| RA -> 314 SOL, lambda 99.78 % | dep3 | 600 | liquidation +645 s @1.750x, lender +0.879, borrower 0.978; 0.998 | S1 +706 s @2.767x, lender -13.476, borrower 0.000; 1.565 |
+| RA -> 630 SOL, lambda 99.78 % | dep3 | 600 | liquidation +646 s @1.767x, lender +0.852, borrower 2.132; 0.998 | liquidation +646 s @1.767x, lender +0.841, borrower 2.154; 1.525 |
+| RA -> 630 SOL, lambda 99.78 % | dep3 | 1800 | liquidation +1846 s @1.767x, lender +0.852, borrower 2.131; 0.998 | S1 +1907 s @2.783x, lender -13.784, borrower 0.000; 2.255 |
+
+### 4d. The keeper's idle cadence after the gate (M4F-1): part 4c's freeze with the keeper on its coverage
+duties instead of a crank every second (Spec.keeper_rule, class Coverage).  'old keeper' = as built at M4R
+(ECON §5.8): per second while ema_warm > 0, near a threshold (CR < 1.3 L) or |P_spot/P_ema - 1| > 2 %, and in
+a duty-2 burst, which only a PRICE deviation starts; otherwise every 30 s.  A deposit-wrapped crank does not
+move the price, so 29 of every 30 seconds after the gate are the attacker's: its buckets lift L_mlo, the
+guard clears (+15 s), L_ema = L_mlo = the deposit's depth, and the reference blocks the genuine pump.  'M4F-1
+keeper' (#98): per second also while ema_guard = 1, and a burst on a foreign bucket whose llo / lhi
+deviates from the keeper's own sqrt(X*Y) by > 2 % (every LP-wrapped crank); its liquidity bursts are
+REVERTED by #99 (a cheap keeper-cost DoS, M4G-2; keeper misses ratchet the freeze, M4G-1).  '#99 keeper' =
+per second while ema_guard = 1, bursts on price only.  '#101 keeper' (FITS-2 (b)) = the #99 keeper plus
+per-SECOND coverage for 10 s after a foreign bucket liquidity deviation on a market with positions, extended
+while deviations recur (one crank per attacker second).  These carried positions exceed the candidate's
+opening caps, so under #99 no window opens (part 11); the rows force the adoption.  'M4R' caps the EMA terms of
+L_b at floor(D*1e4/lambda_min) (2D here); 'before M4F-1' has no cap.  RA -> cand SOL at lambda 99.78 %, flat W
+s after the adoption, then a genuine pump to the top over 120 s; the attacker deposit-wraps one crank every
+second from 'from' s (depK = K x the pool's LP counter deposited; from 40 = after an honest guard clear at
++9 s).  q is 5.9 % of the 314-SOL candidate's X, 2.9 % of the 630-SOL one's; the 320-SOL 4x row takes the
+LiteSVM reproducer's candidate size and ramp (m4r_it::m4f1_*, where q is 3.1 % of X).  Cells: outcome;
+attacker-only seconds after the gate; seconds the keeper observed.
+
+| candidate | freeze | W (s) | from | top | old keeper, M4 as built | old keeper, M4R without the reference cap (before M4F-1) | old keeper, M4R | M4F-1 keeper (liquidity bursts, reverted by #99), M4R without the reference cap (before M4F-1) | M4F-1 keeper (liquidity bursts, reverted by #99), M4R | #99 keeper, M4R | #101 keeper, M4R |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| RA -> 314 SOL | none | 120 | +1 s | 3x | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 44 s | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 51 s | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 51 s | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 51 s | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 51 s | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 51 s | liquidation +160 s @1.667x, lender +0.836, borrower 2.806; 0 a-only s; keeper 51 s |
+| RA -> 314 SOL | dep | 120 | +1 s | 3x | S1 +223 s @2.717x, lender -12.553, borrower 0.000; 116 a-only s; keeper 107 s | S1 +223 s @2.717x, lender -12.553, borrower 0.000; 109 a-only s; keeper 114 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 109 a-only s; keeper 54 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 163 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 163 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 163 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 163 s |
+| RA -> 314 SOL | dep3 | 120 | +1 s | 3x | S1 +226 s @2.767x, lender -13.476, borrower 0.000; 116 a-only s; keeper 110 s | S1 +226 s @2.767x, lender -13.476, borrower 0.000; 109 a-only s; keeper 117 s | liquidation +165 s @1.750x, lender +0.879, borrower 0.978; 109 a-only s; keeper 56 s | liquidation +165 s @1.750x, lender +0.879, borrower 0.978; 0 a-only s; keeper 165 s | liquidation +165 s @1.750x, lender +0.879, borrower 0.978; 0 a-only s; keeper 165 s | liquidation +165 s @1.750x, lender +0.879, borrower 0.978; 0 a-only s; keeper 165 s | liquidation +165 s @1.750x, lender +0.879, borrower 0.978; 0 a-only s; keeper 165 s |
+| RA -> 314 SOL | dep7 | 120 | +1 s | 3x | S1 +227 s @2.783x, lender -13.784, borrower 0.000; 116 a-only s; keeper 111 s | S1 +227 s @2.783x, lender -13.784, borrower 0.000; 109 a-only s; keeper 118 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 109 a-only s; keeper 57 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 0 a-only s; keeper 166 s |
+| RA -> 314 SOL | dep | 600 | +1 s | 3x | S1 +703 s @2.717x, lender -12.553, borrower 0.000; 580 a-only s; keeper 123 s | S1 +703 s @2.717x, lender -12.553, borrower 0.000; 573 a-only s; keeper 130 s | liquidation +643 s @1.717x, lender +0.862, borrower 1.710; 573 a-only s; keeper 70 s | liquidation +643 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 643 s | liquidation +643 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 643 s | liquidation +643 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 643 s | liquidation +643 s @1.717x, lender +0.862, borrower 1.710; 0 a-only s; keeper 643 s |
+| RA -> 314 SOL | dep | 120 | +40 s | 3x | S1 +223 s @2.717x, lender -12.553, borrower 0.000; 79 a-only s; keeper 107 s | S1 +223 s @2.717x, lender -12.553, borrower 0.000; 80 a-only s; keeper 114 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 80 a-only s; keeper 54 s | liquidation +161 s @1.683x, lender +0.835, borrower 2.459; 1 a-only s; keeper 131 s | liquidation +161 s @1.683x, lender +0.845, borrower 2.441; 1 a-only s; keeper 131 s | liquidation +163 s @1.717x, lender +0.862, borrower 1.710; 80 a-only s; keeper 54 s | liquidation +161 s @1.683x, lender +0.845, borrower 2.441; 1 a-only s; keeper 131 s |
+| RA -> 314 SOL | dep7 | 120 | +40 s | 3x | S1 +227 s @2.783x, lender -13.784, borrower 0.000; 79 a-only s; keeper 111 s | S1 +227 s @2.783x, lender -13.784, borrower 0.000; 80 a-only s; keeper 118 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 80 a-only s; keeper 57 s | liquidation +161 s @1.683x, lender +0.835, borrower 2.459; 1 a-only s; keeper 131 s | liquidation +161 s @1.683x, lender +0.845, borrower 2.441; 1 a-only s; keeper 131 s | liquidation +166 s @1.767x, lender +0.888, borrower 0.612; 80 a-only s; keeper 57 s | liquidation +161 s @1.683x, lender +0.845, borrower 2.441; 1 a-only s; keeper 131 s |
+| RA -> 630 SOL | dep3 | 120 | +1 s | 3x | S1 +227 s @2.783x, lender -13.784, borrower 0.000; 116 a-only s; keeper 111 s | S1 +227 s @2.783x, lender -13.784, borrower 0.000; 109 a-only s; keeper 118 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 109 a-only s; keeper 57 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s |
+| RA -> 630 SOL | dep7 | 120 | +1 s | 3x | S1 +228 s @2.800x, lender -14.092, borrower 0.000; 116 a-only s; keeper 112 s | S1 +228 s @2.800x, lender -14.092, borrower 0.000; 109 a-only s; keeper 119 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 109 a-only s; keeper 57 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s | liquidation +166 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 166 s |
+| RA -> 630 SOL | dep3 | 600 | +1 s | 3x | S1 +707 s @2.783x, lender -13.784, borrower 0.000; 580 a-only s; keeper 127 s | S1 +707 s @2.783x, lender -13.784, borrower 0.000; 573 a-only s; keeper 134 s | liquidation +646 s @1.767x, lender +0.852, borrower 2.132; 573 a-only s; keeper 73 s | liquidation +646 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 646 s | liquidation +646 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 646 s | liquidation +646 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 646 s | liquidation +646 s @1.767x, lender +0.852, borrower 2.132; 0 a-only s; keeper 646 s |
+| RA -> 320 SOL | dep7 | 120 | +1 s | 4x | S1 +207 s @3.175x, lender -21.018, borrower 0.000; 116 a-only s; keeper 91 s | S1 +207 s @3.175x, lender -21.018, borrower 0.000; 108 a-only s; keeper 99 s | liquidation +153 s @1.825x, lender +0.612, borrower 0.000; 108 a-only s; keeper 45 s | liquidation +153 s @1.825x, lender +0.612, borrower 0.000; 0 a-only s; keeper 153 s | liquidation +153 s @1.825x, lender +0.612, borrower 0.000; 0 a-only s; keeper 153 s | liquidation +153 s @1.825x, lender +0.612, borrower 0.000; 0 a-only s; keeper 153 s | liquidation +153 s @1.825x, lender +0.612, borrower 0.000; 0 a-only s; keeper 153 s |
+
+### 4e. Steady-state controls (no switch; M4F-1): a position at the size cap on a Raydium pool, the EMA
+converged; the keeper on its coverage duties (Coverage, as in 4d; the guard is never set without a switch,
+so the #99 keeper is the old keeper here and 'old keeper, M4R' is the rule after #99; '#101 keeper, M4R' is
+the rule as adopted (#101): a deposit-wrapped crank deviates the bucket's lhi, so the keeper then covers every
+second); the attacker deposit-wraps one crank every second (after the drain: from +60 s); flat W s, then a genuine
+pump.  At the open caps (q/x <= 1.5 %) the push delays the liquidation by 0-2 s under the old keeper even
+without the cap: the exposure of 4d is a switch's (a carried position that is large on the new pool).
+Cells: outcome (seconds after the pump starts, price, lender P&L at the exit price, borrower remainder);
+attacker-only seconds.
+
+| pool | q / x | ramp | freeze | old keeper, M4R without the reference cap (before M4F-1) | old keeper, M4R | M4F-1 keeper (liquidity bursts, reverted by #99), M4R | #101 keeper, M4R |
+|---|---|---|---|---|---|---|---|
+| 314 SOL, lambda 99.78 %, Tier A, flat 120 s | 0.74 % | 3x/120 s | none | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 99.78 %, Tier A, flat 120 s | 0.74 % | 3x/120 s | dep | liquidation +46 s @1.767x, lender +0.103, borrower 0.400; 116 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 116 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 99.78 %, Tier A, flat 120 s | 0.74 % | 3x/120 s | dep3 | liquidation +46 s @1.767x, lender +0.103, borrower 0.401; 116 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 116 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 99.78 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | none | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 99.78 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | dep | liquidation +46 s @1.767x, lender +0.103, borrower 0.400; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 99.78 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | dep3 | liquidation +46 s @1.767x, lender +0.103, borrower 0.401; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 50.00 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | none | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 50.00 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | dep | liquidation +46 s @1.767x, lender +0.103, borrower 0.400; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 314 SOL, lambda 50.00 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | dep3 | liquidation +46 s @1.767x, lender +0.103, borrower 0.401; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 580 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s | liquidation +46 s @1.767x, lender +0.104, borrower 0.400; 0 a-only s |
+| 1250 SOL, lambda 99.78 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | none | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s |
+| 1250 SOL, lambda 99.78 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | dep | liquidation +46 s @1.767x, lender +0.412, borrower 1.594; 580 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 580 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s |
+| 1250 SOL, lambda 99.78 %, Tier A, flat 600 s | 0.74 % | 3x/120 s | dep3 | liquidation +46 s @1.767x, lender +0.411, borrower 1.596; 580 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 580 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s | liquidation +46 s @1.767x, lender +0.414, borrower 1.591; 0 a-only s |
+| 314 SOL, lambda 50 % drained, Tier A, flat 300 s | 1.49 % | 3x/120 s | none | liquidation +45 s @1.750x, lender +0.103, borrower 0.399; 0 a-only s | liquidation +45 s @1.750x, lender +0.104, borrower 0.398; 0 a-only s | liquidation +45 s @1.750x, lender +0.104, borrower 0.398; 0 a-only s | liquidation +45 s @1.750x, lender +0.104, borrower 0.398; 0 a-only s |
+| 314 SOL, lambda 50 % drained, Tier A, flat 300 s | 1.49 % | 3x/120 s | dep3 | liquidation +46 s @1.767x, lender +0.103, borrower 0.359; 233 a-only s | liquidation +46 s @1.767x, lender +0.105, borrower 0.356; 233 a-only s | liquidation +46 s @1.767x, lender +0.105, borrower 0.356; 1 a-only s | liquidation +46 s @1.767x, lender +0.105, borrower 0.356; 1 a-only s |
+| 314 SOL, lambda 50 % drained, Tier A, flat 300 s | 1.49 % | 3x/120 s | dep7 | liquidation +46 s @1.767x, lender +0.103, borrower 0.359; 233 a-only s | liquidation +46 s @1.767x, lender +0.105, borrower 0.356; 233 a-only s | liquidation +46 s @1.767x, lender +0.105, borrower 0.356; 1 a-only s | liquidation +46 s @1.767x, lender +0.105, borrower 0.356; 1 a-only s |
+| 314 SOL, lambda 50 % drained, Tier A, flat 300 s | 1.49 % | 2.5x/60 s | none | liquidation +33 s @1.825x, lender +0.108, borrower 0.211; 0 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 0 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 0 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 0 a-only s |
+| 314 SOL, lambda 50 % drained, Tier A, flat 300 s | 1.49 % | 2.5x/60 s | dep3 | liquidation +34 s @1.850x, lender +0.108, borrower 0.149; 233 a-only s | liquidation +34 s @1.850x, lender +0.110, borrower 0.146; 233 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 1 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 1 a-only s |
+| 314 SOL, lambda 50 % drained, Tier A, flat 300 s | 1.49 % | 2.5x/60 s | dep7 | liquidation +34 s @1.850x, lender +0.108, borrower 0.149; 233 a-only s | liquidation +34 s @1.850x, lender +0.110, borrower 0.146; 233 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 1 a-only s | liquidation +33 s @1.825x, lender +0.108, borrower 0.209; 1 a-only s |
+| 150 SOL, lambda 50 % drained, Tier B, flat 300 s | 1.49 % | 3x/120 s | none | liquidation +60 s @2.000x, lender +0.079, borrower 0.413; 0 a-only s | liquidation +60 s @2.000x, lender +0.080, borrower 0.412; 0 a-only s | liquidation +60 s @2.000x, lender +0.080, borrower 0.412; 0 a-only s | liquidation +60 s @2.000x, lender +0.080, borrower 0.412; 0 a-only s |
+| 150 SOL, lambda 50 % drained, Tier B, flat 300 s | 1.49 % | 3x/120 s | dep3 | liquidation +62 s @2.033x, lender +0.080, borrower 0.373; 233 a-only s | liquidation +62 s @2.033x, lender +0.081, borrower 0.371; 233 a-only s | liquidation +61 s @2.017x, lender +0.080, borrower 0.391; 1 a-only s | liquidation +61 s @2.017x, lender +0.080, borrower 0.391; 1 a-only s |
+| 150 SOL, lambda 50 % drained, Tier B, flat 300 s | 1.49 % | 3x/120 s | dep7 | liquidation +62 s @2.033x, lender +0.079, borrower 0.374; 233 a-only s | liquidation +62 s @2.033x, lender +0.081, borrower 0.371; 233 a-only s | liquidation +61 s @2.017x, lender +0.080, borrower 0.391; 1 a-only s | liquidation +61 s @2.017x, lender +0.080, borrower 0.391; 1 a-only s |
+| 150 SOL, lambda 50 % drained, Tier B, flat 300 s | 1.49 % | 2.5x/60 s | none | liquidation +43 s @2.075x, lender +0.082, borrower 0.321; 0 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 0 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 0 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 0 a-only s |
+| 150 SOL, lambda 50 % drained, Tier B, flat 300 s | 1.49 % | 2.5x/60 s | dep3 | liquidation +44 s @2.100x, lender +0.082, borrower 0.291; 233 a-only s | liquidation +44 s @2.100x, lender +0.084, borrower 0.289; 233 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 1 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 1 a-only s |
+| 150 SOL, lambda 50 % drained, Tier B, flat 300 s | 1.49 % | 2.5x/60 s | dep7 | liquidation +44 s @2.100x, lender +0.082, borrower 0.292; 233 a-only s | liquidation +44 s @2.100x, lender +0.084, borrower 0.289; 233 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 1 a-only s | liquidation +43 s @2.075x, lender +0.083, borrower 0.320; 1 a-only s |
+| 60 SOL, lambda 50 % drained, Tier C, flat 300 s | 1.49 % | 3x/120 s | none | liquidation +69 s @2.150x, lender +0.039, borrower 0.309; 0 a-only s | liquidation +69 s @2.150x, lender +0.039, borrower 0.308; 0 a-only s | liquidation +69 s @2.150x, lender +0.039, borrower 0.308; 0 a-only s | liquidation +69 s @2.150x, lender +0.039, borrower 0.308; 0 a-only s |
+| 60 SOL, lambda 50 % drained, Tier C, flat 300 s | 1.49 % | 3x/120 s | dep3 | liquidation +71 s @2.183x, lender +0.039, borrower 0.293; 233 a-only s | liquidation +71 s @2.183x, lender +0.040, borrower 0.292; 233 a-only s | liquidation +70 s @2.167x, lender +0.039, borrower 0.300; 1 a-only s | liquidation +70 s @2.167x, lender +0.039, borrower 0.300; 1 a-only s |
+| 60 SOL, lambda 50 % drained, Tier C, flat 300 s | 1.49 % | 3x/120 s | dep7 | liquidation +71 s @2.183x, lender +0.039, borrower 0.293; 233 a-only s | liquidation +71 s @2.183x, lender +0.040, borrower 0.292; 233 a-only s | liquidation +70 s @2.167x, lender +0.039, borrower 0.300; 1 a-only s | liquidation +70 s @2.167x, lender +0.039, borrower 0.300; 1 a-only s |
+| 60 SOL, lambda 50 % drained, Tier C, flat 300 s | 1.49 % | 2.5x/60 s | none | liquidation +49 s @2.225x, lender +0.040, borrower 0.272; 0 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 0 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 0 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 0 a-only s |
+| 60 SOL, lambda 50 % drained, Tier C, flat 300 s | 1.49 % | 2.5x/60 s | dep3 | liquidation +50 s @2.250x, lender +0.040, borrower 0.260; 233 a-only s | liquidation +50 s @2.250x, lender +0.041, borrower 0.259; 233 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 1 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 1 a-only s |
+| 60 SOL, lambda 50 % drained, Tier C, flat 300 s | 1.49 % | 2.5x/60 s | dep7 | liquidation +50 s @2.250x, lender +0.040, borrower 0.260; 233 a-only s | liquidation +50 s @2.250x, lender +0.041, borrower 0.259; 233 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 1 a-only s | liquidation +49 s @2.225x, lender +0.041, borrower 0.271; 1 a-only s |
+
+## 5. Withdraw contest while the guard is set: RA -> 625 SOL, lambda 50 % (D = 25 % of pool_d; q = 3 % of
+the candidate's X); candidate at 1.60x the pre-halt price (the position is liquidatable on it).  The
+attacker holds the candidate's unlocked LP and capital (engine P).  Cells: outcome and the buyback B paid;
+the overpay is the borrower's, against the honest liquidation of the same rule.
+
+| attacker | rule | outcome | B (SOL) | borrower overpay vs honest |
+|---|---|---|---|---|
+| none (honest) | M4 as built | liquidation +20 s @1.601x, lender +0.771, borrower 5.542 | 30.7884 | +0.00 % |
+| withdraw-wrapped liquidation only, lands first | M4 as built | liquidation +20 s @1.601x, lender +0.771, borrower 5.542 | 30.7884 | +0.00 % |
+| deposit freeze + both samples deposit-wrapped (blocker) | M4 as built | liquidation +20 s @1.601x, lender +0.771, borrower 5.542 | 30.7884 | +0.00 % |
+| combined: every sample both ways, withdraw-wrapped liquidation first | M4 as built | liquidation +13 s by attacker @1.601x, lender +0.802, borrower 4.236 | 32.0321 | +4.04 % |
+| none (honest) | M4R | liquidation +9 s @1.601x, lender +0.771, borrower 5.542 | 30.7884 | +0.00 % |
+| withdraw-wrapped liquidation only, lands first | M4R | liquidation +9 s by attacker @1.601x, lender +0.802, borrower 4.236 | 32.0321 | +4.04 % |
+| deposit freeze + both samples deposit-wrapped (blocker) | M4R | open (120 s) | - | - |
+| combined: every sample both ways, withdraw-wrapped liquidation first | M4R | open (120 s) | - | - |
+
+## 5b. The steady-state withdraw drag under the keeper's real cadence (FITV-2, FITS-2; V2-14).  No switch: a
+Tier C Raydium market whose unlocked LP the attacker holds (FITV-2's fork: a 160-SOL lambda 99.78 % 1 % CPMM
+plus the attacker's own deposit of 1x / 3x / 3.95x the LP counter -> lambda 49.9 / 24.9 / 20.2 %), a position
+at the open cap (in (iii) a share of it), the EMA converged.  The keeper follows its duties (every 30 s in
+quiet periods; per second near a threshold or at |P_spot/P_ema - 1| > 2 %).  Every second, before the keeper,
+the attacker sends [withdraw all, crank_price, deposit] -- an attacker-only second's bucket is the drained
+depth D, so such seconds drag L_ema toward D (1/6 of the gap each), and the keeper's own observation in a
+dragged second cannot lift it (the clamped observation is L_ema itself) -- and [withdraw all, liquidate,
+deposit].  Flat for W s (the drag), then a genuine pump to the hold level over 60 s, held 300 s.  The rule sets:
+'#100' = the spot leg at the drained L_live and the #99 keeper (29 of every 30 quiet seconds are the
+attacker's, so L_ema reaches D within about 8 s); L_b = max(L_live, min(max(L_ema', L_slow), cap)), whose
+L_slow term (V2-14) credits the depth that was there until it has followed the dragged L_ema (tau_slow = 1 h).
+'#101' (as adopted, FITS-2) = the spot leg at max(L_live, L_ema') (a withdrawal in the same transaction
+cannot make it true) and the #101 keeper, which covers every second for 10 s after a foreign bucket
+liquidity deviation on a market with positions, extended while they recur: the attacker starts in the
+second after a keeper observation, so its first dragged second is attacker-only (one step, L_ema x ~11/12);
+every later second shares its bucket with the keeper's honest observation, which holds L_ema where it is.
+'the withdrawn lows bound' = #100's first fix for FIT-2 (#100's exits), which bounded the EMA terms by
+floor(L_mlo*1.01) = D (FITV-2).  Cells: outcome (seconds after the pump starts, by whom, price); for #101 the
+keeper observations / attacker transactions over the run; L_ema / L_slow / L_mlo as a share of sqrt(X*Y)
+at the pump.
+
+(i) The drag held W s before a pump to the first table's hold level.
+
+| pool | q / x | hold | W (drag, s) | honest (no attacker) | attacker, #101 (as adopted) | attacker, #100 | attacker, the withdrawn lows bound | at the pump, #101 (attacker) | at the pump, #100 (attacker) |
+|---|---|---|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.40 % | 2.05x | 30 | open | open; keeper 389 / attacker 389 | liquidation +67 s by the attacker @2.050x | liquidation +67 s by the attacker @2.050x | 0.917 / 0.999 / 0.499 | 0.502 / 0.996 / 0.499 |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.40 % | 2.05x | 600 | open | open; keeper 959 / attacker 959 | liquidation +67 s by the attacker @2.050x | liquidation +67 s by the attacker @2.050x | 0.917 / 0.987 / 0.499 | 0.499 / 0.923 / 0.499 |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.40 % | 2.05x | 3600 | open | open; keeper 3959 / attacker 3959 | liquidation +67 s by the attacker @2.050x | liquidation +67 s by the attacker @2.050x | 0.917 / 0.947 / 0.499 | 0.499 / 0.683 / 0.499 |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.40 % | 2.05x | 10800 | open | open; keeper 11159 / attacker 11159 | liquidation +67 s by the attacker @2.050x | liquidation +67 s by the attacker @2.050x | 0.917 / 0.921 / 0.499 | 0.499 / 0.524 / 0.499 |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1.22 % | 2.00x | 30 | open | open; keeper 389 / attacker 389 | liquidation +65 s by the attacker @2.000x | liquidation +65 s by the attacker @2.000x | 0.917 / 0.999 / 0.249 | 0.256 / 0.994 / 0.249 |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1.22 % | 2.00x | 600 | open | open; keeper 959 / attacker 959 | liquidation +65 s by the attacker @2.000x | liquidation +65 s by the attacker @2.000x | 0.917 / 0.987 / 0.249 | 0.249 / 0.885 / 0.249 |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1.22 % | 2.00x | 3600 | open | open; keeper 3959 / attacker 3959 | liquidation +65 s by the attacker @2.000x | liquidation +65 s by the attacker @2.000x | 0.917 / 0.947 / 0.249 | 0.249 / 0.526 / 0.249 |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1.22 % | 2.00x | 10800 | open | open; keeper 11159 / attacker 11159 | liquidation +65 s by the attacker @2.000x | liquidation +65 s by the attacker @2.000x | 0.917 / 0.921 / 0.249 | 0.249 / 0.287 / 0.249 |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 2.41 % | 1.90x | 30 | open | open; keeper 389 / attacker 389 | liquidation +63 s by the attacker @1.900x | liquidation +63 s by the attacker @1.900x | 0.917 / 0.999 / 0.202 | 0.210 / 0.994 / 0.202 |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 2.41 % | 1.90x | 600 | open | open; keeper 959 / attacker 959 | liquidation +62 s by the attacker @1.900x | liquidation +62 s by the attacker @1.900x | 0.917 / 0.987 / 0.202 | 0.202 / 0.878 / 0.202 |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 2.41 % | 1.90x | 3600 | open | open; keeper 3959 / attacker 3959 | liquidation +62 s by the attacker @1.900x | liquidation +62 s by the attacker @1.900x | 0.917 / 0.947 / 0.202 | 0.202 / 0.496 / 0.202 |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 2.41 % | 1.90x | 10800 | open | open; keeper 11159 / attacker 11159 | liquidation +62 s by the attacker @1.900x | liquidation +62 s by the attacker @1.900x | 0.917 / 0.921 / 0.202 | 0.202 / 0.241 / 0.202 |
+
+(ii) Forcing windows: the hold levels (1.80x, 1.81x, ...) below the honest keeper's threshold -- the lowest
+hold level (to 0.005x) it liquidates at without an attacker -- at which the attacker's wrapped liquidation
+lands after a W-s drag (their count in brackets).  Above a band the drained buyback no longer fits the vault
+(V - K_s - ert) and nothing is forced.  The last columns are the shortest drag (to 60 s) after which the
+attacker forces the first table's hold level; the attacker pays one transaction a second for it and must
+hold the pool's unlocked LP (under #101 the keeper pays one crank a second as well).
+
+| pool | q / x | honest threshold | forced, #101, W 30 s | forced, #101, W 1 h | forced, #101, W 3 h | forced, #100, W 30 s | forced, #100, W 1 h | forced, #100, W 3 h | forced, the withdrawn lows bound, W 30 s | shortest #101 drag that forces the hold level | shortest #100 drag that forces the hold level |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.40 % | 2.078x | none | none | none | 2.01-2.07x (7) | 2.01-2.07x (7) | 2.01-2.07x (7) | 2.01-2.07x (7) | 2.05x: not within 8 h | 2.05x: 86 s (0.02 h) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1.22 % | 2.039x | none | none | none | 1.94-2.03x (10) | 1.94-2.03x (10) | 1.94-2.03x (10) | 1.94-2.03x (10) | 2.00x: not within 8 h | 2.00x: 86 s (0.02 h) |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 2.41 % | 2.082x | none | none | none | 1.82-1.95x (14) | 1.81-2.07x (27) | 1.81-2.07x (27) | 1.82-1.95x (14) | 1.90x: not within 8 h | 1.90x: 86 s (0.02 h) |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 0.74 % | 2.026x | none | none | none | 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) | 2.02x: not within 8 h | 2.02x: 86 s (0.02 h) |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 2.41 % | 2.082x | 2.08x (1) | 2.08x (1) | 2.08x (1) | 2.08x (1) | 2.08x (1) | 2.08x (1) | 2.08x (1) | 2.05x: not within 8 h | 2.05x: not within 8 h |
+
+(iii) FITS-2 (a): smaller positions and the fork's drag lengths.  The 320-SOL lambda 49.89 % 1 % pool; the
+position at a share of the open cap.  Below about half the cap delta (2 %) covers the drained cost
+cost(D)/cost(H) - 1, so under #100 the wrapped liquidation fits the bound with L_slow still at the pool's
+depth: a 30-s drag forces a band below the honest threshold (the fork: FITV_QPM = 500, forced at 2.025x); a
+longer drag widens it for the larger positions (the fork's cap-sized regression position, 1.9 % of X,
+after 25 min).  Columns: forced hold levels (from 1.80x) after a W-s drag; the ablations take one of #101's
+two changes at a time (W 1 h).
+
+| position (share of the open cap) | q / x | honest threshold | forced, #100, W 30 s | forced, #100, W 25 min | forced, #100, W 1 h | forced, #101, W 30 s | forced, #101, W 25 min | forced, #101, W 1 h | forced, #101's spot leg alone, W 1 h | forced, the #101 keeper alone, W 1 h |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 2.40 % | 2.078x | 2.01-2.07x (7) | 2.01-2.07x (7) | 2.01-2.07x (7) | none | none | none | 2.01-2.07x (7) | none |
+| 0.79 | 1.91 % | 2.065x | 2.01-2.06x (6) | 2.01-2.06x (6) | 2.01-2.06x (6) | 2.06x (1) | 2.06x (1) | 2.06x (1) | 2.01-2.06x (6) | 2.06x (1) |
+| 0.5 | 1.22 % | 2.039x | 2.01-2.03x (3) | 2.01-2.03x (3) | 2.01-2.03x (3) | none | none | none | 2.01-2.03x (3) | none |
+| 0.3 | 0.73 % | 2.026x | 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) | none | none | none | 2.01-2.02x (2) | none |
+| 0.15 | 0.37 % | 2.013x | 2.01x (1) | 2.01x (1) | 2.01x (1) | none | none | none | 2.01x (1) | none |
+
+(iv) What is left under #101: the keeper's missed seconds (the M4G-1 class, downward), and pause-and-
+resume drags.  While the attacker wraps every second, each second the keeper's observation does not land is
+another attacker-only step (L_ema - D shrinks by 1/6), and a covered second's bucket holds L_ema, so the
+steps add up; they need not be consecutive (no degraded mode).  An attacker that pauses until the coverage
+window lapses (10 s) gets one attacker-only second per resumption, but the covered seconds of the pause
+carry honest observations only and give back 1/6 of the gap each, so the drag does not accumulate.  The
+320-SOL lambda 49.89 % 1 % pool, the position at the open cap and at half of it, the drag held 1 h (k
+isolated misses spread over it, or the attacker wrapping every n-th second).  Cells: forced hold levels
+(from 1.80x); L_ema / L_slow / L_mlo at the pump (the hold level of (i)); keeper observations / attacker
+transactions over that run.
+
+| position | q / x | honest threshold | attacker | forced, #101 | at the pump | keeper / attacker |
+|---|---|---|---|---|---|---|
+| 1 x the cap | 2.40 % | 2.078x | every second, 0 keeper misses | none | 0.917 / 0.947 / 0.499 | 3959 / 3959 |
+| 1 x the cap | 2.40 % | 2.078x | every second, 1 keeper miss | 2.07x (1) | 0.847 / 0.920 / 0.499 | 3958 / 3959 |
+| 1 x the cap | 2.40 % | 2.078x | every second, 3 keeper misses | 2.06-2.07x (2) | 0.741 / 0.880 / 0.499 | 3956 / 3959 |
+| 1 x the cap | 2.40 % | 2.078x | every second, 5 keeper misses | 2.05-2.07x (3) | 0.667 / 0.845 / 0.499 | 3669 / 3675 |
+| 1 x the cap | 2.40 % | 2.078x | every second, 10 keeper misses | 2.03-2.07x (5) | 0.566 / 0.787 / 0.499 | 3658 / 3669 |
+| 1 x the cap | 2.40 % | 2.078x | every second, 20 keeper misses | 2.01-2.07x (7) | 0.510 / 0.735 / 0.499 | 3646 / 3667 |
+| 1 x the cap | 2.40 % | 2.078x | one wrap every 2 s, no keeper miss | none | 1.000 / 1.000 / 0.499 | 3959 / 1980 |
+| 1 x the cap | 2.40 % | 2.078x | one wrap every 11 s, no keeper miss | none | 0.903 / 0.971 / 1.000 | 3632 / 360 |
+| 0.5 x the cap | 1.22 % | 2.039x | every second, 0 keeper misses | none | 0.917 / 0.947 / 0.499 | 3671 / 3672 |
+| 0.5 x the cap | 1.22 % | 2.039x | every second, 1 keeper miss | none | 0.847 / 0.920 / 0.499 | 3669 / 3671 |
+| 0.5 x the cap | 1.22 % | 2.039x | every second, 3 keeper misses | 2.03x (1) | 0.741 / 0.880 / 0.499 | 3666 / 3670 |
+| 0.5 x the cap | 1.22 % | 2.039x | every second, 5 keeper misses | 2.03x (1) | 0.667 / 0.845 / 0.499 | 3663 / 3669 |
+| 0.5 x the cap | 1.22 % | 2.039x | every second, 10 keeper misses | 2.02-2.03x (2) | 0.566 / 0.787 / 0.499 | 3656 / 3667 |
+| 0.5 x the cap | 1.22 % | 2.039x | every second, 20 keeper misses | 2.01-2.03x (3) | 0.510 / 0.735 / 0.499 | 3645 / 3666 |
+| 0.5 x the cap | 1.22 % | 2.039x | one wrap every 2 s, no keeper miss | none | 1.000 / 1.000 / 0.499 | 3674 / 1837 |
+| 0.5 x the cap | 1.22 % | 2.039x | one wrap every 11 s, no keeper miss | none | 0.903 / 0.971 / 1.000 | 3347 / 334 |
+
+(v) The spot leg's own case (FITS-2 (a)): no drag, a genuine spike and retreat.  The price ramps to k x over
+the ramp, holds, and falls back over 2 s to r x below the honest threshold: P_ema lags the spike, so for a
+few seconds after the retreat the EMA leg is true while the robust spot at the pool's depth is not -- the
+spot leg is the veto.  The unlocked-LP holder sends only [withdraw all, liquidate, deposit] every second,
+before the keeper.  Under #100 the spot leg reads the drained L_live, the withdrawal makes it true, and the
+liquidation of a position healthy at the pool's depth lands; under #101 it reads max(L_live, L_ema') and the
+veto holds.  The #101 keeper alone (the spot leg at L_live) does not help: no attacker-only second is
+involved.  Cells: the retreat levels r (of 1.98x, 2.00x, 2.01x, ..., 2.07x below the honest threshold) at
+which the attacker's wrapped liquidation lands while the honest keeper leaves the position open.
+
+| pool | honest threshold | spike (k, ramp, hold) | retreats the honest keeper leaves open | forced, #100 | forced, the #101 keeper alone | forced, #101 (as adopted) |
+|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.078x | 2.2x, 20 s, 5 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (9) | 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (5) | 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (5) | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.078x | 2.3x, 10 s, 5 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (9) | 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (7) | 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (7) | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.078x | 2.4x, 10 s, 5 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (9) | 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (7) | 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (7) | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 2.078x | 2.6x, 5 s, 3 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x, 2.04x, 2.05x, 2.06x, 2.07x (9) | 2.05x, 2.06x, 2.07x (3) | 2.05x, 2.06x, 2.07x (3) | none |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 2.039x | 2.2x, 20 s, 5 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | none |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 2.039x | 2.3x, 10 s, 5 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | none |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 2.039x | 2.4x, 10 s, 5 s | none | none | none | none |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 2.039x | 2.6x, 5 s, 3 s | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | 1.98x, 2.00x, 2.01x, 2.02x, 2.03x (5) | none |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 2.026x | 2.2x, 20 s, 5 s | none | none | none | none |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 2.026x | 2.3x, 10 s, 5 s | 1.98x, 2.00x, 2.01x, 2.02x (4) | 2.01x, 2.02x (2) | 2.01x, 2.02x (2) | none |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 2.026x | 2.4x, 10 s, 5 s | none | none | none | none |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 2.026x | 2.6x, 5 s, 3 s | 1.98x, 2.00x, 2.01x, 2.02x (4) | 2.01x, 2.02x (2) | 2.01x, 2.02x (2) | none |
+
+(vi) Liveness: a GENUINE withdrawal (FITS-2 (c)).  No attacker; every unlocked LP unit leaves the pool at
+second 90 and stays out, so a position that is healthy at the pool's full depth becomes liquidatable at
+its new depth.  Under #101 the spot leg reads max(L_live, L_ema'), and L_ema follows the drained depth at
+1/6 of the gap per integrated second (tau = 5 s; the keeper observes every second near a threshold or
+while |P_spot/P_ema - 1| > 2 %, else every 30 s, dt <= 2 s).  The EMA leg (the ring's reprojections at
+L_ema) already waited for that decay under #100: in a flat or rising market it binds, and the new spot leg
+costs nothing; it delays an exit only while the robust spot is below P_ema (a dip, noise), until L_ema has
+decayed.  Positions where a band exists -- the drained buyback within delta of the reference, which L_b's
+L_slow term keeps at the pre-withdrawal depth for about tau_slow: the 25-bps pool at the open cap and the
+1 % pools at 0.3 of it.  Paths (x the starting price; h the middle of the band): 'flat h' = a 60-s ramp to
+h, flat; 'dip d' = a 60-s ramp to h*(1 + d), flat, and the price back to h with the withdrawal (the
+robust spot below P_ema); 'noise' = 'flat h' with +-1 % per-second noise (seeds 1-3); 'pump' = 1.2 h over
+60 s, the withdrawal at second 30.  Cells: outcome, seconds after the withdrawal, price; the delay of #101
+against #100.
+
+| pool | position | q / x | threshold at full depth / drained | path | #100 (spot leg at L_live) | #101 (as adopted) | delay |
+|---|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | flat 2.0133x | liquidation +8 s @2.013x | liquidation +8 s @2.013x | +0 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | dip 0.25 % | liquidation +7 s @2.013x | liquidation +7 s @2.013x | +0 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | dip 0.5 % | liquidation +4 s @2.013x | liquidation +6 s @2.013x | +2 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | flat 2.0133x, noise +-1 %, seed 1 | liquidation +7 s @2.026x | liquidation +7 s @2.026x | +0 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | flat 2.0133x, noise +-1 %, seed 2 | liquidation +9 s @2.010x | liquidation +9 s @2.010x | +0 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | flat 2.0133x, noise +-1 %, seed 3 | liquidation +9 s @2.012x | liquidation +10 s @2.014x | +1 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.0240x / 2.0025x | pump to 2.416x over 60 s | liquidation +21 s @2.204x | liquidation +21 s @2.204x | +0 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | flat 2.0133x | liquidation +8 s @2.013x | liquidation +8 s @2.013x | +0 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | dip 0.25 % | liquidation +7 s @2.013x | liquidation +7 s @2.013x | +0 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | dip 0.5 % | liquidation +3 s @2.013x | liquidation +6 s @2.013x | +3 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | flat 2.0133x, noise +-1 %, seed 1 | liquidation +7 s @2.026x | liquidation +7 s @2.026x | +0 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | flat 2.0133x, noise +-1 %, seed 2 | liquidation +9 s @2.010x | liquidation +9 s @2.010x | +0 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | flat 2.0133x, noise +-1 %, seed 3 | liquidation +9 s @2.012x | liquidation +10 s @2.014x | +1 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.0240x / 2.0025x | pump to 2.416x over 60 s | liquidation +21 s @2.204x | liquidation +21 s @2.204x | +0 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | flat 1.9966x | liquidation +13 s @1.997x | liquidation +13 s @1.997x | +0 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | dip 0.25 % | liquidation +12 s @1.997x | liquidation +12 s @1.997x | +0 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | dip 0.5 % | liquidation +12 s @1.997x | liquidation +12 s @1.997x | +0 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | flat 1.9966x, noise +-1 %, seed 1 | liquidation +9 s @1.999x | liquidation +13 s @1.999x | +4 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | flat 1.9966x, noise +-1 %, seed 2 | liquidation +13 s @1.984x | liquidation +21 s @2.009x | +8 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | flat 1.9966x, noise +-1 %, seed 3 | liquidation +12 s @2.000x | liquidation +12 s @2.000x | +0 s |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.37 % | 2.0122x / 1.9811x | pump to 2.396x over 60 s | liquidation +21 s @2.187x | liquidation +21 s @2.187x | +0 s |
+
+At the open cap on the 1 % pools there is no such band: the drained buyback exceeds B_ref*(1 + delta) while
+L_slow still credits the pre-withdrawal depth (V2-14), so after a genuine withdrawal the position waits for
+L_slow under both rule sets -- in a pump that follows at once it can gap into S1 (pre-existing, unchanged
+by #101):
+
+| pool | position | path | #100 (spot leg at L_live) | #101 (as adopted) | no withdrawal (#101) |
+|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | the open cap | withdrawal at +1 s, pump 3x/120 s | liquidation +68 s @2.150x | liquidation +68 s @2.150x | liquidation +72 s @2.217x |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | the open cap | withdrawal at +1 s, pump 2.5x/300 s | liquidation +209 s @2.050x | liquidation +209 s @2.050x | liquidation +223 s @2.120x |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | the open cap | withdrawal at +1 s, pump 3x/120 s | liquidation +64 s @2.083x | liquidation +64 s @2.083x | liquidation +70 s @2.183x |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | the open cap | withdrawal at +1 s, pump 2.5x/300 s | liquidation +194 s @1.975x | liquidation +194 s @1.975x | liquidation +215 s @2.080x |
+
+(vii) What is left under #101: a GENUINELY reached low, frozen (FITX-1, the verification of #101).  The
+attacker withdraws its unlocked LP for real at second 1 and keeps it out for `held` s, cranking every second
+at the drained depth -- the keeper reads the same depth, so nothing is foreign and no coverage starts, and
+L_ema genuinely falls toward D (at lambda 49.9 %: 0.741 / 0.667 / 0.566 / 0.510 of the full depth after
+3 / 5 / 10 / 20 s).  It then re-deposits and withdraw-wraps a crank every second: its first wrap starts the
+keeper's per-second coverage, and every later bucket holds the drained and the keeper's honest observation,
+[D, H], which leaves L_ema where it is (the clamped observation is L_ema itself) -- the freeze, at one keeper
+crank per attacker transaction.  L_slow follows the drained lows (its input is min(lobs, L_mlo), and every
+bucket's low is D; tau_slow = 1 h), as after a withdrawal for good.
+After W s flat, the genuine pump to the hold level, with [withdraw all, liquidate, deposit] every second: the
+spot leg reads max(L_live, L_ema') = the frozen low, the EMA leg the same low, and where delta covers the
+drained cost (or L_slow has followed) the exit bound passes.  Cells: forced hold levels (from 1.80x, below the
+honest threshold with the LP in the pool).  'The LP out for good': the same LP withdraws at second 1 and
+stays out, nobody else acts -- the genuine withdrawal the protocol liquidates on (FITS-2 (c)); for every
+forced level of the row, whether the honest keeper liquidates it then too, no later (count, and the smallest
+lag of the forced liquidation behind it, in seconds).
+
+| pool | position | q / x | honest threshold (LP in) | forced, #101, W 60 s, held 3 / 5 / 10 / 20 s | forced, #101, held 20 s, W 25 min | forced, #101, held 20 s, W 1 h | L_ema / L_slow at the pump (held 20 s; W 60 s / 25 min / 1 h) | each forced level: the LP out for good liquidates it too, no later |
+|---|---|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.40 % | 2.078x | 2.06-2.07x (2); 2.05-2.07x (3); 2.03-2.07x (5); 2.01-2.07x (7) | 2.01-2.07x (7) | 2.01-2.07x (7) | 0.510 / 0.992; 0.510 / 0.833; 0.510 / 0.690 | 31 of 31 (lag >= +0 s) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.79 x the cap | 1.91 % | 2.065x | 2.05-2.06x (2); 2.04-2.06x (3); 2.02-2.06x (5); 2.01-2.06x (6) | 2.01-2.06x (6) | 2.01-2.06x (6) | 0.510 / 0.992; 0.510 / 0.833; 0.510 / 0.690 | 28 of 28 (lag >= +0 s) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 1.22 % | 2.039x | 2.03x (1); 2.03x (1); 2.02-2.03x (2); 2.01-2.03x (3) | 2.01-2.03x (3) | 2.01-2.03x (3) | 0.510 / 0.992; 0.510 / 0.833; 0.510 / 0.690 | 13 of 13 (lag >= +0 s) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 0.73 % | 2.026x | 2.02x (1); 2.02x (1); 2.01-2.02x (2); 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) | 0.510 / 0.992; 0.510 / 0.833; 0.510 / 0.690 | 10 of 10 (lag >= +0 s) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1 x the cap | 1.22 % | 2.039x | 2.03x (1); 2.02-2.03x (2); 1.99-2.03x (5); 1.95-2.03x (9) | 1.95-2.03x (9) | 1.95-2.03x (9) | 0.273 / 0.988; 0.273 / 0.752; 0.273 / 0.540 | 35 of 35 (lag >= +1 s) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.5 x the cap | 0.61 % | 2.022x | 2.02x (1); 2.01-2.02x (2); 2.00-2.02x (3); 1.98-2.02x (5) | 1.98-2.02x (5) | 1.98-2.02x (5) | 0.273 / 0.988; 0.273 / 0.752; 0.273 / 0.540 | 21 of 21 (lag >= +1 s) |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 1 x the cap | 2.41 % | 2.082x | none; none; none; 1.85-1.95x (11) | 1.85-1.95x (11) | 1.85-1.95x (11) | 0.231 / 0.988; 0.231 / 0.738; 0.231 / 0.514 | 33 of 33 (lag >= +2 s) |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 0.74 % | 2.026x | 2.02x (1); 2.02x (1); 2.01-2.02x (2); 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) | 0.510 / 0.992; 0.510 / 0.833; 0.510 / 0.690 | 10 of 10 (lag >= +0 s) |
+
+The held drain needs a few seconds of the attacker's capital genuinely out of the pool (3 s force a level at half
+the cap); after it, the freeze costs one transaction a second, as the drag did.  Everything it forces is what the
+same LP forces by withdrawing for good (the rows' last column): the frozen L_ema is at or above the depth a
+withdrawal for good reaches, L_slow follows the same drained lows, the wrapped liquidation buys at the same
+drained depth, and its bound is no looser (a deeper L_b only lowers max_in).  What the attacker saves is keeping
+its LP in the pool (its fees) after the held seconds.  The two candidate floors (analysis rules, NOT adopted;
+owner item O18) judge the spot leg also at L_mhi -- the upper median of the ring's bucket liquidity highs, the
+box's L_hi term: every covered second's high is the keeper's honest depth, so lowering it needs 5 of 8
+attacker-only buckets -- or at min(L_mhi, L_slow), which deposit-wrapped cranks cannot raise.  Forced hold levels
+after a 20-s held drain; (iv)'s missed keeper seconds (1 h, the open cap and half of it, 3 / 20 misses); their
+cost under a capital deposit freeze; and the delay they add to (vi)'s genuine withdrawals, against #101:
+
+| pool | position | honest threshold | floor | forced, held 20 s, W 60 s | forced, W 25 min | forced, W 1 h |
+|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.078x | none (#101) | 2.01-2.07x (7) | 2.01-2.07x (7) | 2.01-2.07x (7) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.078x | L_mhi | none | none | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.078x | min(L_mhi, L_slow) | none | 2.06-2.07x (2) | 2.05-2.07x (3) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.79 x the cap | 2.065x | none (#101) | 2.01-2.06x (6) | 2.01-2.06x (6) | 2.01-2.06x (6) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.79 x the cap | 2.065x | L_mhi | none | none | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.79 x the cap | 2.065x | min(L_mhi, L_slow) | 2.06x (1) | 2.05-2.06x (2) | 2.04-2.06x (3) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.039x | none (#101) | 2.01-2.03x (3) | 2.01-2.03x (3) | 2.01-2.03x (3) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.039x | L_mhi | none | none | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.039x | min(L_mhi, L_slow) | none | 2.03x (1) | 2.03x (1) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 2.026x | none (#101) | 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 2.026x | L_mhi | none | none | none |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.3 x the cap | 2.026x | min(L_mhi, L_slow) | none | 2.02x (1) | 2.02x (1) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1 x the cap | 2.039x | none (#101) | 1.95-2.03x (9) | 1.95-2.03x (9) | 1.95-2.03x (9) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1 x the cap | 2.039x | L_mhi | none | none | none |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 1 x the cap | 2.039x | min(L_mhi, L_slow) | none | 2.03x (1) | 2.01-2.03x (3) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.022x | none (#101) | 1.98-2.02x (5) | 1.98-2.02x (5) | 1.98-2.02x (5) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.022x | L_mhi | 2.02x (1) | 2.02x (1) | 2.02x (1) |
+| 640 SOL, lambda 24.94 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.022x | min(L_mhi, L_slow) | 2.02x (1) | 2.02x (1) | 2.01-2.02x (2) |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 1 x the cap | 2.082x | none (#101) | 1.85-1.95x (11) | 1.85-1.95x (11) | 1.85-1.95x (11) |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 1 x the cap | 2.082x | L_mhi | none | none | none |
+| 792 SOL, lambda 20.16 %, 1 %, lambda_min 20 % | 1 x the cap | 2.082x | min(L_mhi, L_slow) | none | none | none |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.026x | none (#101) | 2.01-2.02x (2) | 2.01-2.02x (2) | 2.01-2.02x (2) |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.026x | L_mhi | none | none | none |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.026x | min(L_mhi, L_slow) | none | 2.02x (1) | 2.02x (1) |
+
+(At 640 SOL, half the cap, the 2.02x level is one the honest keeper liquidates too -- at +90 s, the
+threshold's bisection is to 0.005x -- so there the wrapped liquidation only comes first, under every rule.)
+
+| position | honest threshold | keeper misses in a 1-h drag | forced, #101 | forced, floor L_mhi | forced, floor min(L_mhi, L_slow) |
+|---|---|---|---|---|---|
+| 1 x the cap | 2.078x | 3 | 2.06-2.07x (2) | none | 2.07x (1) |
+| 1 x the cap | 2.078x | 20 | 2.01-2.07x (7) | none | 2.05-2.07x (3) |
+| 0.5 x the cap | 2.039x | 3 | 2.03x (1) | none | none |
+| 0.5 x the cap | 2.039x | 20 | 2.01-2.03x (3) | none | 2.03x (1) |
+
+Their cost: a capital DEPOSIT freeze (M4F-1's push, residual 2) -- an LP deposit-wraps a crank every second
+(as much again as the LP counter, or 7x; no fee) -- raises every covered bucket's high, so 5 of 8 of them
+raise L_mhi, while #101's covered buckets hold L_ema at the honest depth.  Flat 60 s, then a 60-s pump to a
+hold level just above the honest threshold (+0.5 % ... +5 % of price), held 300 s; cells: the liquidation,
+seconds after the pump starts, or open:
+
+| pool | position | hold level | deposit freeze | #101 | floor L_mhi | floor min(L_mhi, L_slow) |
+|---|---|---|---|---|---|---|
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.088x (+0.5 %) | none (control) | liquidation +75 s | liquidation +75 s | liquidation +75 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.088x (+0.5 %) | dep | liquidation +106 s | open (300 s) | liquidation +106 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.088x (+0.5 %) | dep7 | liquidation +106 s | open (300 s) | liquidation +106 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.099x (+1 %) | none (control) | liquidation +71 s | liquidation +71 s | liquidation +71 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.099x (+1 %) | dep | liquidation +75 s | open (300 s) | liquidation +75 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.099x (+1 %) | dep7 | liquidation +75 s | open (300 s) | liquidation +75 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.119x (+2 %) | none (control) | liquidation +68 s | liquidation +68 s | liquidation +68 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.119x (+2 %) | dep | liquidation +70 s | liquidation +70 s | liquidation +70 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.119x (+2 %) | dep7 | liquidation +70 s | open (300 s) | liquidation +70 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.182x (+5 %) | none (control) | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.182x (+5 %) | dep | liquidation +64 s | liquidation +64 s | liquidation +64 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 1 x the cap | 2.182x (+5 %) | dep7 | liquidation +64 s | liquidation +64 s | liquidation +64 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.049x (+0.5 %) | none (control) | liquidation +75 s | liquidation +75 s | liquidation +75 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.049x (+0.5 %) | dep | liquidation +79 s | open (300 s) | liquidation +79 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.049x (+0.5 %) | dep7 | liquidation +79 s | open (300 s) | liquidation +79 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.059x (+1 %) | none (control) | liquidation +72 s | liquidation +72 s | liquidation +72 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.059x (+1 %) | dep | liquidation +73 s | liquidation +73 s | liquidation +73 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.059x (+1 %) | dep7 | liquidation +73 s | open (300 s) | liquidation +73 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.080x (+2 %) | none (control) | liquidation +68 s | liquidation +68 s | liquidation +68 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.080x (+2 %) | dep | liquidation +68 s | liquidation +68 s | liquidation +68 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.080x (+2 %) | dep7 | liquidation +68 s | liquidation +68 s | liquidation +68 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.141x (+5 %) | none (control) | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.141x (+5 %) | dep | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 320 SOL, lambda 49.89 %, 1 %, lambda_min 50 % | 0.5 x the cap | 2.141x (+5 %) | dep7 | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.036x (+0.5 %) | none (control) | liquidation +74 s | liquidation +74 s | liquidation +74 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.036x (+0.5 %) | dep | liquidation +76 s | liquidation +76 s | liquidation +76 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.036x (+0.5 %) | dep7 | liquidation +76 s | open (300 s) | liquidation +76 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.046x (+1 %) | none (control) | liquidation +71 s | liquidation +71 s | liquidation +71 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.046x (+1 %) | dep | liquidation +72 s | liquidation +72 s | liquidation +72 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.046x (+1 %) | dep7 | liquidation +72 s | liquidation +72 s | liquidation +72 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.067x (+2 %) | none (control) | liquidation +67 s | liquidation +67 s | liquidation +67 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.067x (+2 %) | dep | liquidation +68 s | liquidation +68 s | liquidation +68 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.067x (+2 %) | dep7 | liquidation +68 s | liquidation +68 s | liquidation +68 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.127x (+5 %) | none (control) | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.127x (+5 %) | dep | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 320 SOL, lambda 49.89 %, 0.25 %, lambda_min 50 % | 1 x the cap | 2.127x (+5 %) | dep7 | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.092x (+0.5 %) | none (control) | liquidation +74 s | liquidation +74 s | liquidation +74 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.092x (+0.5 %) | dep | liquidation +81 s | open (300 s) | liquidation +81 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.092x (+0.5 %) | dep7 | liquidation +81 s | open (300 s) | liquidation +81 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.103x (+1 %) | none (control) | liquidation +71 s | liquidation +71 s | liquidation +71 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.103x (+1 %) | dep | liquidation +74 s | open (300 s) | liquidation +74 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.103x (+1 %) | dep7 | liquidation +74 s | open (300 s) | liquidation +74 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.124x (+2 %) | none (control) | liquidation +67 s | liquidation +67 s | liquidation +67 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.124x (+2 %) | dep | liquidation +69 s | liquidation +69 s | liquidation +69 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.124x (+2 %) | dep7 | liquidation +69 s | open (300 s) | liquidation +69 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.186x (+5 %) | none (control) | liquidation +63 s | liquidation +63 s | liquidation +63 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.186x (+5 %) | dep | liquidation +64 s | liquidation +64 s | liquidation +64 s |
+| 160 SOL, lambda 99.78 %, 1 %, lambda_min 50 % | 1 x the cap | 2.186x (+5 %) | dep7 | liquidation +64 s | liquidation +64 s | liquidation +64 s |
+
+(vi)'s 21 genuine withdrawals under the floor L_mhi: 21 liquidated (#101: 21), the delay against #101 +0 to +0 s
+(vi)'s 21 genuine withdrawals under the floor min(L_mhi, L_slow): 21 liquidated (#101: 21), the delay against #101 +0 to +0 s
+
+## 6. M4R-2: the token dumps f x during the halt; the only candidate has 30 SOL of locked SOL at the
+pre-halt price (lambda 99.78 %, D = 30 % of pool_d), i.e. 30/sqrt(f) SOL at the live price (window floor
+25 SOL).  Attacker: none / the thin pool's backer pump-wraps the recording proposal back to the frozen
+price; or no dump during the halt but a genuine one 5 s into the collection window.  Cells: adopted?; P_ema
+vs the candidate's price at the switch (M4R: -> at the gate); real locked SOL at the live price; the
+attacker's round-trip cost (engine P).
+
+| f | attacker | M4 as built | M4R |
+|---|---|---|---|
+| 4x | none | adopted; P_ema/P 3.99; 15.0 SOL locked; cost 0.00 SOL | not adopted (refused 310, cancelled 0); cost 0.00 SOL |
+| 4x | pump-wrapped recording proposal | adopted; P_ema/P 3.99; 15.0 SOL locked; cost 0.04 SOL | adopted; P_ema/P 3.99 -> 1.86; 15.0 SOL locked; cost 0.04 SOL |
+| 4x | none; the dump comes 5 s INTO the window (M4X-3) | adopted; P_ema/P 3.99; 15.0 SOL locked; cost 0.00 SOL | adopted; P_ema/P 3.99 -> 1.86; 15.0 SOL locked; cost 0.00 SOL |
+| 16x | none | adopted; P_ema/P 15.97; 7.5 SOL locked; cost 0.00 SOL | not adopted (refused 310, cancelled 0); cost 0.00 SOL |
+| 16x | pump-wrapped recording proposal | adopted; P_ema/P 15.97; 7.5 SOL locked; cost 0.03 SOL | adopted; P_ema/P 15.97 -> 7.44; 7.5 SOL locked; cost 0.03 SOL |
+| 16x | none; the dump comes 5 s INTO the window (M4X-3) | adopted; P_ema/P 15.97; 7.5 SOL locked; cost 0.00 SOL | adopted; P_ema/P 15.97 -> 7.44; 7.5 SOL locked; cost 0.00 SOL |
+
+A dump inside the 60-s window (after the proposal that opened it) is judged only by the execution, at
+P_ema (M4X-3): adopted under both rules.  The warm-up then lowers P_ema towards the live price -- since
+M6-SEC-1 (#105) by at most one v0.4.1 step per integration, so at the gate P_ema is still 1.86x / 7.44x
+the pool after a 4x / 16x dump (the M4R column; 1.00x before #105), and the steady-state EMA follows
+after it.  That is the safe side: no exit is forced (the spot leg reads the live price), and opens wait
+out the adopted pool's listing window (PoolListWindow), by which time P_ema is on the pool, and are then
+refused PoolTooThin (tiers and R_eff see the pool as it is).  A re-check at the execution against P_cand
+would either revert (and hold every other proposal, M4V-4) or cancel (and let a dump-wrapped execution
+cancel windows until S3).
+
+## 7. Genuine moves (no attacker; honest keeper every second): exits must still happen.
+
+### 7a. Engine W, q 0.40 %.  Cells: outcome, seconds after the adoption, price vs pre-halt at the exit,
+(borrower / lender SOL).  The dump row: the M4R proposal judges the 52-SOL lambda 50 % candidate at its
+live price (13 SOL locked < 25 SOL, M4R-2) and opens no window.
+
+| scenario | M4 as built | M4R |
+|---|---|---|
+| pump during the halt: candidate at 2.2x, flat | liquidation k +13s @2.20x (0.250 / 0.036) | liquidation k +9s @2.20x (0.250 / 0.036) |
+| pump during the halt: 3x, flat | S1 k +61s @3.00x (0.000 / 1.186) | S1 k +49s @3.00x (0.000 / 1.186) |
+| pump during the halt: 5x, flat | S1 k +48s @5.01x (0.000 / 1.186) | S1 k +49s @5.01x (0.000 / 1.186) |
+| pump during the halt: 16x, flat | S1 k +48s @16.03x (0.000 / 1.186) | S1 k +49s @16.03x (0.000 / 1.186) |
+| step 2.2x at +1 s | liquidation k +13s @2.20x (0.251 / 0.035) | liquidation k +9s @2.20x (0.251 / 0.035) |
+| step 5x at +1 s | S1 k +48s @5.00x (0.000 / 1.186) | S1 k +49s @5.00x (0.000 / 1.186) |
+| ramp 2.2x/60 s from +1 s | liquidation k +62s @2.20x (0.251 / 0.035) | liquidation k +62s @2.20x (0.251 / 0.035) |
+| ramp 5x/60 s from +1 s | liquidation k +35s @2.49x (0.125 / 0.040) | liquidation k +35s @2.49x (0.125 / 0.040) |
+| ramp 2.2x/120 s from +300 s | liquidation k +414s @2.11x (0.287 / 0.034) | liquidation k +414s @2.11x (0.287 / 0.034) |
+| dump 4x during the halt, then 10x/60 s from +1 s | liquidation k +63s @2.50x (0.120 / 0.040) | no adoption (window floor) |
+| lambda 99.78 % 30-SOL candidate: pump during the halt 2.0x, flat | liquidation k +26s @2.00x (0.329 / 0.033) | liquidation k +9s @2.00x (0.329 / 0.033) |
+| lambda 99.78 % 30-SOL candidate: pump during the halt 3x, flat | S1 k +59s @3.00x (0.000 / 1.186) | S1 k +49s @3.00x (0.000 / 1.186) |
+| lambda 99.78 % 30-SOL candidate: step 2x at +1 s | liquidation k +26s @2.00x (0.329 / 0.033) | liquidation k +9s @2.00x (0.329 / 0.033) |
+
+### 7b. The big carried position (part 4b's markets), pump during the halt to m, flat (engine W).
+
+| m | q / x_cand | M4 as built | M4R |
+|---|---|---|---|
+| 1.6 | 12.34 % | open (6.748) | open (6.748) |
+| 1.8 | 13.09 % | open (5.560) | open (5.560) |
+| 2.0 | 13.80 % | liquidation k +14s @2.00x (3.462 / 0.448) | liquidation k +9s @2.00x (3.462 / 0.448) |
+| 2.5 | 15.43 % | liquidation k +8s @2.51x (0.142 / 0.571) | liquidation k +9s @2.51x (0.142 / 0.571) |
+
+### 7c. Engine P: candidate at 50 % of the incumbent's reserves (R100: 50 SOL), lambda 90 %; 'during the
+halt' = the candidate trades at m x the pre-halt price when the window opens; 'after' = the adopted pool
+moves from the adoption on.  Cells: outcome (time after the adoption, price vs pre-halt, lender P&L at
+the exit price, borrower remainder).
+
+| market | move | M4 as built | M4R |
+|---|---|---|---|
+| R100 | during the halt: x2 | open (300 s) | open (300 s) |
+| R100 | during the halt: x5 | S1 +48 s @5.006x, lender -1.459, borrower 0.000 | S1 +49 s @5.006x, lender -1.459, borrower 0.000 |
+| R100 | during the halt: x0.5, then flat | open (300 s) | open (300 s) |
+| R100 | after: step x2 at +1 s | open (300 s) | open (300 s) |
+| R100 | after: step x5 at +1 s | S1 +48 s @5.000x, lender -1.454, borrower 0.000 | S1 +49 s @5.000x, lender -1.454, borrower 0.000 |
+| R100 | after: ramp x2 over 30 s | open (300 s) | open (300 s) |
+| R100 | after: ramp x5 over 60 s | liquidation +35 s @2.489x, lender +0.076, borrower 0.234 | liquidation +35 s @2.489x, lender +0.076, borrower 0.233 |
+| RA | during the halt: x2 | S1 +65 s @2.001x, lender +0.659, borrower 0.000 | S1 +49 s @2.001x, lender +0.659, borrower 0.000 |
+| RA | during the halt: x5 | S1 +46 s @5.006x, lender -54.835, borrower 0.000 | S1 +49 s @5.006x, lender -54.835, borrower 0.000 |
+| RA | during the halt: x0.5, then flat | open (300 s) | open (300 s) |
+| RA | after: step x2 at +1 s | S1 +66 s @2.000x, lender +0.683, borrower 0.000 | S1 +49 s @2.000x, lender +0.683, borrower 0.000 |
+| RA | after: step x5 at +1 s | S1 +46 s @5.000x, lender -54.723, borrower 0.000 | S1 +49 s @5.000x, lender -54.723, borrower 0.000 |
+| RA | after: ramp x2 over 30 s | liquidation +30 s @1.954x, lender +0.462, borrower 0.000 | liquidation +30 s @1.954x, lender +0.462, borrower 0.000 |
+| RA | after: ramp x5 over 60 s | S1 +73 s @5.000x, lender -54.723, borrower 0.000 | S1 +73 s @5.000x, lender -54.723, borrower 0.000 |
+| RC | during the halt: x2 | open (300 s) | open (300 s) |
+| RC | during the halt: x5 | S1 +48 s @5.006x, lender -1.241, borrower 0.000 | S1 +49 s @5.006x, lender -1.241, borrower 0.000 |
+| RC | during the halt: x0.5, then flat | open (300 s) | open (300 s) |
+| RC | after: step x2 at +1 s | open (300 s) | open (300 s) |
+| RC | after: step x5 at +1 s | S1 +48 s @5.000x, lender -1.237, borrower 0.000 | S1 +49 s @5.000x, lender -1.237, borrower 0.000 |
+| RC | after: ramp x2 over 30 s | open (300 s) | open (300 s) |
+| RC | after: ramp x5 over 60 s | liquidation +35 s @2.489x, lender +0.064, borrower 0.199 | liquidation +35 s @2.489x, lender +0.064, borrower 0.199 |
+
+### 7d. Engine M: a genuine pump during the halt, flat after (honest keeper only).
+
+| candidate price | M4 as built | M4R |
+|---|---|---|
+| 2.1x | liquidation by keeper +16 s | liquidation by keeper +9 s |
+| 2.5x | liquidation by keeper +9 s | liquidation by keeper +9 s |
+| 3.0x | S1 by keeper +61 s | S1 by keeper +49 s |
+| 5.0x | S1 by keeper +48 s | S1 by keeper +49 s |
+
+## 8. Degraded mode: no honest observer during the warm-up.
+
+### 8a. Engine W, m 1.99 (healthy on the pool as it trades; honest threshold 2.01).  (a) The keeper is
+absent for the first k seconds after the adoption; the M4R-1 attacker is present every second
+(withdraw-wrapped execute, cranks and liquidation attempts).  (b) Nobody observes for 600 s after the
+adoption, then the keeper; genuinely liquidatable at 2.2x.  (c) The adopted pool halts at +3 s (warm-up
+incomplete), 2.2x; keeper cranks every second.  (d) A genuine held withdrawal of every unlocked LP unit
+for s in [1, k), re-deposited at k, then the per-second withdraw-wrapped freeze and liquidation.  (e), (f)
+A held price push through the warm-up (the §12.6 held model).
+
+| case | M4 as built | M4R |
+|---|---|---|
+| (a) keeper absent s < 2 | liquidation a +27s (0.331) | open (0.407) |
+| (a) keeper absent s < 4 | liquidation a +27s (0.331) | open (0.407) |
+| (a) keeper absent s < 8 | liquidation a +27s (0.331) | open (0.407) |
+| (a) keeper absent s < 9 | liquidation a +27s (0.331) | liquidation a +9s (0.331) |
+| (a) keeper absent s < 13 | liquidation a +27s (0.331) | liquidation a +9s (0.331) |
+| (a) keeper absent s < 31 | liquidation a +27s (0.331) | liquidation a +9s (0.331) |
+| (b) no observation for 600 s, then the keeper (2.2x) | liquidation k +612s (0.250) | liquidation k +608s (0.250) |
+| (c) the new pool halts at +3 s (2.2x), 1,500 s | open | open |
+| (d) held withdrawal s in [1, 4), then withdraw-wrapped freeze | open (0.407) | open (0.407) |
+| (d) held withdrawal s in [1, 9), then withdraw-wrapped freeze | liquidation a +33s (0.331) | liquidation a +9s (0.331) |
+| (d) held withdrawal s in [1, 21), then withdraw-wrapped freeze | liquidation a +28s (0.331) | liquidation k +9s (0.331) |
+| (d) held withdrawal s in [1, 41), then withdraw-wrapped freeze | liquidation k +28s (0.331) | liquidation k +9s (0.331) |
+| (e) the attacker holds the pool at 1.2x for s in [1, 9) (every observation sees it), withdraw-wrapped liquidation every second | liquidation a +10s @2.00x (0.329 / 0.033) | open (0.405) |
+| (f) as (e), the keeper absent for s in [1, 9) | open (0.405) | open (0.405) |
+
+### 8b. Engine M: no keeper in the window nor after; the recording proposal is pump-wrapped (3x) and the
+attacker holds the adopted pool at mult x the true price every second (held model: every observation
+of the second is pushed) until the position would be liquidatable, then sandwiches the liquidation.
+Cells: P_ema / P at the switch; the best mult, the seconds held, the attacker's net (SOL).
+
+| rule | result |
+|---|---|
+| M4 as built | P/P 1.000; x3.0 for 8 s, net -0.2667 SOL |
+| M4R | P/P 1.000; x3.0 for 9 s, net -0.3825 SOL |
+
+### 8c. Steady state for comparison (no switch; the same under both rules; pre-existing).  The position is
+opened on a lambda 50 % 52-SOL CPMM pool; the price walks to m x over 60 s (EMA converged).  At T0 the
+attacker withdraws every unlocked LP unit for k seconds (a GENUINE withdrawal: the keeper's cranks see D),
+re-deposits, then holds L_ema with a withdraw-wrapped crank every second and tries a withdraw-wrapped
+liquidation every second; or k attacker-only seconds (keeper absent, the attacker's cranks withdraw-
+wrapped).  Cells: outcome, seconds after T0, L_ema / √(X·Y) at the end.
+
+| m | variant | k = 0 | k = 3 | k = 5 | k = 8 | k = 12 | k = 20 | k = 40 |
+|---|---|---|---|---|---|---|---|---|
+| 1.99 | held withdrawal k s, then freeze | open, 1.00 | open, 0.79 | open, 0.70 | open, 0.62 | open, 0.56 | open, 0.51 | open, 0.50 |
+| 1.99 | k attacker-only seconds, then freeze | open, 1.00 | open, 0.79 | open, 0.70 | open, 0.62 | open, 0.56 | open, 0.51 | open, 0.50 |
+| 2.00 | held withdrawal k s, then freeze | open, 1.00 | open, 0.79 | open, 0.70 | open, 0.62 | open, 0.56 | open, 0.51 | open, 0.50 |
+| 2.00 | k attacker-only seconds, then freeze | open, 1.00 | open, 0.79 | open, 0.70 | open, 0.62 | open, 0.56 | open, 0.51 | open, 0.50 |
+| 2.01 | held withdrawal k s, then freeze | open, 1.00 | attacker +5s, 0.79 | attacker +5s, 0.70 | keeper +5s, 1.40 | keeper +5s, 1.40 | keeper +5s, 1.40 | keeper +5s, 1.40 |
+| 2.01 | k attacker-only seconds, then freeze | open, 1.00 | attacker +5s, 0.79 | attacker +5s, 0.70 | attacker +5s, 0.70 | attacker +5s, 0.70 | attacker +5s, 0.70 | attacker +5s, 0.70 |
+
+Reference (no attack, 60 s): m 2.00 healthy; m 2.01 healthy; m 2.02 liquidated.
+
+### 8d. Atomic price bundles in attacker-only seconds (M4X-1).  Engine W's market; the position's vault
+raised by add_margin (+0 / +25 / +50 / +100 % of V) so its honest threshold is about 2-4x the pre-halt
+price; the candidate trades FLAT at 1.00x after the adoption.  The keeper is absent for s <= k after the
+adoption (degraded mode); every second the attacker sends [buy kc, crank_price, sell] and [buy kl, liquidate,
+sell], with its best kc in {1.5 ... 12} and kl in {1.0, 1.1, 1.25, 1.5} x the threshold (the pumped buyback
+must still fit V - K_s).  Cells: the earliest forced liquidation, seconds after the adoption (kc, kl), or
+open (30 s).  Before M4X-1 the warm-up seed read the pumped low directly: 8 attacker-only seconds forced ANY
+threshold at +9 s.  With the step bound the reach is exactly as built's (whose P_ema moves at most
+x(tau + dt*(1 + C))/(tau + dt) per integration, the same bound), and never earlier (the gate).
+
+| margin | threshold | rule | keeper absent s <= 7 | keeper absent s <= 8 | keeper absent s <= 9 | keeper absent s <= 10 | keeper absent s <= 12 |
+|---|---|---|---|---|---|---|---|
+| +0 % | 2.05x | M4 as built | +7 s (4, 2.05) | +7 s (4, 2.05) | +7 s (4, 2.05) | +7 s (4, 2.05) | +7 s (4, 2.05) |
+| +0 % | 2.05x | M4R without the step bound (analysis; before M4X-1) | open | +9 s (2.5, 2.05) | +9 s (2.5, 2.05) | +9 s (2.5, 2.05) | +9 s (2.5, 2.05) |
+| +0 % | 2.05x | M4R | open | +9 s (2.5, 2.05) | +9 s (2.5, 2.05) | +9 s (2.5, 2.05) | +9 s (2.5, 2.05) |
+| +25 % | 2.50x | M4 as built | open | +9 s (4, 2.50) | +9 s (4, 2.50) | +9 s (4, 2.50) | +9 s (4, 2.50) |
+| +25 % | 2.50x | M4R without the step bound (analysis; before M4X-1) | open | +9 s (2.5, 2.50) | +9 s (2.5, 2.50) | +9 s (2.5, 2.50) | +9 s (2.5, 2.50) |
+| +25 % | 2.50x | M4R | open | +9 s (2.5, 2.50) | +9 s (2.5, 2.50) | +9 s (2.5, 2.50) | +9 s (2.5, 2.50) |
+| +50 % | 3.00x | M4 as built | open | open | +10 s (6, 3.00) | +10 s (6, 3.00) | +10 s (6, 3.00) |
+| +50 % | 3.00x | M4R without the step bound (analysis; before M4X-1) | open | +9 s (3, 3.00) | +9 s (3, 3.00) | +9 s (3, 3.00) | +9 s (3, 3.00) |
+| +50 % | 3.00x | M4R | open | open | +10 s (3, 3.00) | +10 s (3, 3.00) | +10 s (3, 3.00) |
+| +100 % | 4.00x | M4 as built | open | open | open | open | +12 s (6, 4.00) |
+| +100 % | 4.00x | M4R without the step bound (analysis; before M4X-1) | open | +9 s (4, 4.00) | +9 s (4, 4.00) | +9 s (4, 4.00) | +9 s (4, 4.00) |
+| +100 % | 4.00x | M4R | open | open | open | open | +12 s (6, 4.00) |
+
+## 9. Stale-high P_ema after a mild dip (engine M): the incumbent's price rises to pre x the open spot
+(EMA converged there), the incumbent halts, the candidate trades at m x (a mild dip); after the adoption
+the LP holder sends a withdraw-wrapped crank and a withdraw-wrapped liquidation every second after the
+keeper.  CR = the position's CR on the candidate at its true depth / at D (cr_liq 15,000).  Cells: P_ema /
+P at the switch; outcome in 90 s [borrower / lender / attacker's keeper reward, SOL].
+
+| pre -> m | CR | M4 as built | M4R |
+|---|---|---|---|
+| 2.0->1.98 | 15158/14993 | P/P 1.010 open [-0.4004 / +0.0000 / 0.0000] | P/P 1.010 open [-0.4004 / +0.0000 / 0.0000] |
+| 2.005->1.98 | 15158/14993 | P/P 1.013 open [-0.4004 / +0.0000 / 0.0000] | P/P 1.013 open [-0.4004 / +0.0000 / 0.0000] |
+| 2.01->1.98 | 15158/14993 | P/P 1.015 liquidation by attacker +2 s [-0.4759 / +0.0319 / 0.0221] | P/P 1.015 open [-0.4004 / +0.0000 / 0.0000] |
+| 2.01->1.985 | 15120/14955 | P/P 1.013 liquidation by attacker +2 s [-0.4781 / +0.0320 / 0.0221] | P/P 1.013 open [-0.4024 / +0.0000 / 0.0000] |
+| 2.01->1.99 | 15081/14917 | P/P 1.010 liquidation by attacker +2 s [-0.4802 / +0.0321 / 0.0221] | P/P 1.010 open [-0.4045 / +0.0000 / 0.0000] |
+| 2.01->1.95 | 15393/15226 | P/P 1.031 open [-0.3883 / +0.0000 / 0.0000] | P/P 1.031 open [-0.3883 / +0.0000 / 0.0000] |
+
+## 10. Targeted random search (engine W): 1,200 runs, seed 23.  Candidate lambda 10-99.78 %, 52-300 SOL,
+m drawn in [1.93, 2.06] around the position's threshold, q 0.20 / 0.40 / 0.74 %; attacker = one of five
+per-second LP schedules (withdraw or deposit around the samples, withdraw-wrapped cranks and liquidations,
+atomic 1.5x price bundles).  FORCED = the attacked run exits while the honest-only run of the same rule
+stays open for 90 s.
+
+| rule | adopted | honest-open | FORCED | first forced cases (lambda, SOL, m, q bps, attacker, exit, s, by) |
+|---|---|---|---|---|
+| M4 as built | 955/1200 | 615 | 30 | (1000, 300, 2.009, 40, {'rec_move': 'dep', 'exec_move': 'wd', 'att_crank': 'wd', 'att_liq': 'wd'}, 'liquidation', 23, 'attacker'); (5000, 80, 1.999, 40, {'rec_move': 'dep', 'exec_move': 'wd', 'att_crank': 'wd', 'att_liq': 'wd'}, 'liquidation', 32, 'attacker'); (7500, 80, 2.004, 40, {'exec_move': 'wd', 'att_crank': 'wd', 'att_liq': 'wd', 'att_price': ('pump', 1.5)}, 'liquidation', 47, 'attacker') |
+| M4R | 955/1200 | 615 | 0 | - |
+
+## 11. Switch only if all fit (#99, owner decision 2026-09-29; ECON §6.1, §6.2, §12.12 (11); ARCH §2.6
+rule 3).  A proposal that opens or improves a window whose adoption carries open positions, and the
+execution, also need every open position to fit the candidate's normal opening caps as an open on it right
+after the adoption: X0 = min(X_cand, min(L_slow, D)/sqrt(p), D/(lambda_min*sqrt(p))) <= D/sqrt(p), the
+candidate's locked token reserve (the execution without X_cand), at p = min(P_ema, P_cand) and at P_ema;
+min(max_q_hwm, sum Q) <= min(impact cap, 3.00*phi*X0) and sum Q <= min(OI cap, 7.50*phi*X0), phi =
+min(phi_inc, phi_cand) since FIT-2's fix (#100; phi_inc = Market.min_open_fee_ppm, the lowest fee an open paid
+since the market last had no position) and at most 2,500 ppm since FITS-1 (#101; CARRIED_FEE_CAP_PPM)
+(Market.carried_fit; CarriedPositionsTooLarge / cancelled).  Parts 1-10 force the adoption to study its
+mechanics; this part applies the rule.
+
+### 11a. The carried positions of parts 1-10 on their candidates (X0 at P_ema with the candidate's live X;
+one position, so sum Q = q).  Cells: q / X0; the per-position cap / X0 (the fee-scaled 0.75 % at 25 bps and,
+since FITS-1 (#101), at any fee: a 1 % -> 1 % switch's was the 2.470 % impact cap); sum Q / X0 and the OI cap
+/ X0; the #99 verdict.
+
+| parts | candidate | q / X0 | position cap / X0 | sum Q / X0 vs OI cap / X0 | #99 |
+|---|---|---|---|---|---|
+| 1, 3, 4b, 7a, 8a, 10 (engine W, q 0.40 % of the 100-SOL incumbent's X) | 52 SOL, lambda 50 % | 1.533 % | 0.750 % | 1.533 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 1, 3, 4b, 7a, 8a, 10 (engine W, q 0.74 % of the 100-SOL incumbent's X) | 52 SOL, lambda 50 % | 2.826 % | 0.750 % | 2.826 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 2a (q 0.74 %) | 240 SOL, lambda 25 % | 1.225 % | 0.750 % | 1.225 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 2a (q 0.74 %) | 400 SOL, lambda 10 % | 1.838 % | 0.750 % | 1.838 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 3, 7a (q 0.40 %) | 30 SOL, lambda 99.78 % | 1.333 % | 0.750 % | 1.333 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 3, 7a (q 0.40 %) | 150 SOL, lambda 90.00 % | 0.398 % | 0.750 % | 0.398 % / 1.875 % | adopted |
+| 3, 7a (q 0.40 %) | 150 SOL, lambda 99.78 % | 0.398 % | 0.750 % | 0.398 % / 1.875 % | adopted |
+| 3, 7a (q 0.40 %) | 120 SOL, lambda 25.00 % | 1.329 % | 0.750 % | 1.329 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 3, 7a (q 0.40 %) | 240 SOL, lambda 25.00 % | 0.664 % | 0.750 % | 0.664 % / 1.875 % | adopted |
+| 3, 7a (q 0.40 %) | 400 SOL, lambda 10.00 % | 0.997 % | 0.750 % | 0.997 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 4b, 7b (big carried position, 1 % fees, q 2.5 %) | 50 SOL, lambda 99.78 % | 10.000 % | 0.750 % | 10.000 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 4a, 4c, 4d (engine P, RA at the size cap) | 630 SOL, lambda 99.78 % | 2.938 % | 0.750 % | 2.938 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 4a, 4c, 4d (engine P, RA at the size cap) | 314 SOL, lambda 99.78 % | 5.895 % | 0.750 % | 5.895 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 4a, 4c, 4d (engine P, RA at the size cap) | 320 SOL, lambda 99.78 % | 5.785 % | 0.750 % | 5.785 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 5 (RA at the size cap) | 625 SOL, lambda 50 % | 5.910 % | 0.750 % | 5.910 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 2b (engine P, R100 at the size cap) | 104 SOL, lambda 25.00 % | 2.843 % | 0.750 % | 2.843 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 6 (engine P, R100 at the size cap) | 30 SOL, lambda 99.78 % | 2.469 % | 0.750 % | 2.469 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 7c (engine P, R100 at the size cap) | 50 SOL, lambda 90.00 % | 1.642 % | 0.750 % | 1.642 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 7d, 8b, 9 (engine M, q 0.40 %) | 52 SOL, lambda 50 % | 1.533 % | 0.750 % | 1.533 % / 1.875 % | refused (CarriedPositionsTooLarge) |
+| 10 (random search) | lambda 10-99.78 %, 52-300 SOL, q 0.20-0.74 % | - | - | - | 651 of the 955 the window floor admits (of 1200) |
+
+### 11b. Part 4d's candidates under #99 (engine P, the #101 keeper, the deposit freeze from +1 s): no window
+opens, the position stays on the halted incumbent at its pre-halt P_ema (never liquidatable there) and exits
+through S3 at fair value at its deadline (the keeper keeps the chain with a crank every 30 s).  The same for
+every attack of 4d, M4G-1 and M4G-3: nothing after an adoption happens.
+
+| candidate | q / X0 (cap 0.75 %) | #99 outcome |
+|---|---|---|
+| RA -> 314 SOL, lambda 99.78 % | 5.90 % | no window (#99: every proposal refused); S3 at the deadline (+29.96 d): lender 19.786 for q worth 18.469 at the frozen P_ema (+7.1 %), borrower 17.835 |
+| RA -> 630 SOL, lambda 99.78 % | 2.94 % | no window (#99: every proposal refused); S3 at the deadline (+29.96 d): lender 19.786 for q worth 18.469 at the frozen P_ema (+7.1 %), borrower 17.835 |
+| RA -> 320 SOL, lambda 99.78 % | 5.78 % | no window (#99: every proposal refused); S3 at the deadline (+29.96 d): lender 19.786 for q worth 18.469 at the frozen P_ema (+7.1 %), borrower 17.835 |
+
+### 11c. Carried positions at the #99 fit limit (RA's position at size x its cap, carried onto a candidate
+whose opening caps it just fits) under the M4F-1 / M4G attacks: the rule on (engine P, fit enforced);
+flat W s after the adoption, then a genuine pump to the top over 120 s.  Columns: the #101 keeper (per second
+while the guard is set, price bursts, per-second coverage while foreign liquidity deviations recur) and the
+keeper as built at M4R, with the reference cap; and the #101 keeper without the cap.  Cells: outcome (time
+after the adoption, price vs pre-halt; delay against the control of the same column), lender P&L at the
+exit price.
+
+#### RA -> 2510 SOL, lambda 99.78 %; q = 1 x RA's cap = 0.744 % of X0 (cap 0.750 %), 0.736 % of the candidate's X; pump to 3x
+
+| attack | W (s) | #101 keeper, M4R | old keeper, M4R | #101 keeper, M4R without the reference cap (before M4F-1) |
+|---|---|---|---|---|
+| none (control) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 |
+| deposit freeze dep from +1 s (M4F-1, while the guard is set) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 |
+| deposit freeze dep7 from +1 s | 120 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.835 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.835 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.835 |
+| deposit freeze dep from +40 s (M4F-1 after the clear; M4G-1's limit: every second after the clear but the keeper's attacker-only) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.826 |
+| deposit freeze dep7 from +40 s | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.835 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.826 |
+| held deposit 1x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.827 |
+| held deposit 7x from +20 s, pulled 40 s into the pump (just before the control's exit) | 120 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.835 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.835 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.829 |
+| none (control) | 600 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.827 |
+| held deposit 7x from +20 s for 580 s, pulled at the pump's first second (M4G-3) | 600 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.827 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.824 |
+
+#### RA -> 5000 SOL, lambda 50.00 %; q = 1 x RA's cap = 0.744 % of X0 (cap 0.750 %), 0.369 % of the candidate's X; pump to 3x
+
+| attack | W (s) | #101 keeper, M4R | old keeper, M4R | #101 keeper, M4R without the reference cap (before M4F-1) |
+|---|---|---|---|---|
+| none (control) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| deposit freeze dep from +1 s (M4F-1, while the guard is set) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| deposit freeze dep7 from +1 s | 120 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.831 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.831 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.831 |
+| deposit freeze dep from +40 s (M4F-1 after the clear; M4G-1's limit: every second after the clear but the keeper's attacker-only) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| deposit freeze dep7 from +40 s | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.831 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| held deposit 1x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +166 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| held deposit 7x from +20 s, pulled 40 s into the pump (just before the control's exit) | 120 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.831 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.831 | liquidation +167 s @1.783x (+1 s, +0.9 % in price), lender +0.828 |
+| none (control) | 600 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.823 |
+| held deposit 7x from +20 s for 580 s, pulled at the pump's first second (M4G-3) | 600 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.823 | liquidation +646 s @1.767x (+0 s, +0.0 % in price), lender +0.822 |
+
+#### RA -> 1260 SOL, lambda 99.78 %; q = 0.5 x RA's cap = 0.740 % of X0 (cap 0.750 %), 0.738 % of the candidate's X; pump to 3x
+
+| attack | W (s) | #101 keeper, M4R | old keeper, M4R | #101 keeper, M4R without the reference cap (before M4F-1) |
+|---|---|---|---|---|
+| none (control) | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 |
+| deposit freeze dep from +1 s (M4F-1, while the guard is set) | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 |
+| deposit freeze dep7 from +1 s | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 |
+| deposit freeze dep from +40 s (M4F-1 after the clear; M4G-1's limit: every second after the clear but the keeper's attacker-only) | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.412 |
+| deposit freeze dep7 from +40 s | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.412 |
+| held deposit 1x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 |
+| held deposit 7x from +20 s, pulled 40 s into the pump (just before the control's exit) | 120 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +165 s @1.750x (+0 s, +0.0 % in price), lender +0.410 |
+| none (control) | 600 | liquidation +645 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +645 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +645 s @1.750x (+0 s, +0.0 % in price), lender +0.413 |
+| held deposit 7x from +20 s for 580 s, pulled at the pump's first second (M4G-3) | 600 | liquidation +645 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +645 s @1.750x (+0 s, +0.0 % in price), lender +0.413 | liquidation +645 s @1.750x (+0 s, +0.0 % in price), lender +0.411 |
+
+#### RA -> 630 SOL, lambda 99.78 %; q = 0.25 x RA's cap = 0.743 % of X0 (cap 0.750 %), 0.741 % of the candidate's X; pump to 3x
+
+| attack | W (s) | #101 keeper, M4R | old keeper, M4R | #101 keeper, M4R without the reference cap (before M4F-1) |
+|---|---|---|---|---|
+| none (control) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 |
+| deposit freeze dep from +1 s (M4F-1, while the guard is set) | 120 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 |
+| deposit freeze dep7 from +1 s | 120 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 |
+| deposit freeze dep from +40 s (M4F-1 after the clear; M4G-1's limit: every second after the clear but the keeper's attacker-only) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 |
+| deposit freeze dep7 from +40 s | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 |
+| held deposit 1x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.205 |
+| held deposit 7x from +20 s, pulled 40 s into the pump (just before the control's exit) | 120 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.207 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.206 |
+| none (control) | 600 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.205 |
+| held deposit 7x from +20 s for 580 s, pulled at the pump's first second (M4G-3) | 600 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.205 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.204 |
+
+#### RA -> 314 SOL, lambda 99.78 %; q = 0.125 x RA's cap = 0.747 % of X0 (cap 0.750 %), 0.745 % of the candidate's X; pump to 3x
+
+| attack | W (s) | #101 keeper, M4R | old keeper, M4R | #101 keeper, M4R without the reference cap (before M4F-1) |
+|---|---|---|---|---|
+| none (control) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| deposit freeze dep from +1 s (M4F-1, while the guard is set) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| deposit freeze dep7 from +1 s | 120 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.104 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.104 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.104 |
+| deposit freeze dep from +40 s (M4F-1 after the clear; M4G-1's limit: every second after the clear but the keeper's attacker-only) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| deposit freeze dep7 from +40 s | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.104 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| held deposit 1x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +164 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| held deposit 7x from +20 s, pulled 40 s into the pump (just before the control's exit) | 120 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.104 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.104 | liquidation +165 s @1.750x (+1 s, +1.0 % in price), lender +0.103 |
+| none (control) | 600 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.103 |
+| held deposit 7x from +20 s for 580 s, pulled at the pump's first second (M4G-3) | 600 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.103 | liquidation +644 s @1.733x (+0 s, +0.0 % in price), lender +0.102 |
+
+#### RA -> 320 SOL, lambda 99.78 %; q = 0.125 x RA's cap = 0.733 % of X0 (cap 0.750 %), 0.731 % of the candidate's X; pump to 4x
+
+| attack | W (s) | #101 keeper, M4R | old keeper, M4R | #101 keeper, M4R without the reference cap (before M4F-1) |
+|---|---|---|---|---|
+| none (control) | 120 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| deposit freeze dep from +1 s (M4F-1, while the guard is set) | 120 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| deposit freeze dep7 from +1 s | 120 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.108 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.108 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.108 |
+| deposit freeze dep from +40 s (M4F-1 after the clear; M4G-1's limit: every second after the clear but the keeper's attacker-only) | 120 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| deposit freeze dep7 from +40 s | 120 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.108 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| held deposit 1x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | 120 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| held deposit 7x from +20 s, pulled 40 s into the pump (just before the control's exit) | 120 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.107 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.107 | liquidation +153 s @1.825x (+1 s, +1.4 % in price), lender +0.107 |
+| none (control) | 600 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.107 |
+| held deposit 7x from +20 s for 580 s, pulled at the pump's first second (M4G-3) | 600 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.107 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.106 |
+
+### 11d. FIT-2: a carried position on a higher-fee candidate, and fast pumps (engine P, fit enforced, the #101
+keeper).  On a 1 % pool the per-position impact cap binds (2.47 % of X0) where 25 bps' fee-scaled cap is
+0.75 %, and a carried position's margin was posted on the incumbent's cost: V/B on the new pool is lower than
+for a position of the same size opened there.  RAC = RA's 2,500-SOL lambda 50 % 0.25 % AMM v4 pool at Tier C
+(the fork's M4X-2 / FIT-2 market), RA the same pool at Tier A, RAC1 the same pool at a 1 % fee; the candidate
+a lambda 99.78 % pool at a 1 % fee; flat W s after the adoption, then a genuine pump to 4x over R s.  '#99's
+fit at phi_cand' is the rule FIT-2 broke (the carried fee-scaled caps at the candidate's fee); '#100's fit' the
+carried fee-scaled caps at min(phi_inc, phi_cand) (phi_inc = Market.min_open_fee_ppm, the lowest fee an open
+paid since the market last had no position), which FITS-1 broke at a 1 % -> 1 % switch; 'M4R' is the rule as
+adopted (#101): the carried fee-scaled caps at min(phi_inc, phi_cand, 2,500 ppm), the impact caps unchanged,
+the exit reference of #99, the spot leg at max(L_live, L_ema').  Both analysis fits run with the exits and the
+keeper as adopted.  Cells: outcome (time after the adoption, price vs pre-halt; delay against the control of
+the same W and ramp), lender P&L at the exit price.
+
+(i) FIT-2's positions: RAC -> 320 SOL at 1 %, the position at 100 % / 76 % of #99's fit limit, under #99's fit
+at phi_cand (the adoption allowed) and under M4R (#101).
+
+#### 100 % of #99's limit: q 2.469 % of X0 (#101's cap 0.750 %), 2.464 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 8.389 for q worth 7.883 at the frozen P_ema (+6.4 %), borrower 15.297.
+#99's fit with the carried fee caps at phi_cand (before FIT-2's fix):
+
+| attack | 4x/30 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|
+| none (control) | liquidation +137 s @2.700x (+0 s, +0.0 % in price), lender +0.764 | liquidation +147 s @2.350x (+0 s, +0.0 % in price), lender +0.780 | liquidation +166 s @2.150x (+0 s, +0.0 % in price), lender +0.712 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+1 s, +3.7 % in price), lender +0.340 | liquidation +147 s @2.350x (+0 s, +0.0 % in price), lender +0.780 | liquidation +166 s @2.150x (+0 s, +0.0 % in price), lender +0.712 |
+| none (control, W 600) | liquidation +617 s @2.700x (+0 s, +0.0 % in price), lender +0.764 | liquidation +627 s @2.350x (+0 s, +0.0 % in price), lender +0.780 | liquidation +646 s @2.150x (+0 s, +0.0 % in price), lender +0.712 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+1 s, +3.7 % in price), lender +0.340 | liquidation +627 s @2.350x (+0 s, +0.0 % in price), lender +0.780 | liquidation +646 s @2.150x (+0 s, -0.0 % in price), lender +0.712 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+1 s, +3.7 % in price), lender +0.340 | liquidation +628 s @2.400x (+1 s, +2.1 % in price), lender +0.797 | liquidation +648 s @2.200x (+2 s, +2.3 % in price), lender +0.729 |
+
+#### 76 % of #99's limit: q 1.879 % of X0 (#101's cap 0.750 %), 1.875 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 6.380 for q worth 6.000 at the frozen P_ema (+6.3 %), borrower 11.604.
+#99's fit with the carried fee caps at phi_cand (before FIT-2's fix):
+
+| attack | 4x/30 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.328 | liquidation +147 s @2.350x (+0 s, +0.0 % in price), lender +0.588 | liquidation +166 s @2.150x (+0 s, +0.0 % in price), lender +0.537 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.328 | liquidation +148 s @2.400x (+1 s, +2.1 % in price), lender +0.601 | liquidation +167 s @2.175x (+1 s, +1.2 % in price), lender +0.544 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.328 | liquidation +627 s @2.350x (+0 s, +0.0 % in price), lender +0.588 | liquidation +646 s @2.150x (+0 s, +0.0 % in price), lender +0.537 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.328 | liquidation +628 s @2.400x (+1 s, +2.1 % in price), lender +0.601 | liquidation +646 s @2.150x (+0 s, +0.0 % in price), lender +0.537 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.328 | liquidation +628 s @2.400x (+1 s, +2.1 % in price), lender +0.601 | liquidation +648 s @2.200x (+2 s, +2.3 % in price), lender +0.550 |
+
+(ii) Positions at the #101 fit limit on 1 % candidates, under the pushes (M4R).
+
+#### RAC (Tier C, fee 0.25 %) -> 320 SOL, lambda 99.78 %, fee 1 %; q at the fit limit = 0.750 % of X0 (cap 0.750 %), 0.748 % of the candidate's X
+
+| attack | 4x/30 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.182 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.213 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.182 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.213 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.182 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.213 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.182 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.213 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.182 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +648 s @2.200x (+1 s, +1.1 % in price), lender +0.216 |
+
+#### RAC (Tier C, fee 0.25 %) -> 2510 SOL, lambda 99.78 %, fee 1 %; q at the fit limit = 0.750 % of X0 (cap 0.750 %), 0.741 % of the candidate's X
+
+| attack | 4x/30 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +1.975 | liquidation +149 s @2.450x (+0 s, +0.0 % in price), lender +1.868 | liquidation +169 s @2.225x (+0 s, +0.0 % in price), lender +1.696 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +1.975 | liquidation +149 s @2.450x (+0 s, +0.0 % in price), lender +1.868 | liquidation +169 s @2.225x (+0 s, +0.0 % in price), lender +1.696 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +1.976 | liquidation +629 s @2.450x (+0 s, +0.0 % in price), lender +1.868 | liquidation +649 s @2.225x (+0 s, +0.0 % in price), lender +1.696 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +1.976 | liquidation +629 s @2.450x (+0 s, +0.0 % in price), lender +1.868 | liquidation +649 s @2.225x (+0 s, +0.0 % in price), lender +1.696 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +1.976 | liquidation +629 s @2.450x (+0 s, +0.0 % in price), lender +1.868 | liquidation +650 s @2.250x (+1 s, +1.1 % in price), lender +1.715 |
+
+#### RA (Tier A, fee 0.25 %) -> 320 SOL, lambda 99.78 %, fee 1 %; q at the fit limit = 0.750 % of X0 (cap 0.750 %), 0.748 % of the candidate's X
+
+| attack | 4x/30 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|
+| none (control) | S1 +176 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | S1 +185 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.110 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | S1 +176 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | S1 +185 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | liquidation +152 s @1.800x (+0 s, +0.0 % in price), lender +0.110 |
+| none (control, W 600) | S1 +656 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | S1 +665 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.110 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | S1 +656 s @4.000x (+0 s, -0.0 % in price), lender -4.818 | S1 +665 s @4.000x (+0 s, +0.0 % in price), lender -4.818 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.110 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | S1 +656 s @4.000x (+0 s, -0.0 % in price), lender -4.818 | S1 +666 s @4.000x (+1 s, -0.0 % in price), lender -4.818 | liquidation +632 s @1.800x (+0 s, +0.0 % in price), lender +0.110 |
+
+(iii) A 1 % -> 1 % switch (FITS-1): RAC1 (the 2,500-SOL pool at a 1 % fee, Tier C) -> 320 SOL at 1 %.
+min(phi_inc, phi_cand) is the candidate's own fee, so under #100's fit the limit was the impact cap (2.47 % of
+X0), on a margin posted on the deeper incumbent's cost (#100's residual 15); since #101 the carried fee caps
+take at most 2,500 ppm, the limit is 0.75 % of X0, and those positions settle S3 at fair value.
+
+#### RAC1 -> 320 SOL: q = 1 x #100's fit limit = 2.469 % of X0 (#100's cap 2.470 %, #101's 0.750 %), 2.463 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 8.449 for q worth 7.882 at the frozen P_ema (+7.2 %), borrower 15.413.
+#100's fit: min(phi_inc, phi_cand), no carried fee cap (before FITS-1):
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.431 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.841 | liquidation +147 s @2.350x (+0 s, +0.0 % in price), lender +0.779 | liquidation +166 s @2.150x (+0 s, +0.0 % in price), lender +0.712 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.431 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.841 | liquidation +148 s @2.400x (+1 s, +2.1 % in price), lender +0.796 | liquidation +167 s @2.175x (+1 s, +1.2 % in price), lender +0.720 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.431 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.842 | liquidation +627 s @2.350x (+0 s, +0.0 % in price), lender +0.780 | liquidation +646 s @2.150x (+0 s, +0.0 % in price), lender +0.712 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.431 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.842 | liquidation +628 s @2.400x (+1 s, +2.1 % in price), lender +0.797 | liquidation +646 s @2.150x (+0 s, -0.0 % in price), lender +0.712 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.431 | liquidation +624 s @2.600x (+1 s, +2.6 % in price), lender +0.864 | liquidation +629 s @2.450x (+2 s, +4.3 % in price), lender +0.813 | liquidation +649 s @2.225x (+3 s, +3.5 % in price), lender +0.737 |
+
+#### RAC1 -> 320 SOL: q = 0.76 x #100's fit limit = 1.878 % of X0 (#100's cap 2.470 %, #101's 0.750 %), 1.874 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 6.422 for q worth 5.996 at the frozen P_ema (+7.1 %), borrower 11.685.
+#100's fit: min(phi_inc, phi_cand), no carried fee cap (before FITS-1):
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.397 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.634 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.600 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.543 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.397 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.634 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.600 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.543 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.397 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.634 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.600 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.543 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.397 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.634 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.600 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.543 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.397 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.634 | liquidation +629 s @2.450x (+1 s, +2.1 % in price), lender +0.613 | liquidation +649 s @2.225x (+2 s, +2.3 % in price), lender +0.556 |
+
+#### RAC1 -> 320 SOL: q = 0.7 x #100's fit limit = 1.730 % of X0 (#100's cap 2.470 %, #101's 0.750 %), 1.726 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 5.917 for q worth 5.525 at the frozen P_ema (+7.1 %), borrower 10.758.
+#100's fit: min(phi_inc, phi_cand), no carried fee cap (before FITS-1):
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.381 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.583 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.552 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.499 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.381 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.583 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.552 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.499 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.381 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.583 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.552 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.500 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.381 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.583 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.552 | liquidation +647 s @2.175x (+0 s, -0.0 % in price), lender +0.500 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.381 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.583 | liquidation +629 s @2.450x (+1 s, +2.1 % in price), lender +0.563 | liquidation +649 s @2.225x (+2 s, +2.3 % in price), lender +0.511 |
+
+#### RAC1 -> 320 SOL: q = 0.65 x #100's fit limit = 1.608 % of X0 (#100's cap 2.470 %, #101's 0.750 %), 1.604 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 5.496 for q worth 5.133 at the frozen P_ema (+7.1 %), borrower 9.988.
+#100's fit: min(phi_inc, phi_cand), no carried fee cap (before FITS-1):
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.366 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.540 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.512 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.463 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.366 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.540 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.512 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.463 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.366 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.540 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.512 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.463 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.366 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.540 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.512 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.463 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.366 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.540 | liquidation +629 s @2.450x (+1 s, +2.1 % in price), lender +0.522 | liquidation +649 s @2.225x (+2 s, +2.3 % in price), lender +0.474 |
+
+#### RAC1 -> 320 SOL: q = 0.6 x #100's fit limit = 1.485 % of X0 (#100's cap 2.470 %, #101's 0.750 %), 1.482 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 5.076 for q worth 4.741 at the frozen P_ema (+7.1 %), borrower 9.218.
+#100's fit: min(phi_inc, phi_cand), no carried fee cap (before FITS-1):
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.349 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.498 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.472 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.427 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.349 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.498 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.472 | liquidation +168 s @2.200x (+1 s, +1.1 % in price), lender +0.432 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.349 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.498 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.472 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.427 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.349 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.498 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.472 | liquidation +647 s @2.175x (+0 s, -0.0 % in price), lender +0.427 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.349 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.498 | liquidation +629 s @2.450x (+1 s, +2.1 % in price), lender +0.482 | liquidation +649 s @2.225x (+2 s, +2.3 % in price), lender +0.437 |
+
+#### RAC1 -> 320 SOL: q = 0.5 x #100's fit limit = 1.237 % of X0 (#100's cap 2.470 %, #101's 0.750 %), 1.234 % of the candidate's X.  M4R (#101), any ramp and attack: no window (#99: every proposal refused); S3 at the deadline (+6.96 d): lender 4.228 for q worth 3.950 at the frozen P_ema (+7.0 %), borrower 7.669.
+#100's fit: min(phi_inc, phi_cand), no carried fee cap (before FITS-1):
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.309 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.413 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.391 | liquidation +167 s @2.175x (+0 s, +0.0 % in price), lender +0.354 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.309 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.413 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.391 | liquidation +168 s @2.200x (+1 s, +1.1 % in price), lender +0.359 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.309 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.413 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.391 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.355 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.309 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.413 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.391 | liquidation +647 s @2.175x (+0 s, +0.0 % in price), lender +0.355 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.309 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.413 | liquidation +629 s @2.450x (+1 s, +2.1 % in price), lender +0.400 | liquidation +649 s @2.225x (+2 s, +2.3 % in price), lender +0.363 |
+
+#### RAC1 -> 320 SOL at the #101 fit limit: q = 0.749 % of X0 (cap 0.750 %), 0.747 % of the candidate's X (M4R)
+
+| attack | 4x/30 s | 4x/45 s | 4x/60 s | 4x/120 s |
+|---|---|---|---|---|
+| none (control) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.209 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.248 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +168 s @2.200x (+0 s, +0.0 % in price), lender +0.215 |
+| deposit freeze dep7 from +40 s (M4F-1 after the clear; M4G-1's limit) | liquidation +138 s @2.800x (+0 s, +0.0 % in price), lender +0.209 | liquidation +143 s @2.534x (+0 s, +0.0 % in price), lender +0.248 | liquidation +148 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +168 s @2.200x (+0 s, +0.0 % in price), lender +0.215 |
+| none (control, W 600) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.209 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.248 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +648 s @2.200x (+0 s, +0.0 % in price), lender +0.215 |
+| held deposit 7x from +20 s, pulled at the pump's first second (M4G-3) | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.209 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.248 | liquidation +628 s @2.400x (+0 s, +0.0 % in price), lender +0.235 | liquidation +648 s @2.200x (+0 s, -0.0 % in price), lender +0.215 |
+| held deposit 7x from +20 s, pulled at the pump, then a deposit freeze dep7 | liquidation +618 s @2.800x (+0 s, +0.0 % in price), lender +0.209 | liquidation +623 s @2.534x (+0 s, +0.0 % in price), lender +0.248 | liquidation +629 s @2.450x (+1 s, +2.1 % in price), lender +0.240 | liquidation +649 s @2.225x (+1 s, +1.1 % in price), lender +0.218 |
+
+Native controls: the 320-SOL lambda 99.78 % 1 % pool listed directly (no switch), a position at its own open
+cap (Tier C; Tier A for comparison with RA's row), the EMA converged; the old keeper (no switch, no guard:
+the #99 keeper) and the #101 keeper; the same attacks from the listing's +20 / +40 s, W 600 / 120.  Cells:
+outcome (seconds after the pump starts, price, lender P&L at the exit price, borrower remainder);
+attacker-only seconds.
+
+| pool | q / x | ramp | attack | old keeper, M4R | #101 keeper, M4R |
+|---|---|---|---|---|---|
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/30 s | none | liquidation +19 s @2.900x, lender +0.779, borrower 0.000; 0 a-only s | liquidation +19 s @2.900x, lender +0.779, borrower 0.000; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/30 s | deposit freeze dep7 from +40 s | liquidation +20 s @3.000x, lender +0.373, borrower 0.000; 79 a-only s | liquidation +19 s @2.900x, lender +0.779, borrower 0.000; 1 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/30 s | held deposit 7x from +20 s, pulled at the pump | liquidation +19 s @2.900x, lender +0.779, borrower 0.000; 0 a-only s | liquidation +19 s @2.900x, lender +0.779, borrower 0.000; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/60 s | none | liquidation +30 s @2.500x, lender +0.792, borrower 3.206; 0 a-only s | liquidation +30 s @2.500x, lender +0.792, borrower 3.206; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/60 s | deposit freeze dep7 from +40 s | liquidation +31 s @2.550x, lender +0.808, borrower 2.771; 79 a-only s | liquidation +30 s @2.500x, lender +0.792, borrower 3.206; 1 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/60 s | held deposit 7x from +20 s, pulled at the pump | liquidation +30 s @2.500x, lender +0.792, borrower 3.206; 0 a-only s | liquidation +30 s @2.500x, lender +0.792, borrower 3.206; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/120 s | none | liquidation +52 s @2.300x, lender +0.728, borrower 4.946; 0 a-only s | liquidation +52 s @2.300x, lender +0.728, borrower 4.946; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/120 s | deposit freeze dep7 from +40 s | liquidation +54 s @2.350x, lender +0.744, borrower 4.512; 79 a-only s | liquidation +52 s @2.300x, lender +0.728, borrower 4.946; 1 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier C | 2.41 % | 4x/120 s | held deposit 7x from +20 s, pulled at the pump | liquidation +52 s @2.300x, lender +0.728, borrower 4.946; 0 a-only s | liquidation +52 s @2.300x, lender +0.728, borrower 4.946; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/30 s | none | S1 +57 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s | S1 +57 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/30 s | deposit freeze dep7 from +40 s | S1 +57 s @4.000x, lender -13.918, borrower 0.000; 79 a-only s | S1 +57 s @4.000x, lender -13.918, borrower 0.000; 1 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/30 s | held deposit 7x from +20 s, pulled at the pump | S1 +57 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s | S1 +57 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/60 s | none | S1 +68 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s | S1 +68 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/60 s | deposit freeze dep7 from +40 s | S1 +69 s @4.000x, lender -13.918, borrower 0.000; 79 a-only s | S1 +68 s @4.000x, lender -13.918, borrower 0.000; 1 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/60 s | held deposit 7x from +20 s, pulled at the pump | S1 +68 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s | S1 +68 s @4.000x, lender -13.918, borrower 0.000; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/120 s | none | liquidation +35 s @1.875x, lender +0.369, borrower 0.886; 0 a-only s | liquidation +35 s @1.875x, lender +0.369, borrower 0.886; 0 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/120 s | deposit freeze dep7 from +40 s | liquidation +37 s @1.925x, lender +0.379, borrower 0.466; 79 a-only s | liquidation +36 s @1.900x, lender +0.374, borrower 0.676; 1 a-only s |
+| 320 SOL, lambda 99.78 %, 1 %, Tier A | 2.41 % | 4x/120 s | held deposit 7x from +20 s, pulled at the pump | liquidation +35 s @1.875x, lender +0.369, borrower 0.886; 0 a-only s | liquidation +35 s @1.875x, lender +0.369, borrower 0.886; 0 a-only s |
+
+### 11e. FIT-3: a closed large position keeps the mark (residual 14; max_q_hwm resets only when
+open_positions reaches 0).  RA's market (Tier A, 30-day terms): three honest positions of 0.25 x the
+incumbent's size cap, opened on days 0 / 10 / 20; with the griefer, one borrower opens at the incumbent's
+cap on day 20 and closes a second later.  The incumbent halts on day 21; the only candidate has 40 % of its
+reserves at lambda 99.78 %, and every honest position and their OI fit it.  The fit bounds every open q by
+min(max_q_hwm, sum Q): the griefer's closed position keeps the first term at the cap, so the candidate is
+refused until the S3 exits bring sum Q down to its per-position cap.  Each healthy position on the halted
+pool is frozen at the pre-halt P_ema and settles S3 at its own deadline (fair value, the expiry fee as p');
+one carried by the adoption expires on the new pool.  Cells: time after the halt; sum Q / the incumbent's
+cap after the event; the lender's P&L against holding q (at the frozen P_ema for S3, else the exit price).
+
+#### control (no griefer)
+
+| event | after the halt | outcome | sum Q / cap after | lender P&L |
+|---|---|---|---|---|
+| the candidate adopted | +210 s | 3 positions carried | 0.750 | - |
+| position 1 (opened day 0) exits | +9.00 d | expiry | 0.500 | +0.256 SOL (+5.5 % of q at the exit price) |
+| position 2 (opened day 10) exits | +19.00 d | expiry | 0.250 | +0.257 SOL (+5.5 % of q at the exit price) |
+| position 3 (opened day 20) exits | +29.00 d | expiry | 0.000 | +0.259 SOL (+5.5 % of q at the exit price) |
+
+#### with the griefer (cost 0.140112 SOL: open fee, minimum rent and the round trip's impact); 54715 proposals refused (CarriedPositionsTooLarge)
+
+| event | after the halt | outcome | sum Q / cap after | lender P&L |
+|---|---|---|---|---|
+| position 1 (opened day 0) exits | +9.00 d | S3 | 0.500 | +0.305 SOL (+6.6 % of q at the frozen P_ema) |
+| position 2 (opened day 10) exits | +19.00 d | S3 | 0.250 | +0.304 SOL (+6.6 % of q at the frozen P_ema) |
+| the candidate adopted | +19.00 d | 1 position carried | 0.250 | - |
+| position 3 (opened day 20) exits | +29.00 d | expiry | 0.000 | +0.255 SOL (+5.5 % of q at the exit price) |
+

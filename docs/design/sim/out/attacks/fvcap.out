@@ -1,0 +1,14 @@
+=== (a) critic's cases (model: LP lock violated): outcome and lenders' take ===
+| market | LP drained | move | outcome | V - K_s (SOL) | FV at EMA executable cost (SOL) | lenders get (SOL) | borrower gets (SOL) | S1 lenders' take == V - K_s |
+|---|---|---|---|---|---|---|---|---|
+| A | 70% | x2.0 | S1 | 127.491 | 140.439 | 127.491 | 0.000 | yes |
+| A | 80% | x1.9 | S1 | 127.491 | 141.809 | 127.491 | 0.000 | yes |
+| A | 80% | x2.0 | S1 | 127.491 | 150.055 | 127.491 | 0.000 | yes |
+| B | 80% | x2.0 | S2 | 63.684 | 61.318 | 61.318 | 2.366 | n/a (S2) |
+| RA | 80% | x2.0 | S1 | 37.620 | 41.069 | 37.620 | 0.000 | yes |
+
+=== (b) S2 (thin liquidity, model drains) cases: FV cap binds, excess to the borrower ===
+| market | LP drained | move | outcome | V - K_s (SOL) | FV (SOL) | lenders get (SOL) | borrower gets (SOL) | lenders' take / value of Q at spot |
+|---|---|---|---|---|---|---|---|---|
+| RA | 95% | x1.4 | S2 | 37.620 | 33.048 | 33.048 | 4.573 | 1.278 |
+| A | 95% | x1.0 | S2 | 127.491 | 120.267 | 120.267 | 7.225 | 2.045 |

@@ -1,0 +1,35 @@
+[package]
+name = "shortwin-services-common"
+version = "0.1.0"
+description = "short.win services: the chain-client abstraction (RPC backend) and transaction building (v1 with v0 fallback)"
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+# Jito `sendBundle` (U22): base64 transactions in a JSON-RPC body (the indexer-litesvm recorder's
+# wire encoding too).
+base64.workspace = true
+serde_json.workspace = true
+bs58.workspace = true
+tokio.workspace = true
+# M7-SEC-8: `getMultipleAccounts` chunks in parallel (already in this lockfile through the RPC
+# client).
+futures.workspace = true
+solana-rpc-client.workspace = true
+solana-rpc-client-api.workspace = true
+solana-commitment-config.workspace = true
+solana-account-decoder-client-types.workspace = true
+solana-transaction-status-client-types.workspace = true
+solana-compute-budget-interface.workspace = true
+solana-hash.workspace = true
+solana-instruction.workspace = true
+solana-keypair.workspace = true
+solana-message.workspace = true
+solana-pubkey.workspace = true
+solana-signature.workspace = true
+solana-signer.workspace = true
+solana-transaction = { workspace = true, features = ["wincode"] }
+wincode.workspace = true
+solana-transaction-error.workspace = true
