@@ -1,5 +1,7 @@
 # short.win
 
+[![Discord](https://img.shields.io/badge/Discord-Join%20ShortWin-5865F2?logo=discord&logoColor=white)](https://discord.gg/sTcSSXDZqK)
+
 A Solana protocol for permissionless peer-to-peer token lending, built to short memecoins,
 including pump.fun launches still on the bonding curve. Lenders deposit tokens into a
 per-token pool and earn rent. A borrower posts SOL margin; the program borrows the tokens
